@@ -1,0 +1,52 @@
+version: '3.8'
+
+networks:
+  psql-network:
+
+services:
+  reservenow-back:
+    build:
+      context: .
+    ports:
+      - ${SERVER_PORT}:${SERVER_PORT}
+      - ${SERVER_DEBUG_PORT}:${SERVER_DEBUG_PORT}
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    command: npm run start:debug
+    networks:
+      - psql-network
+
+  postgres:
+    image: postgres
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    volumes:
+      - ../2. Init Database:/docker-entrypoint-initdb.d
+      - reservenow-db:/var/lib/postgresql/data
+    env_file:
+      - './.env'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U reservenow -d reservenowdb']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - psql-network
+
+  pgadmin:
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - '5050:80'
+    networks:
+      - psql-network
+
+volumes:
+  reservenow-db:
