@@ -24,25 +24,18 @@ export class AccountService {
     return newAccount.raw;
   }
 
-  async updateAccount(account: Account) {
-    const updatedAccount = await this.accountRepository
-      .createQueryBuilder('account')
-      .update(Account, account)
-      .where('id = :id', { id: account.id })
-      .returning('*')
-      .execute();
+  async updateAccount(id: number, fields: any) {
+    const updatedAccount = await this.accountRepository.update({ id }, fields);
 
     return updatedAccount.raw;
   }
 
-  async getAccount(email: string, withPassword: boolean = false) {
+  async getAccount(id: number, email: string, withPassword: boolean = false) {
     let accountQuery = this.accountRepository
       .createQueryBuilder('account')
-      .where('account.email = :email', { email });
+      .where('account.email = :email OR account.id = :id', { id, email });
 
-    accountQuery = withPassword
-      ? accountQuery.addSelect('account.password')
-      : accountQuery;
+    accountQuery = withPassword ? accountQuery.addSelect('account.password') : accountQuery;
 
     return accountQuery.getOne();
   }

@@ -1,5 +1,4 @@
-import * as bcrypt from 'bcrypt';
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Token } from './entities/token.entity';
 import { Repository } from 'typeorm';
@@ -13,15 +12,12 @@ export class TokenService {
     private readonly tokenRepository: Repository<Token>,
     private readonly jwtService: JwtService,
   ) {}
-  async createOrUpdateToken(account: Account, refreshToken: string) {
-    const hashedRt = refreshToken ? await bcrypt.hash(refreshToken, 10) : null;
-    return this.tokenRepository.upsert({ account, refresh_token: hashedRt }, [
-      'account',
-    ]);
+  async createOrUpdateToken(account: Account, tokens: any) {
+    return this.tokenRepository.upsert({ account, ...tokens }, ['account']);
   }
 
-  async getToken(account: Account) {
-    return this.tokenRepository.findOneBy({ account });
+  async getToken(accountId) {
+    return this.tokenRepository.findOneBy({ account: { id: accountId } });
   }
 
   async generateTokens(payload) {
@@ -35,7 +31,24 @@ export class TokenService {
         expiresIn: 60 * 60 * 24 * 15,
       }),
     ]);
-
     return { access_token, refresh_token };
+  }
+
+  generateToken(payload: any, secret: string, exp: number) {
+    return this.jwtService.signAsync(payload, {
+      secret: secret,
+      expiresIn: exp,
+    });
+  }
+
+  async refresh(payload) {
+    const token = await this.getToken(payload);
+
+    if (!token.refresh_token) throw new ForbiddenException();
+
+    const newTokens = await this.generateTokens(payload);
+    await this.createOrUpdateToken(payload, newTokens.refresh_token);
+
+    return { ...newTokens, account: payload };
   }
 }

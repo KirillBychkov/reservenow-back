@@ -9,9 +9,7 @@ import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
-  constructor(
-    @InjectRepository(User) private readonly userRepository: Repository<User>,
-  ) {}
+  constructor(@InjectRepository(User) private readonly userRepository: Repository<User>) {}
 
   async get(search: string, limit: number, skip: number) {
     const users = await this.userRepository
@@ -20,12 +18,16 @@ export class UserService {
       .skip(skip ?? 0)
       .getMany();
 
-    return users;
+    return { filters: { skip, limit, search }, data: users };
+  }
+
+  async getById(id: number) {
+    return this.userRepository.findOneBy({ id });
   }
 
   async export(search: string, limit: number, skip: number): Promise<string> {
     const users = await this.get(search, limit, skip);
-    const ws = xlsx.utils.json_to_sheet(users);
+    const ws = xlsx.utils.json_to_sheet(users.data);
 
     const workBook = xlsx.utils.book_new();
 

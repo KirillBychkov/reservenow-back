@@ -1,50 +1,47 @@
 import { AuthService } from './auth.service';
-import {
-  Body,
-  Request,
-  Controller,
-  Delete,
-  Get,
-  Post,
-  UseGuards,
-  HttpCode,
-} from '@nestjs/common';
+import { Body, Request, Controller, Delete, Get, Post, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
 import SignInDTO from './dto/signin.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import AuthDTO from './dto/auth.dto';
+import { User } from 'src/user/entities/user.entity';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
-  @UseGuards(AuthGuard('jwt'))
-  @Get('user')
-  getUser(@Request() req) {
-    return this.authService.getUser(req);
+  @ApiOperation({ summary: 'Get bearer token for the user in the system' })
+  @Post('login')
+  @ApiOkResponse({ description: 'The user has logged in successfully', type: AuthDTO })
+  login(@Body() signInDTO: SignInDTO) {
+    return this.authService.login(signInDTO);
   }
 
+  @ApiOperation({ summary: 'Get current user by the access token' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get('user')
+  @ApiOkResponse({ description: 'The user has been received successfully', type: User })
+  getUser(@Request() req) {
+    return this.authService.getUser(req.user.id);
+  }
+
+  @ApiOperation({ summary: 'Verify email by the token' })
+  @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Get('verify')
   verify() {
     return '/auth/verify';
   }
 
-  @Post('login')
-  login(@Body() signInDTO: SignInDTO) {
-    return this.authService.login(signInDTO);
-  }
-
+  @ApiOperation({ summary: 'Log out from the account' })
+  @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Delete('logout')
-  @HttpCode(204)
+  @ApiNoContentResponse({ description: 'The user has logged out successfully' })
+  @HttpCode(HttpStatus.NO_CONTENT)
   logout(@Request() req) {
-    return this.authService.logout(req);
-  }
-
-  @UseGuards(AuthGuard('jwt-refresh'))
-  @Post('refresh')
-  refresh(@Request() req) {
-    return this.authService.refresh(req);
+    return this.authService.logout(req.user.id);
   }
 }

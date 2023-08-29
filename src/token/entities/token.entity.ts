@@ -1,12 +1,5 @@
 import { Account } from 'src/account/entities/account.entity';
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  OneToOne,
-  JoinColumn,
-  Column,
-  CreateDateColumn,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, OneToOne, JoinColumn, Column, CreateDateColumn } from 'typeorm';
 
 @Entity()
 export class Token {
@@ -16,6 +9,9 @@ export class Token {
   @OneToOne(() => Account)
   @JoinColumn()
   account: Account;
+
+  @Column({ nullable: true })
+  access_token: string;
 
   @Column({ nullable: true })
   refresh_token: string;
