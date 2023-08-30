@@ -13,9 +13,6 @@ import {
   Patch,
   UseGuards,
 } from '@nestjs/common';
-import { UserService } from './user.service';
-import { Response } from 'express';
-import UserDTO from './dto/user.dto';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -26,13 +23,20 @@ import {
   ApiOkResponse,
   ApiNoContentResponse,
 } from '@nestjs/swagger';
+import { UserService } from './user.service';
+import { Response } from 'express';
+import UserDTO from './dto/user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import ElementsQueryDto from './dto/query.dto';
 import { User } from './entities/user.entity';
+import { Roles } from 'src/role/role.decorator';
+import { RolesGuard } from 'src/role/role.guard';
+import NewUserDto from './dto/newuser.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'))
+@Roles('superuser')
+@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('users')
 export class UserController {
   constructor(private userService: UserService) {}
@@ -61,8 +65,9 @@ export class UserController {
   @Post('')
   @ApiCreatedResponse({ description: 'A new user has been created successfully', type: User })
   // @ApiForbiddenResponse({ description: 'Forbidded' })
-  postUser(@Body() userDTO: UserDTO) {
-    return this.userService.insertUser(userDTO);
+  postUser(@Body() newUserDto: NewUserDto) {
+    const { email, user } = newUserDto;
+    return this.userService.insertUser(email, user);
   }
 
   @ApiOperation({ summary: 'Update user by their ID' })
@@ -71,9 +76,9 @@ export class UserController {
     description: 'ID of the user that you want to update',
   })
   @Put(':id')
-  @ApiOkResponse({ description: 'A new user has been updated successfully', type: User })
+  @ApiOkResponse({ description: 'The user has been updated successfully', type: User })
   // @ApiForbiddenResponse({ description: 'Forbidded' })
-  fullUserUpdate(@Param('id') id: number, @Body() body) {
+  fullUserUpdate(@Param('id') id: number, @Body() body: UserDTO) {
     return this.userService.fullyUpdateUser(id, body);
   }
 
@@ -83,9 +88,9 @@ export class UserController {
     description: 'ID of the user that you want to update',
   })
   @Patch(':id')
-  @ApiOkResponse({ description: 'A new user has been updated successfully', type: User })
+  @ApiOkResponse({ description: 'The user has been updated successfully', type: User })
   // @ApiForbiddenResponse({ description: 'Forbidded' })
-  partialUserUpdate(@Param('id') id: number, @Body() Body) {
+  partialUserUpdate(@Param('id') id: number, @Body() Body: UserDTO) {
     return this.userService.partiallyUpdateUser(id, Body);
   }
 
@@ -95,7 +100,7 @@ export class UserController {
     description: 'ID of the user that you want to delete',
   })
   @Delete(':id')
-  @ApiNoContentResponse({ description: 'A new user has been deleted successfully' })
+  @ApiNoContentResponse({ description: 'The user has been deleted successfully' })
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteUser(@Param('id') id: number) {
     return this.userService.deleteUserById(id);

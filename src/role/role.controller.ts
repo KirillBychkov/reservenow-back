@@ -1,17 +1,32 @@
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiFoundResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Controller, Get, Post, Body, Param, UseGuards, Patch, Delete } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { RoleService } from './role.service';
 import RoleDto from './dto/role.dto';
+import { Role } from './entities/role.entity';
+import { RolesGuard } from './role.guard';
+import { Roles } from './role.decorator';
 
 @ApiTags('Role')
-@UseGuards(AuthGuard('jwt'))
+@ApiBearerAuth()
+@Roles('superuser')
+@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('role')
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
   @ApiOperation({ summary: 'Get all roles in the system' })
   @Get('')
+  @ApiFoundResponse({ description: 'All roles have been received', type: [Role] })
   getAll() {
     return this.roleService.getAll();
   }
@@ -22,12 +37,14 @@ export class RoleController {
     description: 'ID of the role that you want to receive',
   })
   @Get(':id')
+  @ApiFoundResponse({ description: 'The role has been received', type: Role })
   getById(@Param('id') id: number) {
     return this.roleService.getById(id);
   }
 
   @ApiOperation({ summary: 'Create a new role in the system' })
   @Post('')
+  @ApiCreatedResponse({ description: 'A role has been created successfully', type: Role })
   createRole(@Body() body: RoleDto) {
     return this.roleService.createRole(body);
   }
@@ -38,7 +55,8 @@ export class RoleController {
     description: 'ID of the role that you want to update',
   })
   @Patch(':id')
-  updateById(@Param('id') id: number, @Body() body) {
+  @ApiOkResponse({ description: 'The role has been updated successfully', type: Role })
+  updateById(@Param('id') id: number, @Body() body: RoleDto) {
     return this.roleService.updateRole(id, body);
   }
 
@@ -48,6 +66,7 @@ export class RoleController {
   })
   @ApiOperation({ summary: 'Delete role by its id' })
   @Delete(':id')
+  @ApiNoContentResponse({ description: 'The role has been deleted successfully' })
   deleteById(@Param('id') id: number) {
     return this.roleService.deleteRoleById(id);
   }

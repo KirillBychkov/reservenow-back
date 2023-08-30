@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from './entities/role.entity';
 import { Repository } from 'typeorm';
@@ -12,15 +12,35 @@ export class RoleService {
     return this.roleRepository.find();
   }
 
-  getById(id: number) {
-    return this.roleRepository.findBy({ id });
+  async getByName(name: string) {
+    const role = this.roleRepository.findOneBy({ name });
+    if (!role) throw new ConflictException('An account with the given id does not exist');
+    return role;
   }
 
-  createRole(roleDto: RoleDto) {
-    return this.roleRepository.insert(roleDto);
+  async getById(id: number) {
+    const role = await this.roleRepository.findOneBy({ id });
+    if (!role) throw new ConflictException('An account with the given id does not exist');
+    return role;
+  }
+
+  async createRole(roleDto: RoleDto) {
+    const newRole = await this.roleRepository
+      .createQueryBuilder()
+      .insert()
+      .into(Role)
+      .values(roleDto)
+      .returning('*')
+      .execute();
+    return newRole;
   }
 
   async updateRole(id: number, fieldsToUpdate: any) {
+    try {
+      await this.getById(id);
+    } catch (error) {
+      return error;
+    }
     const updated = await this.roleRepository
       .createQueryBuilder('role')
       .update(Role, fieldsToUpdate)
@@ -28,12 +48,18 @@ export class RoleService {
       .returning('*')
       .execute();
 
-    return updated.raw;
+    return updated;
   }
 
   async deleteRoleById(id: number) {
-    const result = await this.roleRepository.delete({ id });
-    if (result.affected === 0) throw new NotFoundException();
+    try {
+      await this.getById(id);
+    } catch (error) {
+      return error;
+    }
+
+    const deleted = await this.roleRepository.delete({ id });
+    if (deleted.affected === 0) throw new NotFoundException();
     return;
   }
 }

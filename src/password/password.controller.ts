@@ -5,7 +5,8 @@ import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swa
 import ResetDto from './dto/reset.dto';
 import ChangeDto from './dto/change.dto';
 import ResetRo from './ro/reset.ro';
-import AuthRo from 'src/auth/dto/auth.dto';
+import AuthRo from 'src/auth/ro/auth.ro';
+import ConfirmDto from './dto/confirm.dto';
 
 @ApiTags('Password')
 @ApiBearerAuth()
@@ -24,7 +25,7 @@ export class PasswordController {
   @UseGuards(AuthGuard('jwt-reset'))
   @Patch('confirm')
   @ApiOkResponse({ description: 'The password has been changed', type: AuthRo })
-  confirm(@Request() req, @Body() body) {
+  confirm(@Request() req, @Body() body: ConfirmDto) {
     const { id, email } = req.user;
     return this.passwordService.confirmReset(body.new_password, { id, email });
   }

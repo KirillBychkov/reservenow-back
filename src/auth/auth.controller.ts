@@ -1,10 +1,10 @@
-import { AuthService } from './auth.service';
 import { Body, Request, Controller, Delete, Get, Post, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
-import SignInDTO from './dto/signin.dto';
-import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import AuthDTO from './dto/auth.dto';
+import { AuthService } from './auth.service';
+import { AuthGuard } from '@nestjs/passport';
 import { User } from 'src/user/entities/user.entity';
+import SignInDTO from './dto/signin.dto';
+import AuthRo from './ro/auth.ro';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -13,7 +13,7 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Get bearer token for the user in the system' })
   @Post('login')
-  @ApiOkResponse({ description: 'The user has logged in successfully', type: AuthDTO })
+  @ApiOkResponse({ description: 'The user has logged in successfully', type: AuthRo })
   login(@Body() signInDTO: SignInDTO) {
     return this.authService.login(signInDTO);
   }

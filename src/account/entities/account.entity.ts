@@ -1,4 +1,5 @@
 import { IsEmail } from 'class-validator';
+import { Role } from 'src/role/entities/role.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
@@ -26,20 +27,24 @@ export class Account {
   @IsEmail()
   email: string;
 
-  @Column({ select: false })
+  @Column({ nullable: true, select: false })
   password: string;
 
   @OneToOne(() => User, { nullable: true })
   @JoinColumn()
-  user_id: User;
+  user: User;
 
   @OneToOne(() => User, { nullable: true })
   @JoinColumn()
-  manager_id: User;
+  manager: User;
 
   @OneToOne(() => User, { nullable: true })
   @JoinColumn()
-  trainer_id: User;
+  trainer: User;
+
+  @OneToOne(() => Role)
+  @JoinColumn()
+  role: Role;
 
   @Column({ type: 'enum', enum: AccountStatus, default: AccountStatus.ACTIVE })
   status: AccountStatus;
