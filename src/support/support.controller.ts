@@ -7,6 +7,7 @@ import { RolesGuard } from 'src/role/role.guard';
 import { Roles } from 'src/role/role.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Support } from './entities/support.entity';
+import IdPar from 'src/helpers/id.par';
 
 @ApiTags('Support')
 @ApiBearerAuth()
@@ -30,21 +31,21 @@ export class SupportController {
   @Roles('superuser')
   @UseGuards(RolesGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.supportService.findOne(+id);
+  findOne(@Param('id') id: IdPar) {
+    return this.supportService.findOne(+id.id);
   }
 
   @Roles('superuser')
   @UseGuards(RolesGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSupportDto: UpdateSupportDto) {
-    return this.supportService.update(+id, updateSupportDto);
+  update(@Param('id') id: IdPar, @Body() updateSupportDto: UpdateSupportDto) {
+    return this.supportService.update(+id.id, updateSupportDto);
   }
 
   @Roles('superuser')
   @UseGuards(RolesGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.supportService.remove(+id);
+  remove(@Param('id') id: IdPar) {
+    return this.supportService.remove(+id.id);
   }
 }

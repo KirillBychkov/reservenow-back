@@ -100,6 +100,7 @@ export class UserService {
 
       return { reset_token };
     } catch (error) {
+      console.log(error);
       await queryRunner.rollbackTransaction();
       return error;
     } finally {

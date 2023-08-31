@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -42,8 +43,7 @@ export class Account {
   @JoinColumn()
   trainer: User;
 
-  @OneToOne(() => Role)
-  @JoinColumn()
+  @ManyToOne(() => Role, (role) => role.id)
   role: Role;
 
   @Column({ type: 'enum', enum: AccountStatus, default: AccountStatus.ACTIVE })
@@ -51,7 +51,6 @@ export class Account {
 
   @CreateDateColumn()
   created_at: Date;
-
   @UpdateDateColumn()
   updated_at: Date;
 }
