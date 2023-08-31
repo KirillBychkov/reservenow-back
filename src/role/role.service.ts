@@ -8,7 +8,7 @@ import RoleDto from './dto/role.dto';
 export class RoleService {
   constructor(@InjectRepository(Role) private readonly roleRepository: Repository<Role>) {}
 
-  getAll() {
+  findAll() {
     return this.roleRepository.find();
   }
 
@@ -18,13 +18,13 @@ export class RoleService {
     return role;
   }
 
-  async getById(id: number) {
+  async findOne(id: number) {
     const role = await this.roleRepository.findOneBy({ id });
     if (!role) throw new ConflictException('An account with the given id does not exist');
     return role;
   }
 
-  async createRole(roleDto: RoleDto) {
+  async create(roleDto: RoleDto) {
     const newRole = await this.roleRepository
       .createQueryBuilder()
       .insert()
@@ -35,9 +35,9 @@ export class RoleService {
     return newRole;
   }
 
-  async updateRole(id: number, fieldsToUpdate: any) {
+  async update(id: number, fieldsToUpdate: any) {
     try {
-      await this.getById(id);
+      await this.findOne(id);
     } catch (error) {
       return error;
     }
@@ -51,9 +51,9 @@ export class RoleService {
     return updated;
   }
 
-  async deleteRoleById(id: number) {
+  async delete(id: number) {
     try {
-      await this.getById(id);
+      await this.findOne(id);
     } catch (error) {
       return error;
     }

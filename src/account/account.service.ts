@@ -18,7 +18,12 @@ export class AccountService {
     return this.accountRepository.createQueryBuilder('account').getCount();
   }
 
-  async getNewAccount(email: string, password: string, user: User, roleName: string = 'user_viewer') {
+  async getNewAccount(
+    email: string,
+    password: string,
+    user: User,
+    roleName: string = 'user_viewer',
+  ) {
     if (await this.accountRepository.findOneBy({ email }))
       throw new ConflictException('An account with the given email already exists');
 
@@ -62,7 +67,8 @@ export class AccountService {
 
     const account = accountQuery.getOne();
 
-    if (!account) throw new ConflictException('An account with the given properties does not exist');
+    if (!account)
+      throw new ConflictException('An account with the given properties does not exist');
 
     return account;
   }

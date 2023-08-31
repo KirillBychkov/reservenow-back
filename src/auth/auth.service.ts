@@ -17,9 +17,7 @@ export class AuthService {
     const numberOfAccounts = await this.accountService.getCount();
 
     if (numberOfAccounts === 0) await this.accountService.createSuperUserAccount(email, password);
-
     const account: Account = await this.accountService.getAccount(null, email, true);
-    console.log(account);
 
     if (!(await bcrypt.compare(password, account.password))) throw new UnauthorizedException();
 
@@ -38,7 +36,10 @@ export class AuthService {
   async logout(id) {
     const account = await this.accountService.getAccount(id, null);
 
-    await this.tokenService.createOrUpdateToken(account, { access_token: null, refresh_token: null });
+    await this.tokenService.createOrUpdateToken(account, {
+      access_token: null,
+      refresh_token: null,
+    });
 
     return;
   }

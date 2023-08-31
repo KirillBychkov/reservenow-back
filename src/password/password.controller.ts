@@ -2,11 +2,11 @@ import { Controller, Post, Patch, Body, Put, UseGuards, Request } from '@nestjs/
 import { PasswordService } from './password.service';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import ResetDto from './dto/reset.dto';
-import ChangeDto from './dto/change.dto';
+import ResetPasswordDto from './dto/reset-password.dto';
+import ChangePasswordDto from './dto/change-password.dto';
 import ResetRo from './ro/reset.ro';
 import AuthRo from 'src/auth/ro/auth.ro';
-import ConfirmDto from './dto/confirm.dto';
+import ConfirmPasswordDto from './dto/confirm-password.dto';
 
 @ApiTags('Password')
 @ApiBearerAuth()
@@ -17,7 +17,7 @@ export class PasswordController {
   @ApiOperation({ summary: 'Receive a reset token for password reset' })
   @Post('reset')
   @ApiOkResponse({ description: 'Successfully received a reset token', type: ResetRo })
-  reset(@Body() body: ResetDto) {
+  reset(@Body() body: ResetPasswordDto) {
     return this.passwordService.resetPassword(body.email);
   }
 
@@ -25,19 +25,16 @@ export class PasswordController {
   @UseGuards(AuthGuard('jwt-reset'))
   @Patch('confirm')
   @ApiOkResponse({ description: 'The password has been changed', type: AuthRo })
-  confirm(@Request() req, @Body() body: ConfirmDto) {
+  confirm(@Request() req, @Body() body: ConfirmPasswordDto) {
     const { id, email } = req.user;
-    return this.passwordService.confirmReset(body.new_password, { id, email });
+    return this.passwordService.confirmReset(body, { id, email });
   }
 
   @ApiOperation({ summary: 'Change password for the user by their access token' })
   @UseGuards(AuthGuard('jwt'))
   @Put('change')
   @ApiOkResponse({ description: 'The password has been changed', type: AuthRo })
-  change(@Request() req, @Body() body: ChangeDto) {
-    const { old_password, new_password } = body;
-    const { id } = req.user;
-
-    return this.passwordService.changePassword(id, old_password, new_password);
+  change(@Request() req, @Body() body: ChangePasswordDto) {
+    return this.passwordService.changePassword(req.user.id, body);
   }
 }

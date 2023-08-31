@@ -19,21 +19,6 @@ export class TokenService {
   async getToken(accountId) {
     return this.tokenRepository.findOneBy({ account: { id: accountId } });
   }
-
-  async generateTokens(payload) {
-    const [access_token, refresh_token] = await Promise.all([
-      this.jwtService.signAsync(payload, {
-        secret: process.env.SECRET,
-        expiresIn: 60 * 15,
-      }),
-      this.jwtService.signAsync(payload, {
-        secret: process.env.REFRESH_SECRET,
-        expiresIn: 60 * 60 * 24 * 15,
-      }),
-    ]);
-    return { access_token, refresh_token };
-  }
-
   generateToken(payload: any, secret: string, exp: number) {
     return this.jwtService.signAsync(payload, {
       secret: secret,
@@ -46,9 +31,12 @@ export class TokenService {
 
     if (!token.refresh_token) throw new ForbiddenException();
 
-    const newTokens = await this.generateTokens(payload);
-    await this.createOrUpdateToken(payload, newTokens.refresh_token);
+    const [access_token, refresh_token] = await Promise.all([
+      this.generateToken(payload, process.env.SECRET, 60 * 15),
+      this.generateToken(payload, process.env.REFRESH_SECRET, 60 * 60 * 24 * 15),
+    ]);
+    await this.createOrUpdateToken(payload, { access_token, refresh_token });
 
-    return { ...newTokens, account: payload };
+    return { access_token, refresh_token, account: payload };
   }
 }

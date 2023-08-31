@@ -1,5 +1,21 @@
-import { Body, Request, Controller, Delete, Get, Post, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Request,
+  Controller,
+  Delete,
+  Get,
+  Post,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from 'src/user/entities/user.entity';
@@ -13,8 +29,8 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Get bearer token for the user in the system' })
   @Post('login')
-  @ApiOkResponse({ description: 'The user has logged in successfully', type: AuthRo })
-  login(@Body() signInDTO: SignInDTO) {
+  @ApiOkResponse({ description: 'The user has logged in successfully' })
+  login(@Body() signInDTO: SignInDTO): Promise<AuthRo> {
     return this.authService.login(signInDTO);
   }
 
@@ -22,8 +38,8 @@ export class AuthController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Get('user')
-  @ApiOkResponse({ description: 'The user has been received successfully', type: User })
-  getUser(@Request() req) {
+  @ApiOkResponse({ description: 'The user has been received successfully' })
+  getUser(@Request() req): Promise<User> {
     return this.authService.getUser(req.user.id);
   }
 

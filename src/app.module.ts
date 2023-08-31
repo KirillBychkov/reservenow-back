@@ -8,8 +8,7 @@ import { TokenModule } from './token/token.module';
 import { PasswordModule } from './password/password.module';
 import { MailModule } from './mail/mail.module';
 import { RoleModule } from './role/role.module';
-// import { RolesGuard } from './role/role.guard';
-// import { APP_GUARD } from '@nestjs/core';
+import { SupportModule } from './support/support.module';
 
 @Module({
   imports: [
@@ -35,7 +34,7 @@ import { RoleModule } from './role/role.module';
     PasswordModule,
     MailModule,
     RoleModule,
+    SupportModule,
   ],
-  // providers: [{ provide: APP_GUARD, useClass: RolesGuard }],
 })
 export class AppModule {}

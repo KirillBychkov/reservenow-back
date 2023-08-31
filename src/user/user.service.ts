@@ -3,12 +3,13 @@ import * as tmp from 'tmp';
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import UserDTO from './dto/user.dto';
+import UserDTO from './dto/update-user.dto';
 import { DataSource, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { AccountService } from 'src/account/account.service';
 import { TokenService } from 'src/token/token.service';
 import { Account } from 'src/account/entities/account.entity';
+import ElementsQueryDto from './dto/query.dto';
 
 @Injectable()
 export class UserService {
@@ -19,13 +20,15 @@ export class UserService {
     private tokenService: TokenService,
   ) {}
 
-  async getById(id: number) {
+  async findOne(id: number) {
     const user = await this.userRepository.findOneBy({ id });
-    if (!user) throw new ConflictException('An account with the given id does not exist');
+    if (!user) throw new ConflictException(`A user with id ${id} does not exist`);
     return user;
   }
 
-  async get(search: string, limit: number, skip: number) {
+  async findAll(query: ElementsQueryDto) {
+    const { search, limit, skip } = query;
+
     const users = await this.userRepository
       .createQueryBuilder('user')
       .limit(limit ?? 10)
@@ -35,8 +38,8 @@ export class UserService {
     return { filters: { skip, limit, search }, data: users };
   }
 
-  async export(search: string, limit: number, skip: number): Promise<string> {
-    const users = await this.get(search, limit, skip);
+  async export(query: ElementsQueryDto): Promise<string> {
+    const users = await this.findAll(query);
     const ws = xlsx.utils.json_to_sheet(users.data);
 
     const workBook = xlsx.utils.book_new();
@@ -44,17 +47,20 @@ export class UserService {
     xlsx.utils.book_append_sheet(workBook, ws, 'Users');
 
     return new Promise((resolve, reject) => {
-      tmp.file({ discardDescriptor: true, mode: 0o644, prefix: 'users', postfix: '.xlsx' }, (err, file) => {
-        if (err) reject(err);
+      tmp.file(
+        { discardDescriptor: true, mode: 0o644, prefix: 'users', postfix: '.xlsx' },
+        (err, file) => {
+          if (err) reject(err);
 
-        xlsx.writeFile(workBook, file);
+          xlsx.writeFile(workBook, file);
 
-        resolve(file);
-      });
+          resolve(file);
+        },
+      );
     });
   }
 
-  async insertUser(email: string, userDTO: UserDTO) {
+  async create(email: string, userDTO: UserDTO) {
     const queryRunner = await this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -103,7 +109,7 @@ export class UserService {
 
   async partiallyUpdateUser(id: number, fieldsToUpdate: any) {
     try {
-      await this.getById(id);
+      await this.findOne(id);
     } catch (error) {
       return error;
     }
@@ -118,16 +124,16 @@ export class UserService {
     return updated.raw;
   }
 
-  async fullyUpdateUser(id: number, userDTO: UserDTO) {
+  async fullyUpdateUser(id: number, updateUserDto: UserDTO) {
     try {
-      await this.getById(id);
+      await this.findOne(id);
     } catch (error) {
       return error;
     }
 
     const updated = await this.userRepository
       .createQueryBuilder()
-      .update(User, userDTO)
+      .update(User, updateUserDto)
       .where('id = :id', { id })
       .returning('*')
       .execute();
@@ -135,9 +141,9 @@ export class UserService {
     return updated.raw;
   }
 
-  async deleteUserById(id: number) {
+  async delete(id: number) {
     try {
-      await this.getById(id);
+      await this.findOne(id);
     } catch (error) {
       return error;
     }
