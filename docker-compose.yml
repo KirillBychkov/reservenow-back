@@ -4,49 +4,65 @@ networks:
   psql-network:
 
 services:
-  reservenow-back:
-    build:
-      context: .
-    ports:
-      - ${SERVER_PORT}:${SERVER_PORT}
-      - ${SERVER_DEBUG_PORT}:${SERVER_DEBUG_PORT}
-    volumes:
-      - ./:/app
-      - /app/node_modules
-    command: npm run start:debug
-    networks:
-      - psql-network
-
   postgres:
     image: postgres
     ports:
       - ${POSTGRES_PORT}:${POSTGRES_PORT}
     volumes:
-      - ../2. Init Database:/docker-entrypoint-initdb.d
-      - reservenow-db:/var/lib/postgresql/data
+      - ./pgdata:/var/lib/postgresql/data
     env_file:
       - './.env'
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U reservenow -d reservenowdb']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    restart: unless-stopped
+    restart: always
+    networks:
+      - psql-network
+
+  reservenow-back:
+    build:
+      context: .
+    depends_on:
+      - postgres
+    ports:
+      - ${SERVER_PORT}:${SERVER_PORT}
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    networks:
+      - psql-network
+
+  migration:
+    build:
+      context: .
+    command:
+      [
+        './wait-for-it/wait-for-it.sh',
+        '-t',
+        '30',
+        'postgres:${POSTGRES_PORT}',
+        '--',
+        './wait-for-it/wait-for-it.sh',
+        'reservenow-back:${SERVER_PORT}',
+        '--',
+        'npm',
+        'run',
+        'migration:run',
+      ]
+    env_file:
+      - ./.env
+    depends_on:
+      - postgres
     networks:
       - psql-network
 
   pgadmin:
     container_name: pgadmin4_container
     image: dpage/pgadmin4
+    depends_on:
+      - postgres
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: root
+      PGADMIN_DEFAULT_EMAIL: '${PGADMIN_DEFAULT_EMAIL}'
+      PGADMIN_DEFAULT_PASSWORD: '${PGADMIN_DEFAULT_PASSWORD}'
     ports:
-      - '5050:80'
+      - '${PGADMIN_PORT}:${PGADMIN_CONTAINER_PORT}'
     networks:
       - psql-network
-
-volumes:
-  reservenow-db:

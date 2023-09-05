@@ -18,25 +18,25 @@ export class Token {
   account: Account;
 
   @Column({ nullable: true })
-  access_token: string;
+  access_token?: string;
 
   @Column({ nullable: true })
-  refresh_token: string;
+  refresh_token?: string;
 
   @Column({ nullable: true })
-  verify_token: string;
+  verify_token?: string;
 
   @Column({ nullable: true })
-  reset_token: string;
+  reset_token?: string;
 
   @Column({ default: '0.0.0.0' })
   ip_adress: string;
 
   @Column({ nullable: true })
-  user_agent: string;
+  user_agent?: string;
 
   @Column('timestamp', { nullable: true })
-  expire_at: Date;
+  expire_at?: Date;
 
   @CreateDateColumn()
   created_at: Date;

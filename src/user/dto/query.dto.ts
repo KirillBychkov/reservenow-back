@@ -1,12 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumberString } from 'class-validator';
+import { IsNumberString, IsString } from 'class-validator';
 
 export default class ElementsQueryDto {
-  @ApiProperty({ description: 'How many posts to receive from the DB' })
+  @ApiProperty({ description: 'How many posts to receive from the DB (10 by default)' })
   @IsNumberString()
-  limit: number = 10;
-  @ApiProperty({ description: 'How many posts to skip in the DB' })
+  limit?: number;
+  @ApiProperty({ description: 'How many posts to skip in the DB (0 by default)' })
   @IsNumberString()
-  skip: number = 0;
-  search: string = '';
+  skip?: number;
+  @ApiProperty({ description: 'Name of the user (empty by default)' })
+  @IsString()
+  search?: string;
 }
