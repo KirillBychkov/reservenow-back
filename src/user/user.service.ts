@@ -10,6 +10,7 @@ import { AccountService } from 'src/account/account.service';
 import { TokenService } from 'src/token/token.service';
 import { Account } from 'src/account/entities/account.entity';
 import ElementsQueryDto from './dto/query.dto';
+import FindAllUsersDto from './dto/find-all-users.dto';
 
 @Injectable()
 export class UserService {
@@ -26,7 +27,7 @@ export class UserService {
     return user;
   }
 
-  async findAll(query: ElementsQueryDto) {
+  async findAll(query: ElementsQueryDto): Promise<FindAllUsersDto> {
     const { search, limit, skip } = query;
 
     const users = await this.userRepository
@@ -35,7 +36,7 @@ export class UserService {
       .skip(skip ?? 0)
       .getMany();
 
-    return { filters: { skip, limit, search }, data: users };
+    return { filters: { skip, limit, search, total: users.length }, data: users };
   }
 
   async export(query: ElementsQueryDto): Promise<string> {
@@ -76,7 +77,6 @@ export class UserService {
         .execute();
 
       const accountToCreate = await this.accountService.getNewAccount(email, null, user.raw[0]);
-      await queryRunner.commitTransaction();
 
       const account = (
         await queryRunner.manager
@@ -87,6 +87,7 @@ export class UserService {
           .returning('*')
           .execute()
       ).raw[0];
+      await queryRunner.commitTransaction();
 
       const reset_token = await this.tokenService.generateToken(
         { id: account.id, email: account.email },
@@ -100,7 +101,6 @@ export class UserService {
 
       return { reset_token };
     } catch (error) {
-      console.log(error);
       await queryRunner.rollbackTransaction();
       return error;
     } finally {

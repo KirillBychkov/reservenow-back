@@ -23,13 +23,13 @@ export class Support {
   user: User;
 
   @Column({ nullable: true })
-  file: string;
+  file?: string;
 
   @Column()
   client_description: string;
 
   @Column({ nullable: true })
-  result_description: string;
+  result_description?: string;
 
   @Column({ type: 'enum', enum: SupportStatus, default: SupportStatus.NEW })
   status: SupportStatus;

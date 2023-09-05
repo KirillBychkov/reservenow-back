@@ -29,19 +29,19 @@ export class Account {
   email: string;
 
   @Column({ nullable: true, select: false })
-  password: string;
+  password?: string;
 
   @OneToOne(() => User, { nullable: true })
   @JoinColumn()
-  user: User;
+  user?: User;
 
   @OneToOne(() => User, { nullable: true })
   @JoinColumn()
-  manager: User;
+  manager?: User;
 
   @OneToOne(() => User, { nullable: true })
   @JoinColumn()
-  trainer: User;
+  trainer?: User;
 
   @ManyToOne(() => Role, (role) => role.id)
   role: Role;

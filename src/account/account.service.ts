@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account } from './entities/account.entity';
 import { Repository } from 'typeorm';
@@ -29,6 +29,7 @@ export class AccountService {
 
     const hashedPass = password ? await bcrypt.hash(password, 10) : null;
     const role = await this.roleService.getByName(roleName);
+    if (role === null) throw new NotFoundException('Role not found');
     const newAccount = new Account();
     newAccount.email = email;
     newAccount.password = hashedPass;

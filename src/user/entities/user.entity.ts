@@ -20,14 +20,15 @@ export class User {
   @Column()
   phone: string;
 
+  //temporarily nullable
   @Column({ nullable: true })
-  domain_url: string;
+  domain_url?: string;
 
   @Column({ nullable: true })
-  image: string;
+  image?: string;
 
   @Column('text', { nullable: true })
-  description: string;
+  description?: string;
 
   @CreateDateColumn()
   created_at: Date;
