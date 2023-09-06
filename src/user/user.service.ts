@@ -30,6 +30,7 @@ export class UserService {
   async findAll(query: ElementsQueryDto): Promise<FindAllUsersDto> {
     const { search, limit, skip } = query;
 
+    // TODO: Add Search functionality
     const users = await this.userRepository
       .createQueryBuilder('user')
       .limit(limit ?? 10)

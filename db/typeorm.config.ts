@@ -6,6 +6,7 @@ config();
 
 const configService = new ConfigService();
 
+console.log(configService.get('POSTGRES_PASSWORD'));
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
   host: configService.get('POSTGRES_HOST'),
