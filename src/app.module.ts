@@ -10,6 +10,8 @@ import { MailModule } from './mail/mail.module';
 import { RoleModule } from './role/role.module';
 import { SupportModule } from './support/support.module';
 import { dataSourceOptions } from 'db/typeorm.config';
+import { OrganizationModule } from './organization/organization.module';
+import { RentalObjectModule } from './rental_object/rental_object.module';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { dataSourceOptions } from 'db/typeorm.config';
     MailModule,
     RoleModule,
     SupportModule,
+    OrganizationModule,
+    RentalObjectModule,
   ],
 })
 export class AppModule {}

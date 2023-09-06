@@ -13,9 +13,9 @@ export class SupportService {
     private readonly userService: UserService,
   ) {}
 
-  async create(userId: number, createSupportDto: CreateSupportDto) {
+  async create(userId: number, createSupportDto: CreateSupportDto): Promise<Support> {
     const user = await this.userService.findOne(userId);
-    const newSupportRecord = await this.supportReposity.manager
+    const newSupportRecord = await this.supportReposity
       .createQueryBuilder()
       .insert()
       .into(Support)
@@ -25,31 +25,31 @@ export class SupportService {
     return newSupportRecord.raw;
   }
 
-  findAll() {
+  findAll(): Promise<Support[]> {
     return this.supportReposity.find();
   }
 
-  async findOne(id: number) {
-    const suppertRecort = await this.supportReposity.findOneBy({ id });
-    if (!suppertRecort) throw new ConflictException(`Record with id ${id} does not exist`);
-    return suppertRecort;
+  async findOne(id: number): Promise<Support> {
+    const supportRecord = await this.supportReposity.findOneBy({ id });
+    if (!supportRecord) throw new ConflictException(`Support record with id ${id} does not exist`);
+    return supportRecord;
   }
 
-  async update(id: number, updateSupportDto: UpdateSupportDto) {
+  async update(id: number, updateSupportDto: UpdateSupportDto): Promise<Support> {
     try {
       await this.findOne(id);
     } catch (error) {
       return error;
     }
 
-    await this.supportReposity
+    const updated = await this.supportReposity
       .createQueryBuilder()
       .update(Support, updateSupportDto)
       .where('id = :id', { id })
       .returning('*')
       .execute();
 
-    return `This action updates a #${id} support`;
+    return updated.raw;
   }
 
   async remove(id: number) {
@@ -60,6 +60,6 @@ export class SupportService {
     }
 
     await this.supportReposity.delete({ id });
-    return `This action removes a #${id} support`;
+    return;
   }
 }

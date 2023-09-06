@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+  HttpStatus,
+  HttpCode,
+} from '@nestjs/common';
 import { SupportService } from './support.service';
 import { CreateSupportDto } from './dto/create-support.dto';
 import { UpdateSupportDto } from './dto/update-support.dto';
@@ -6,7 +18,6 @@ import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/role/role.guard';
 import { Roles } from 'src/role/role.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Support } from './entities/support.entity';
 import IdPar from 'src/helpers/id.par';
 
 @ApiTags('Support')
@@ -17,7 +28,7 @@ export class SupportController {
   constructor(private readonly supportService: SupportService) {}
 
   @Post()
-  create(@Req() req, @Body() createSupportDto: CreateSupportDto): Promise<Support> {
+  create(@Req() req, @Body() createSupportDto: CreateSupportDto) {
     return this.supportService.create(req.user.user_id, createSupportDto);
   }
 
@@ -44,6 +55,7 @@ export class SupportController {
 
   @Roles('superuser')
   @UseGuards(RolesGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   remove(@Param('id') id: IdPar) {
     return this.supportService.remove(+id.id);
