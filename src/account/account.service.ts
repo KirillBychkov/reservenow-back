@@ -30,13 +30,8 @@ export class AccountService {
     const hashedPass = password ? await bcrypt.hash(password, 10) : null;
     const role = await this.roleService.getByName(roleName);
     if (role === null) throw new NotFoundException('Role not found');
-    const newAccount = new Account();
-    newAccount.email = email;
-    newAccount.password = hashedPass;
-    newAccount.user = user;
-    newAccount.role = role;
 
-    return newAccount;
+    return { email, password: hashedPass, user, role };
   }
 
   async createSuperUserAccount(email: string, password: string) {

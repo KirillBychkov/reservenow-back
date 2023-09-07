@@ -1,19 +1,10 @@
-import { ConflictException, Injectable, UseGuards } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Organization } from './entities/organization.entity';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from 'src/role/role.guard';
-import { Roles } from 'src/role/role.decorator';
 
-@ApiTags('Organizations')
-@ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'))
-@Roles('superuser')
-@UseGuards(RolesGuard)
 @Injectable()
 export class OrganizationService {
   constructor(
