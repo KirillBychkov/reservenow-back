@@ -11,6 +11,7 @@ import { TokenService } from 'src/token/token.service';
 import { Account } from 'src/account/entities/account.entity';
 import ElementsQueryDto from './dto/query.dto';
 import FindAllUsersDto from './dto/find-all-users.dto';
+import CreateUserDto from './dto/create-user.dto';
 
 @Injectable()
 export class UserService {
@@ -62,32 +63,20 @@ export class UserService {
     });
   }
 
-  async create(email: string, userDTO: UserDTO) {
+  async create(createUserDTO: CreateUserDto) {
+    const { email, user } = createUserDTO;
+
     const queryRunner = await this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const user = await queryRunner.manager
-        .createQueryBuilder()
-        .insert()
-        .into(User)
-        .values(userDTO)
-        .returning('*')
-        .execute();
+      const newUser = await queryRunner.manager.save(User, user);
 
-      const accountToCreate = await this.accountService.getNewAccount(email, null, user.raw[0]);
+      const accountToCreate = await this.accountService.getNewAccount(email, null, newUser);
 
-      const account = (
-        await queryRunner.manager
-          .createQueryBuilder()
-          .insert()
-          .into(Account)
-          .values(accountToCreate)
-          .returning('*')
-          .execute()
-      ).raw[0];
+      const account = await queryRunner.manager.save(Account, accountToCreate);
       await queryRunner.commitTransaction();
 
       const reset_token = await this.tokenService.generateToken(
@@ -96,9 +85,7 @@ export class UserService {
         60 * 10,
       );
 
-      await this.tokenService.createOrUpdateToken(account, {
-        reset_token: reset_token,
-      });
+      await this.tokenService.createOrUpdateToken(account, { reset_token });
 
       return { reset_token };
     } catch (error) {

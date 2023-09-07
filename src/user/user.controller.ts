@@ -30,8 +30,7 @@ import ElementsQueryDto from './dto/query.dto';
 import { User } from './entities/user.entity';
 import { Roles } from 'src/role/role.decorator';
 import { RolesGuard } from 'src/role/role.guard';
-import NewUserDto from './dto/create-user.dto';
-import IdPar from 'src/helpers/id.par';
+import CreateUserDto from './dto/create-user.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -63,32 +62,32 @@ export class UserController {
   @Post('')
   @ApiCreatedResponse({ description: 'A new user has been created successfully' })
   // @ApiForbiddenResponse({ description: 'Forbidded' })
-  create(@Body() newUserDto: NewUserDto): Promise<User> {
-    const { email, user } = newUserDto;
-    return this.userService.create(email, user);
+  create(@Body() createUserDto: CreateUserDto): Promise<User> {
+    return this.userService.create(createUserDto);
   }
 
   @ApiOperation({ summary: 'Update user by their ID' })
   @Put(':id')
   @ApiOkResponse({ description: 'The user has been updated successfully' })
   // @ApiForbiddenResponse({ description: 'Forbidded' })
-  fullUserUpdate(@Param('id') id: IdPar, @Body() body: UserDTO): Promise<User> {
-    return this.userService.fullyUpdateUser(id.id, body);
+  fullUserUpdate(@Param('id') id: string, @Body() body: UserDTO): Promise<User> {
+    return this.userService.fullyUpdateUser(+id, body);
   }
 
   @ApiOperation({ summary: 'Update user by their ID' })
   @Patch(':id')
   @ApiOkResponse({ description: 'The user has been updated successfully' })
   // @ApiForbiddenResponse({ description: 'Forbidded' })
-  partialUserUpdate(@Param('id') id: IdPar, @Body() Body: UserDTO): Promise<User> {
-    return this.userService.partiallyUpdateUser(id.id, Body);
+  partialUserUpdate(@Param('id') id: string, @Body() Body: UserDTO): Promise<User> {
+    console.log(id);
+    return this.userService.partiallyUpdateUser(+id, Body);
   }
 
   @ApiOperation({ summary: 'Delete user by their ID' })
   @Delete(':id')
   @ApiNoContentResponse({ description: 'The user has been deleted successfully' })
   @HttpCode(HttpStatus.NO_CONTENT)
-  delete(@Param('id') id: IdPar) {
-    return this.userService.delete(id.id);
+  delete(@Param('id') id: string) {
+    return this.userService.delete(+id);
   }
 }

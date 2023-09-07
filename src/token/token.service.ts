@@ -20,10 +20,7 @@ export class TokenService {
     return this.tokenRepository.findOneBy({ account: { id: accountId } });
   }
   generateToken(payload: any, secret: string, exp: number) {
-    return this.jwtService.signAsync(payload, {
-      secret: secret,
-      expiresIn: exp,
-    });
+    return this.jwtService.signAsync(payload, { secret, expiresIn: exp });
   }
 
   async refresh(payload) {

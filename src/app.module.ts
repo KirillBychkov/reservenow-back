@@ -12,6 +12,7 @@ import { SupportModule } from './support/support.module';
 import { dataSourceOptions } from 'db/typeorm.config';
 import { OrganizationModule } from './organization/organization.module';
 import { RentalObjectModule } from './rental_object/rental_object.module';
+import { ManagerModule } from './manager/manager.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { RentalObjectModule } from './rental_object/rental_object.module';
     SupportModule,
     OrganizationModule,
     RentalObjectModule,
+    ManagerModule,
   ],
 })
 export class AppModule {}
