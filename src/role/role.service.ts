@@ -1,7 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Role } from './entities/role.entity';
 import { Repository } from 'typeorm';
+import { Role } from './entities/role.entity';
 import RoleDto from './dto/role.dto';
 
 @Injectable()
@@ -32,6 +32,7 @@ export class RoleService {
       .values(roleDto)
       .returning('*')
       .execute();
+
     return newRole;
   }
 

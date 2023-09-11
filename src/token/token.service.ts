@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateTokenDto } from './dto/create-token.dto';
 import { UpdateTokenDto } from './dto/update-token.dto';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import AuthDto from 'src/auth/dto/auth.dto';
 // import { Account } from 'src/account/entities/account.entity';
 
 @Injectable()
@@ -30,7 +32,7 @@ export class TokenService {
     return this.jwtService.signAsync(payload, { secret, expiresIn: exp });
   }
 
-  async refresh(payload) {
+  async refresh(payload): Promise<AuthDto> {
     const token = await this.getToken(payload);
 
     if (!token.refresh_token) throw new ForbiddenException();
@@ -42,5 +44,20 @@ export class TokenService {
     await this.updateToken(payload.id, { access_token, refresh_token });
 
     return { access_token, refresh_token, account: payload };
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async removeExpiredTokens() {
+    this.tokenRepository
+      .createQueryBuilder()
+      .delete()
+      .where('expires_at < now()')
+      .orWhere(
+        `access_token IS NULL AND 
+        refresh_token IS NULL AND 
+        reset_token IS NULL AND 
+        verify_token IS NULL`,
+      )
+      .execute();
   }
 }

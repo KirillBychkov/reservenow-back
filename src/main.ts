@@ -11,7 +11,7 @@ async function bootstrap() {
     .setDescription('The ReserveNow API description')
     .setVersion('1.0')
     .addServer('http://localhost:3000')
-    .addServer('http://localhost:3001')
+    .addServer('https://51.15.35.161')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);

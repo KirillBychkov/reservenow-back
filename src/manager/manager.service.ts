@@ -55,7 +55,6 @@ export class ManagerService {
   async remove(id: number) {
     await this.findOne(id);
 
-    await this.managerRepository.delete({ id });
-    return;
+    return this.managerRepository.delete({ id });
   }
 }

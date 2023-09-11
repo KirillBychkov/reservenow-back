@@ -96,7 +96,7 @@ export class UserService {
     }
   }
 
-  async partiallyUpdateUser(id: number, fieldsToUpdate: any) {
+  async partiallyUpdateUser(id: number, fieldsToUpdate: any): Promise<User> {
     await this.findOne(id);
 
     const updated = await this.userRepository
@@ -109,7 +109,7 @@ export class UserService {
     return updated.raw;
   }
 
-  async fullyUpdateUser(id: number, updateUserDto: UserDTO) {
+  async fullyUpdateUser(id: number, updateUserDto: UserDTO): Promise<User> {
     await this.findOne(id);
 
     const updated = await this.userRepository

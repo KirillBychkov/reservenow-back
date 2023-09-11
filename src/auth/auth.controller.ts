@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
@@ -19,6 +20,8 @@ import {
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import SignInDTO from './dto/signin.dto';
+import AuthDto from './dto/auth.dto';
+import { Account } from 'src/account/entities/account.entity';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -26,8 +29,8 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @ApiOperation({ summary: 'Get bearer token for the user in the system' })
+  @ApiCreatedResponse({ description: 'The user has logged in successfully', type: AuthDto })
   @Post('login')
-  @ApiOkResponse({ description: 'The user has logged in successfully' })
   login(@Body() signInDTO: SignInDTO) {
     return this.authService.login(signInDTO);
   }
@@ -35,8 +38,8 @@ export class AuthController {
   @ApiOperation({ summary: 'Get current user by the access token' })
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
+  @ApiOkResponse({ description: 'The user has been received successfully', type: Account })
   @Get('user')
-  @ApiOkResponse({ description: 'The user has been received successfully' })
   getUser(@Request() req) {
     return this.authService.getAccount(req.user.id);
   }
@@ -52,9 +55,9 @@ export class AuthController {
   @ApiOperation({ summary: 'Log out from the account' })
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
-  @Delete('logout')
   @ApiNoContentResponse({ description: 'The user has logged out successfully' })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete('logout')
   logout(@Request() req) {
     return this.authService.logout(req.user.id);
   }

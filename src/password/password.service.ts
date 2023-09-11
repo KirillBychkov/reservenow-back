@@ -21,20 +21,20 @@ export class PasswordService {
       throw new NotAcceptableException('Passwords do not match');
 
     const newHashedPassword = await bcrypt.hash(new_password, 10);
-    const accountRO = await this.accountService.updateAccount(id, { password: newHashedPassword });
+    await this.accountService.updateAccount(id, { password: newHashedPassword });
 
-    const payload = { id: account.id, email: account.email };
+    // const payload = { id: account.id, email: account.email };
 
-    const [access_token, refresh_token] = await Promise.all([
-      this.tokenService.generateToken(payload, process.env.SECRET, 60 * 15),
-      this.tokenService.generateToken(payload, process.env.REFRESH_SECRET, 60 * 60 * 24 * 15),
-    ]);
+    // const [access_token, refresh_token] = await Promise.all([
+    //   this.tokenService.generateToken(payload, process.env.SECRET, 60 * 15),
+    //   this.tokenService.generateToken(payload, process.env.REFRESH_SECRET, 60 * 60 * 24 * 15),
+    // ]);
 
-    const expires_at = DateTime.utc().plus({ minutes: 15 }).toISO().slice(0, -1);
+    // const expires_at = DateTime.utc().plus({ minutes: 15 }).toISO().slice(0, -1);
 
-    this.tokenService.updateToken(account.id, { access_token, refresh_token, expires_at });
+    // this.tokenService.updateToken(account.id, { access_token, refresh_token, expires_at });
 
-    return { access_token, refresh_token, accountRO };
+    return;
   }
 
   async resetPassword(email: string) {
@@ -60,10 +60,13 @@ export class PasswordService {
       this.tokenService.generateToken(payload, process.env.REFRESH_SECRET, 60 * 60),
     ]);
 
+    const expires_at = DateTime.utc().plus({ minutes: 60 }).toISO().slice(0, -1);
+
     await this.tokenService.updateToken(payload, {
       access_token,
       refresh_token,
       reset_token: null,
+      expires_at,
     });
 
     return { access_token, refresh_token, account: payload };
