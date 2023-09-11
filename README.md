@@ -1,5 +1,7 @@
 # ReserveNow Back
 
+### Setting up a container
+
 You need to provide .env file with following values:
 
 - `POSTGRES_HOST`: host of the server.
@@ -17,6 +19,12 @@ docker build -t reservenow-back .
 docker run --env-file=.env -p 3000:3000 reservenow-back
 ```
 
-API Link:
+### API Link:
 
 `localhost:3000/api#/`
+
+### Superuser credentials:
+
+email: `admin@admin.com`
+
+password: `admin`

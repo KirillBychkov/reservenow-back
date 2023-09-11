@@ -16,15 +16,14 @@ export class ManagerService {
   async create(createManagerDto: CreateManagerDto): Promise<Manager> {
     const { userId, ...createManager } = createManagerDto;
 
-    const user = await this.userService.findOne(userId);
+    await this.userService.findOne(userId);
+    if (!(await this.managerRepository.findOne({ where: { user: { id: userId } } })))
+      throw new ConflictException('Manager for the user already exists');
 
-    const newManager = await this.managerRepository
-      .createQueryBuilder()
-      .insert()
-      .into(Manager)
-      .values({ user, ...createManager })
-      .returning('*')
-      .execute();
+    const newManager = await this.managerRepository.insert({
+      user: { id: userId },
+      ...createManager,
+    });
 
     return newManager.raw;
   }
@@ -41,11 +40,7 @@ export class ManagerService {
   }
 
   async update(id: number, updateManagerDto: UpdateManagerDto) {
-    try {
-      await this.findOne(id);
-    } catch (error) {
-      return error;
-    }
+    await this.findOne(id);
 
     const updated = await this.managerRepository
       .createQueryBuilder()
@@ -58,11 +53,7 @@ export class ManagerService {
   }
 
   async remove(id: number) {
-    try {
-      await this.findOne(id);
-    } catch (error) {
-      return error;
-    }
+    await this.findOne(id);
 
     await this.managerRepository.delete({ id });
     return;

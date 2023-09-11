@@ -41,15 +41,23 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   @ApiOperation({ summary: 'Get all users in the system' })
-  @Get('')
+  @Get()
   @ApiFoundResponse({ description: 'All users have been received', type: [User] })
   // @ApiForbiddenResponse({ description: 'Forbidded' })
   findAll(@Query() queryDto: ElementsQueryDto) {
     return this.userService.findAll(queryDto);
   }
 
+  @ApiOperation({ summary: 'Create a new user in the system' })
+  @Post()
+  @ApiCreatedResponse({ description: 'A new user has been created successfully' })
+  // @ApiForbiddenResponse({ description: 'Forbidded' })
+  create(@Body() createUserDto: CreateUserDto): Promise<User> {
+    return this.userService.create(createUserDto);
+  }
+
   @ApiOperation({ summary: 'Download a file with users in the system' })
-  @Get('/export')
+  @Get('export')
   @ApiOkResponse({ description: 'The file with users has been downloaded successfully' })
   // @ApiForbiddenResponse({ description: 'Forbidded' })
   async export(@Res() res: Response, @Query() queryDto: ElementsQueryDto) {
@@ -58,12 +66,11 @@ export class UserController {
     res.download(file);
   }
 
-  @ApiOperation({ summary: 'Create a new user in the system' })
-  @Post('')
-  @ApiCreatedResponse({ description: 'A new user has been created successfully' })
-  // @ApiForbiddenResponse({ description: 'Forbidded' })
-  create(@Body() createUserDto: CreateUserDto): Promise<User> {
-    return this.userService.create(createUserDto);
+  @ApiOperation({ summary: 'Get a user by its id' })
+  @Get(':id')
+  @ApiFoundResponse({ description: 'The user has been received', type: User })
+  findOne(@Param('id') id: string) {
+    return this.userService.findOne(+id);
   }
 
   @ApiOperation({ summary: 'Update user by their ID' })
@@ -79,7 +86,6 @@ export class UserController {
   @ApiOkResponse({ description: 'The user has been updated successfully' })
   // @ApiForbiddenResponse({ description: 'Forbidded' })
   partialUserUpdate(@Param('id') id: string, @Body() Body: UserDTO): Promise<User> {
-    console.log(id);
     return this.userService.partiallyUpdateUser(+id, Body);
   }
 

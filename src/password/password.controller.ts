@@ -5,7 +5,7 @@ import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swa
 import ResetPasswordDto from './dto/reset-password.dto';
 import ChangePasswordDto from './dto/change-password.dto';
 import ResetRo from './ro/reset.ro';
-import AuthRo from 'src/auth/ro/auth.ro';
+import AuthRo from 'src/auth/dto/auth.dto';
 import ConfirmPasswordDto from './dto/confirm-password.dto';
 
 @ApiTags('Password')
@@ -26,8 +26,7 @@ export class PasswordController {
   @Patch('confirm')
   @ApiOkResponse({ description: 'The password has been changed', type: AuthRo })
   confirm(@Request() req, @Body() body: ConfirmPasswordDto) {
-    const { id, email } = req.user;
-    return this.passwordService.confirmReset(body, { id, email });
+    return this.passwordService.confirmReset(body, req.user);
   }
 
   @ApiOperation({ summary: 'Change password for the user by their access token' })

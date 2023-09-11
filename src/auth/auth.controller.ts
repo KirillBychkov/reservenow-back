@@ -18,9 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
-import { User } from 'src/user/entities/user.entity';
 import SignInDTO from './dto/signin.dto';
-import AuthRo from './ro/auth.ro';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -30,7 +28,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Get bearer token for the user in the system' })
   @Post('login')
   @ApiOkResponse({ description: 'The user has logged in successfully' })
-  login(@Body() signInDTO: SignInDTO): Promise<AuthRo> {
+  login(@Body() signInDTO: SignInDTO) {
     return this.authService.login(signInDTO);
   }
 
@@ -39,8 +37,8 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @Get('user')
   @ApiOkResponse({ description: 'The user has been received successfully' })
-  getUser(@Request() req): Promise<User> {
-    return this.authService.getUser(req.user.id);
+  getUser(@Request() req) {
+    return this.authService.getAccount(req.user.id);
   }
 
   @ApiOperation({ summary: 'Verify email by the token' })

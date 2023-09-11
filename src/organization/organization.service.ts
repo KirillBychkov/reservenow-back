@@ -30,11 +30,7 @@ export class OrganizationService {
   }
 
   async update(id: number, updateOrganizationDto: UpdateOrganizationDto): Promise<Organization> {
-    try {
-      await this.findOne(id);
-    } catch (error) {
-      return error;
-    }
+    await this.findOne(id);
 
     const updated = await this.organizationRepository
       .createQueryBuilder()
@@ -47,11 +43,7 @@ export class OrganizationService {
   }
 
   async remove(id: number) {
-    try {
-      await this.findOne(id);
-    } catch (error) {
-      return error;
-    }
+    await this.findOne(id);
 
     await this.organizationRepository.delete({ id });
     return;

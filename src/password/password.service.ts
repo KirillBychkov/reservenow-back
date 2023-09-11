@@ -4,6 +4,7 @@ import { AccountService } from 'src/account/account.service';
 import { TokenService } from 'src/token/token.service';
 import ChangeDto from './dto/change-password.dto';
 import ConfirmPasswordDto from './dto/confirm-password.dto';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class PasswordService {
@@ -20,8 +21,6 @@ export class PasswordService {
       throw new NotAcceptableException('Passwords do not match');
 
     const newHashedPassword = await bcrypt.hash(new_password, 10);
-    account.password = newHashedPassword;
-
     const accountRO = await this.accountService.updateAccount(id, { password: newHashedPassword });
 
     const payload = { id: account.id, email: account.email };
@@ -30,6 +29,10 @@ export class PasswordService {
       this.tokenService.generateToken(payload, process.env.SECRET, 60 * 15),
       this.tokenService.generateToken(payload, process.env.REFRESH_SECRET, 60 * 60 * 24 * 15),
     ]);
+
+    const expires_at = DateTime.utc().plus({ minutes: 15 }).toISO().slice(0, -1);
+
+    this.tokenService.updateToken(account.id, { access_token, refresh_token, expires_at });
 
     return { access_token, refresh_token, accountRO };
   }
@@ -42,7 +45,7 @@ export class PasswordService {
       60 * 10,
     );
 
-    await this.tokenService.createOrUpdateToken(account, { reset_token });
+    await this.tokenService.updateToken(account.id, { reset_token });
 
     return { reset_token };
   }
@@ -57,7 +60,7 @@ export class PasswordService {
       this.tokenService.generateToken(payload, process.env.REFRESH_SECRET, 60 * 60),
     ]);
 
-    await this.tokenService.createOrUpdateToken(payload, {
+    await this.tokenService.updateToken(payload, {
       access_token,
       refresh_token,
       reset_token: null,

@@ -36,11 +36,8 @@ export class RoleService {
   }
 
   async update(id: number, fieldsToUpdate: any) {
-    try {
-      await this.findOne(id);
-    } catch (error) {
-      return error;
-    }
+    await this.findOne(id);
+
     const updated = await this.roleRepository
       .createQueryBuilder('role')
       .update(Role, fieldsToUpdate)
@@ -52,11 +49,7 @@ export class RoleService {
   }
 
   async delete(id: number) {
-    try {
-      await this.findOne(id);
-    } catch (error) {
-      return error;
-    }
+    await this.findOne(id);
 
     const deleted = await this.roleRepository.delete({ id });
     if (deleted.affected === 0) throw new NotFoundException();

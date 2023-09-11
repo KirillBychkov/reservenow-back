@@ -2,10 +2,11 @@ import { Account } from 'src/account/entities/account.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
-  OneToOne,
-  JoinColumn,
   Column,
   CreateDateColumn,
+  UpdateDateColumn,
+  JoinColumn,
+  OneToOne,
 } from 'typeorm';
 
 @Entity()
@@ -30,14 +31,17 @@ export class Token {
   reset_token?: string;
 
   @Column({ default: '0.0.0.0' })
-  ip_adress: string;
+  ip_address: string;
 
   @Column({ nullable: true })
   user_agent?: string;
 
-  @Column('timestamp', { nullable: true })
-  expire_at?: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  expires_at?: string;
 
   @CreateDateColumn()
   created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
 }

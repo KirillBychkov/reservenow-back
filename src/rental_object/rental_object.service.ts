@@ -16,13 +16,9 @@ export class RentalObjectService {
 
   async create(createRentalObjectDto: CreateRentalObjectDto): Promise<RentalObject> {
     const { organizationId, ...rentalObject } = createRentalObjectDto;
-    try {
-      const organization = await this.organizationService.findOne(organizationId);
+    const organization = await this.organizationService.findOne(organizationId);
 
-      return this.rentalObjectsRepository.create({ organization, ...rentalObject });
-    } catch (error) {
-      return error;
-    }
+    return this.rentalObjectsRepository.create({ organization, ...rentalObject });
   }
 
   findAll(): Promise<RentalObject[]> {
@@ -36,11 +32,7 @@ export class RentalObjectService {
   }
 
   async update(id: number, updateRentalObjectDto: UpdateRentalObjectDto): Promise<RentalObject> {
-    try {
-      await this.findOne(id);
-    } catch (error) {
-      return error;
-    }
+    await this.findOne(id);
 
     const updated = await this.rentalObjectsRepository
       .createQueryBuilder()
@@ -53,11 +45,7 @@ export class RentalObjectService {
   }
 
   async remove(id: number) {
-    try {
-      await this.findOne(id);
-    } catch (error) {
-      return error;
-    }
+    await this.findOne(id);
 
     await this.rentalObjectsRepository.delete({ id });
     return;

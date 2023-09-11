@@ -43,7 +43,7 @@ export class RentalObjectController {
   @Get(':id')
   @ApiFoundResponse({ description: 'The rental object has been received', type: RentalObject })
   findOne(@Param('id') id: string) {
-    console.log(id);
+    this.rentalObjectService.findOne(+id);
   }
 
   @ApiOperation({ summary: 'Update a rental object by its id' })

@@ -22,7 +22,7 @@ export class UserService {
     private tokenService: TokenService,
   ) {}
 
-  async findOne(id: number) {
+  async findOne(id: number): Promise<User> {
     const user = await this.userRepository.findOneBy({ id });
     if (!user) throw new ConflictException(`A user with id ${id} does not exist`);
     return user;
@@ -85,7 +85,7 @@ export class UserService {
         60 * 10,
       );
 
-      await this.tokenService.createOrUpdateToken(account, { reset_token });
+      // TODO CREATE OR UPDATE
 
       return { reset_token };
     } catch (error) {
@@ -97,11 +97,7 @@ export class UserService {
   }
 
   async partiallyUpdateUser(id: number, fieldsToUpdate: any) {
-    try {
-      await this.findOne(id);
-    } catch (error) {
-      return error;
-    }
+    await this.findOne(id);
 
     const updated = await this.userRepository
       .createQueryBuilder()
@@ -114,11 +110,7 @@ export class UserService {
   }
 
   async fullyUpdateUser(id: number, updateUserDto: UserDTO) {
-    try {
-      await this.findOne(id);
-    } catch (error) {
-      return error;
-    }
+    await this.findOne(id);
 
     const updated = await this.userRepository
       .createQueryBuilder()
@@ -131,11 +123,7 @@ export class UserService {
   }
 
   async delete(id: number) {
-    try {
-      await this.findOne(id);
-    } catch (error) {
-      return error;
-    }
+    await this.findOne(id);
 
     await this.userRepository.delete({ id });
     return;

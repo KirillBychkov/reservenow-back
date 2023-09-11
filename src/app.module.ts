@@ -13,14 +13,13 @@ import { dataSourceOptions } from 'db/typeorm.config';
 import { OrganizationModule } from './organization/organization.module';
 import { RentalObjectModule } from './rental_object/rental_object.module';
 import { ManagerModule } from './manager/manager.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     UserModule,
     AuthModule,
     AccountModule,
-    ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRootAsync({ useFactory: () => dataSourceOptions }),
     TokenModule,
     PasswordModule,
     MailModule,
@@ -29,6 +28,9 @@ import { ManagerModule } from './manager/manager.module';
     OrganizationModule,
     RentalObjectModule,
     ManagerModule,
+    ScheduleModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true }),
+    TypeOrmModule.forRootAsync({ useFactory: () => dataSourceOptions }),
   ],
 })
 export class AppModule {}
