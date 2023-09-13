@@ -4,14 +4,14 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { cors: false });
 
   const config = new DocumentBuilder()
     .setTitle('ReserveNow')
     .setDescription('The ReserveNow API description')
     .setVersion('1.0')
     .addServer('http://localhost:3000')
-    .addServer('http://localhost:3001')
+    .addServer('https://51.15.35.161')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);

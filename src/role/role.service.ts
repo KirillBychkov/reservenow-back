@@ -1,7 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Role } from './entities/role.entity';
 import { Repository } from 'typeorm';
+import { Role } from './entities/role.entity';
 import RoleDto from './dto/role.dto';
 
 @Injectable()
@@ -32,15 +32,13 @@ export class RoleService {
       .values(roleDto)
       .returning('*')
       .execute();
+
     return newRole;
   }
 
   async update(id: number, fieldsToUpdate: any) {
-    try {
-      await this.findOne(id);
-    } catch (error) {
-      return error;
-    }
+    await this.findOne(id);
+
     const updated = await this.roleRepository
       .createQueryBuilder('role')
       .update(Role, fieldsToUpdate)
@@ -52,11 +50,7 @@ export class RoleService {
   }
 
   async delete(id: number) {
-    try {
-      await this.findOne(id);
-    } catch (error) {
-      return error;
-    }
+    await this.findOne(id);
 
     const deleted = await this.roleRepository.delete({ id });
     if (deleted.affected === 0) throw new NotFoundException();

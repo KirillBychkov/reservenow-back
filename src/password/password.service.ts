@@ -4,6 +4,7 @@ import { AccountService } from 'src/account/account.service';
 import { TokenService } from 'src/token/token.service';
 import ChangeDto from './dto/change-password.dto';
 import ConfirmPasswordDto from './dto/confirm-password.dto';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class PasswordService {
@@ -20,18 +21,20 @@ export class PasswordService {
       throw new NotAcceptableException('Passwords do not match');
 
     const newHashedPassword = await bcrypt.hash(new_password, 10);
-    account.password = newHashedPassword;
+    await this.accountService.updateAccount(id, { password: newHashedPassword });
 
-    const accountRO = await this.accountService.updateAccount(id, { password: newHashedPassword });
+    // const payload = { id: account.id, email: account.email };
 
-    const payload = { id: account.id, email: account.email };
+    // const [access_token, refresh_token] = await Promise.all([
+    //   this.tokenService.generateToken(payload, process.env.SECRET, 60 * 15),
+    //   this.tokenService.generateToken(payload, process.env.REFRESH_SECRET, 60 * 60 * 24 * 15),
+    // ]);
 
-    const [access_token, refresh_token] = await Promise.all([
-      this.tokenService.generateToken(payload, process.env.SECRET, 60 * 15),
-      this.tokenService.generateToken(payload, process.env.REFRESH_SECRET, 60 * 60 * 24 * 15),
-    ]);
+    // const expires_at = DateTime.utc().plus({ minutes: 15 }).toISO().slice(0, -1);
 
-    return { access_token, refresh_token, accountRO };
+    // this.tokenService.updateToken(account.id, { access_token, refresh_token, expires_at });
+
+    return;
   }
 
   async resetPassword(email: string) {
@@ -42,7 +45,7 @@ export class PasswordService {
       60 * 10,
     );
 
-    await this.tokenService.createOrUpdateToken(account, { reset_token });
+    await this.tokenService.updateToken(account.id, { reset_token });
 
     return { reset_token };
   }
@@ -57,10 +60,13 @@ export class PasswordService {
       this.tokenService.generateToken(payload, process.env.REFRESH_SECRET, 60 * 60),
     ]);
 
-    await this.tokenService.createOrUpdateToken(payload, {
+    const expires_at = DateTime.utc().plus({ minutes: 60 }).toISO().slice(0, -1);
+
+    await this.tokenService.updateToken(payload, {
       access_token,
       refresh_token,
       reset_token: null,
+      expires_at,
     });
 
     return { access_token, refresh_token, account: payload };

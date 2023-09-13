@@ -36,11 +36,7 @@ export class SupportService {
   }
 
   async update(id: number, updateSupportDto: UpdateSupportDto): Promise<Support> {
-    try {
-      await this.findOne(id);
-    } catch (error) {
-      return error;
-    }
+    await this.findOne(id);
 
     const updated = await this.supportReposity
       .createQueryBuilder()
@@ -53,11 +49,7 @@ export class SupportService {
   }
 
   async remove(id: number) {
-    try {
-      await this.findOne(id);
-    } catch (error) {
-      return error;
-    }
+    await this.findOne(id);
 
     await this.supportReposity.delete({ id });
     return;
