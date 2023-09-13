@@ -7,9 +7,10 @@ import { RtStrategy } from './strategies/rt.strategy';
 import { AtStrategy } from './strategies/at.strategy';
 import { RstStrategy } from './strategies/rst.strategy';
 import { TokenController } from './token.controller';
+import { AccountModule } from 'src/account/account.module';
 
 @Module({
-  imports: [JwtModule, TypeOrmModule.forFeature([Token])],
+  imports: [AccountModule, JwtModule, TypeOrmModule.forFeature([Token])],
   providers: [TokenService, RtStrategy, AtStrategy, RstStrategy],
   exports: [TokenService],
   controllers: [TokenController],

@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
@@ -18,9 +19,9 @@ import {
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
-import { User } from 'src/user/entities/user.entity';
 import SignInDTO from './dto/signin.dto';
-import AuthRo from './ro/auth.ro';
+import AuthDto from './dto/auth.dto';
+import { Account } from 'src/account/entities/account.entity';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -28,19 +29,19 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @ApiOperation({ summary: 'Get bearer token for the user in the system' })
+  @ApiCreatedResponse({ description: 'The user has logged in successfully', type: AuthDto })
   @Post('login')
-  @ApiOkResponse({ description: 'The user has logged in successfully' })
-  login(@Body() signInDTO: SignInDTO): Promise<AuthRo> {
+  login(@Body() signInDTO: SignInDTO) {
     return this.authService.login(signInDTO);
   }
 
   @ApiOperation({ summary: 'Get current user by the access token' })
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
+  @ApiOkResponse({ description: 'The user has been received successfully', type: Account })
   @Get('user')
-  @ApiOkResponse({ description: 'The user has been received successfully' })
-  getUser(@Request() req): Promise<User> {
-    return this.authService.getUser(req.user.id);
+  getUser(@Request() req) {
+    return this.authService.getAccount(req.user.id);
   }
 
   @ApiOperation({ summary: 'Verify email by the token' })
@@ -54,9 +55,9 @@ export class AuthController {
   @ApiOperation({ summary: 'Log out from the account' })
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
-  @Delete('logout')
   @ApiNoContentResponse({ description: 'The user has logged out successfully' })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete('logout')
   logout(@Request() req) {
     return this.authService.logout(req.user.id);
   }

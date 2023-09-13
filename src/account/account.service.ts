@@ -43,25 +43,20 @@ export class AccountService {
   }
 
   async updateAccount(id: number, fields: any) {
-    try {
-      await this.getAccount(id, null);
-    } catch (error) {
-      return error;
-    }
+    await this.getAccount(id, null);
+
     const updatedAccount = await this.accountRepository.update({ id }, fields);
 
     return updatedAccount.raw;
   }
 
   async getAccount(id: number, email: string, withPassword: boolean = false) {
-    let accountQuery = this.accountRepository
+    const account = await this.accountRepository
       .createQueryBuilder('account')
       .leftJoinAndSelect('account.role', 'role')
-      .where('account.email = :email OR account.id = :id', { id, email });
-
-    accountQuery = withPassword ? accountQuery.addSelect('account.password') : accountQuery;
-
-    const account = accountQuery.getOne();
+      .where('account.email = :email OR account.id = :id', { id, email })
+      .addSelect(withPassword ? 'account.password' : '')
+      .getOne();
 
     if (!account)
       throw new ConflictException('An account with the given properties does not exist');
