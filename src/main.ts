@@ -4,7 +4,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: false });
+  const app = await NestFactory.create(AppModule);
+  app.enableCors({ allowedHeaders: ['Access-Control-Allow-Origin', '*'] });
 
   const config = new DocumentBuilder()
     .setTitle('ReserveNow')
