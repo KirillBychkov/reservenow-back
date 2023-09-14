@@ -14,12 +14,14 @@ import { OrganizationModule } from './organization/organization.module';
 import { RentalObjectModule } from './rental_object/rental_object.module';
 import { ManagerModule } from './manager/manager.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { EquipmentModule } from './equipment/equipment.module';
 
 @Module({
   imports: [
     UserModule,
     AuthModule,
     AccountModule,
+    EquipmentModule,
     TokenModule,
     PasswordModule,
     MailModule,
