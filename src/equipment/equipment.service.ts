@@ -12,10 +12,10 @@ export class EquipmentService {
   ) {}
 
   async create(createEquipmentDto: CreateEquipmentDto) {
-    const { userId, ...createEquipment } = createEquipmentDto;
+    const { user_id, ...createEquipment } = createEquipmentDto;
 
     const newEquipment = await this.equipmentRepository.insert({
-      user: { id: userId },
+      user: { id: user_id },
       ...createEquipment,
     });
 

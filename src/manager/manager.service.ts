@@ -14,14 +14,14 @@ export class ManagerService {
   ) {}
 
   async create(createManagerDto: CreateManagerDto): Promise<Manager> {
-    const { userId, ...createManager } = createManagerDto;
+    const { user_id, ...createManager } = createManagerDto;
 
-    await this.userService.findOne(userId);
-    if (!(await this.managerRepository.findOne({ where: { user: { id: userId } } })))
+    await this.userService.findOne(user_id);
+    if (!(await this.managerRepository.findOne({ where: { user: { id: user_id } } })))
       throw new ConflictException('Manager for the user already exists');
 
     const newManager = await this.managerRepository.insert({
-      user: { id: userId },
+      user: { id: user_id },
       ...createManager,
     });
 
