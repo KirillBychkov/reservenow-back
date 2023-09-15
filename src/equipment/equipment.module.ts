@@ -3,9 +3,10 @@ import { EquipmentService } from './equipment.service';
 import { EquipmentController } from './equipment.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Equipment } from './entities/equipment.entity';
+import { AccountModule } from 'src/account/account.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Equipment])],
+  imports: [AccountModule, TypeOrmModule.forFeature([Equipment])],
   controllers: [EquipmentController],
   providers: [EquipmentService],
 })

@@ -7,6 +7,7 @@ import { CreateTokenDto } from './dto/create-token.dto';
 import { UpdateTokenDto } from './dto/update-token.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import AuthDto from 'src/auth/dto/auth.dto';
+import { Account } from 'src/account/entities/account.entity';
 // import { Account } from 'src/account/entities/account.entity';
 
 @Injectable()
@@ -32,8 +33,8 @@ export class TokenService {
     return this.jwtService.signAsync(payload, { secret, expiresIn: exp });
   }
 
-  async refresh(payload): Promise<AuthDto> {
-    const token = await this.getToken(payload);
+  async refresh(payload: Account): Promise<AuthDto> {
+    const token = await this.getToken(payload.id);
 
     if (!token.refresh_token) throw new ForbiddenException();
 
