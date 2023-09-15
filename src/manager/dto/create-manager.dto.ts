@@ -1,5 +1,5 @@
 export class CreateManagerDto {
-  userId: number;
+  user_id: number;
   hiredAt: Date;
   resignedAt?: Date;
 }
