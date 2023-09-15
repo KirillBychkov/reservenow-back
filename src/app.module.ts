@@ -17,7 +17,6 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { EquipmentModule } from './equipment/equipment.module';
 import { ReservationModule } from './reservation/reservation.module';
 import { TrainerModule } from './trainer/trainer.module';
-import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
@@ -38,7 +37,6 @@ import { OrderModule } from './order/order.module';
     TypeOrmModule.forRootAsync({ useFactory: () => dataSourceOptions }),
     ReservationModule,
     TrainerModule,
-    OrderModule,
   ],
 })
 export class AppModule {}
