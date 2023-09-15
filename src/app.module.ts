@@ -15,8 +15,6 @@ import { RentalObjectModule } from './rental_object/rental_object.module';
 import { ManagerModule } from './manager/manager.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { EquipmentModule } from './equipment/equipment.module';
-import { ReservationModule } from './reservation/reservation.module';
-import { TrainerModule } from './trainer/trainer.module';
 
 @Module({
   imports: [
@@ -35,8 +33,6 @@ import { TrainerModule } from './trainer/trainer.module';
     ScheduleModule.forRoot(),
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({ useFactory: () => dataSourceOptions }),
-    ReservationModule,
-    TrainerModule,
   ],
 })
 export class AppModule {}
