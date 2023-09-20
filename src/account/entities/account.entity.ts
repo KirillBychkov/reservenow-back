@@ -1,4 +1,3 @@
-import { IsEmail } from 'class-validator';
 import { Role } from 'src/role/entities/role.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
@@ -25,7 +24,6 @@ export class Account {
   id: number;
 
   @Column({ unique: true })
-  @IsEmail()
   email: string;
 
   @Column({ nullable: true, select: false })

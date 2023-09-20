@@ -42,7 +42,7 @@ export class ManagerController {
   }
 
   @ApiOperation({ summary: 'Get all managers in the system' })
-  @ApiOkResponse({ description: 'All roles have been received', type: [Manager] })
+  @ApiOkResponse({ description: 'All managers have been received', type: [Manager] })
   @Get()
   findAll() {
     return this.managerService.findAll();

@@ -18,15 +18,15 @@ export class Manager {
   @JoinColumn()
   user: User;
 
-  @Column('timestamp')
-  hiredAt: Date;
+  @Column({ nullable: true })
+  hired_at: Date;
 
-  @Column('timestamp', { nullable: true })
-  resignedAt: Date;
+  @Column({ nullable: true })
+  resigned_at?: Date;
 
   @CreateDateColumn()
-  createdAt: Date;
+  created_at: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updated_at: Date;
 }

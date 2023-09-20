@@ -26,10 +26,10 @@ export class AuthService {
     const payload = { id: account.id, email: account.email, user_id: account.user?.id };
     const [access_token, refresh_token] = await Promise.all([
       this.tokenService.generateToken(payload, process.env.SECRET, 60 * 15),
-      this.tokenService.generateToken(payload, process.env.REFRESH_SECRET, 60 * 60),
+      this.tokenService.generateToken(payload, process.env.REFRESH_SECRET, 60 * 60 * 24 * 15),
     ]);
 
-    const expires_at = DateTime.utc().plus({ minutes: 60 }).toISO().slice(0, -1);
+    const expires_at = DateTime.utc().plus({ days: 15 }).toISO().slice(0, -1);
 
     const token = { access_token, refresh_token, expires_at };
 
