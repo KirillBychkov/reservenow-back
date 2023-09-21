@@ -4,7 +4,6 @@ import { AccountService } from 'src/account/account.service';
 import { TokenService } from 'src/token/token.service';
 import ChangeDto from './dto/change-password.dto';
 import ConfirmPasswordDto from './dto/confirm-password.dto';
-import { DateTime } from 'luxon';
 
 @Injectable()
 export class PasswordService {
@@ -21,20 +20,7 @@ export class PasswordService {
       throw new NotAcceptableException('Passwords do not match');
 
     const newHashedPassword = await bcrypt.hash(new_password, 10);
-    await this.accountService.updateAccount(id, { password: newHashedPassword });
-
-    // const payload = { id: account.id, email: account.email };
-
-    // const [access_token, refresh_token] = await Promise.all([
-    //   this.tokenService.generateToken(payload, process.env.SECRET, 60 * 15),
-    //   this.tokenService.generateToken(payload, process.env.REFRESH_SECRET, 60 * 60 * 24 * 15),
-    // ]);
-
-    // const expires_at = DateTime.utc().plus({ minutes: 15 }).toISO().slice(0, -1);
-
-    // this.tokenService.updateToken(account.id, { access_token, refresh_token, expires_at });
-
-    return;
+    return this.accountService.update(id, { password: newHashedPassword });
   }
 
   async resetPassword(email: string) {
@@ -53,20 +39,17 @@ export class PasswordService {
   async confirmReset(body: ConfirmPasswordDto, payload: any) {
     const hashedPass = await bcrypt.hash(body.new_password, 10);
 
-    this.accountService.updateAccount(payload.id, { password: hashedPass });
+    await this.accountService.update(payload.id, { password: hashedPass });
 
     const [access_token, refresh_token] = await Promise.all([
       this.tokenService.generateToken(payload, process.env.SECRET, 60 * 15),
       this.tokenService.generateToken(payload, process.env.REFRESH_SECRET, 60 * 60),
     ]);
 
-    const expires_at = DateTime.utc().plus({ minutes: 60 }).toISO().slice(0, -1);
-
-    await this.tokenService.updateToken(payload, {
+    await this.tokenService.updateToken(payload.id, {
       access_token,
       refresh_token,
       reset_token: null,
-      expires_at,
     });
 
     return { access_token, refresh_token, account: payload };

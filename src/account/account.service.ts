@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { RoleService } from 'src/role/role.service';
 import { User } from 'src/user/entities/user.entity';
+import { UpdateAccountDto } from './dto/update.account.dto';
 
 @Injectable()
 export class AccountService {
@@ -42,17 +43,10 @@ export class AccountService {
     return newAccount;
   }
 
-  async updateAccount(id: number, fields: any) {
-    await this.getAccount(id, null);
-
-    const updatedAccount = await this.accountRepository.update({ id }, fields);
-
-    return updatedAccount.raw;
-  }
-
   async getAccount(id: number, email: string, withPassword: boolean = false) {
     const account = await this.accountRepository
       .createQueryBuilder('account')
+      .leftJoinAndSelect('account.user', 'user')
       .leftJoinAndSelect('account.role', 'role')
       .where('account.email = :email OR account.id = :id', { id, email })
       .addSelect(withPassword ? 'account.password' : '')
@@ -62,5 +56,31 @@ export class AccountService {
       throw new ConflictException('An account with the given properties does not exist');
 
     return account;
+  }
+
+  findAll(limit: number, skip: number): Promise<Account[]> {
+    return this.accountRepository
+      .createQueryBuilder('account')
+      .leftJoinAndSelect('account.user', 'user')
+      .leftJoinAndSelect('account.role', 'role')
+      .limit(limit)
+      .skip(skip)
+      .getMany();
+  }
+
+  findOne(id: number): Promise<Account> {
+    return this.accountRepository.findOneBy({ id });
+  }
+  async update(id: number, updateAccountDto: UpdateAccountDto) {
+    await this.findOne(id);
+
+    const updatedAccount = await this.accountRepository
+      .createQueryBuilder()
+      .update(Account, updateAccountDto)
+      .where('id = :id', { id })
+      .returning('*')
+      .execute();
+
+    return updatedAccount.raw;
   }
 }

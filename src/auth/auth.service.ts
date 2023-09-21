@@ -21,15 +21,16 @@ export class AuthService {
     if (numberOfAccounts === 0) await this.accountService.createSuperUserAccount(email, password);
     const account: Account = await this.accountService.getAccount(null, email, true);
 
-    if (!(await bcrypt.compare(password, account.password))) throw new UnauthorizedException();
+    if (!(await bcrypt.compare(password, account.password)))
+      throw new UnauthorizedException('Wrong password');
 
     const payload = { id: account.id, email: account.email, user_id: account.user?.id };
     const [access_token, refresh_token] = await Promise.all([
       this.tokenService.generateToken(payload, process.env.SECRET, 60 * 15),
-      this.tokenService.generateToken(payload, process.env.REFRESH_SECRET, 60 * 60),
+      this.tokenService.generateToken(payload, process.env.REFRESH_SECRET, 60 * 60 * 24 * 15),
     ]);
 
-    const expires_at = DateTime.utc().plus({ minutes: 60 }).toISO().slice(0, -1);
+    const expires_at = DateTime.utc().plus({ days: 15 }).toISO().slice(0, -1);
 
     const token = { access_token, refresh_token, expires_at };
 

@@ -1,6 +1,5 @@
-import { User } from 'src/user/entities/user.entity';
+import { Account } from 'src/account/entities/account.entity';
 import {
-  Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
@@ -10,19 +9,13 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class Manager {
+export class Client {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => User)
+  @OneToOne(() => Account)
   @JoinColumn()
-  user: User;
-
-  @Column({ nullable: true })
-  hired_at: Date;
-
-  @Column({ nullable: true })
-  resigned_at?: Date;
+  account: Account;
 
   @CreateDateColumn()
   created_at: Date;

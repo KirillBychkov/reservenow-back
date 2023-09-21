@@ -8,6 +8,7 @@ import { UpdateTokenDto } from './dto/update-token.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import AuthDto from 'src/auth/dto/auth.dto';
 import { Account } from 'src/account/entities/account.entity';
+import { DateTime } from 'luxon';
 // import { Account } from 'src/account/entities/account.entity';
 
 @Injectable()
@@ -42,7 +43,10 @@ export class TokenService {
       this.generateToken(payload, process.env.SECRET, 60 * 15),
       this.generateToken(payload, process.env.REFRESH_SECRET, 60 * 60 * 24 * 15),
     ]);
-    await this.updateToken(payload.id, { access_token, refresh_token });
+
+    const expires_at = DateTime.utc().plus({ days: 15 }).toISO().slice(0, -1);
+
+    await this.updateToken(payload.id, { access_token, refresh_token, expires_at });
 
     return { access_token, refresh_token, account: payload };
   }

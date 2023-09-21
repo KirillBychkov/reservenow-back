@@ -47,7 +47,6 @@ export class RentalObjectService {
   async remove(id: number) {
     await this.findOne(id);
 
-    await this.rentalObjectsRepository.delete({ id });
-    return;
+    return this.rentalObjectsRepository.delete({ id });
   }
 }

@@ -45,7 +45,6 @@ export class OrganizationService {
   async remove(id: number) {
     await this.findOne(id);
 
-    await this.organizationRepository.delete({ id });
-    return;
+    return this.organizationRepository.delete({ id });
   }
 }
