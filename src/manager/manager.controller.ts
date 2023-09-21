@@ -17,6 +17,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Request,
 } from '@nestjs/common';
 import { ManagerService } from './manager.service';
 import { CreateManagerDto } from './dto/create-manager.dto';
@@ -37,8 +38,8 @@ export class ManagerController {
   @ApiOperation({ summary: 'Create a new manager in the system' })
   @ApiCreatedResponse({ description: 'A manager has been created successfully', type: Manager })
   @Post()
-  create(@Body() createManagerDto: CreateManagerDto) {
-    return this.managerService.create(createManagerDto);
+  create(@Request() req, @Body() createManagerDto: CreateManagerDto) {
+    return this.managerService.create(req.usre.id, createManagerDto);
   }
 
   @ApiOperation({ summary: 'Get all managers in the system' })

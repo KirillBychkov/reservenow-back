@@ -20,9 +20,8 @@ import { Role } from 'src/role/entities/role.entity';
 // TODO: Configure roles
 @ApiTags('Organization')
 @ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Roles('superuser')
-@UseGuards(RolesGuard)
 @Controller('organization')
 export class OrganizationController {
   constructor(private readonly organizationService: OrganizationService) {}

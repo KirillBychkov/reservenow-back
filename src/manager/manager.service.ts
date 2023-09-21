@@ -13,7 +13,7 @@ export class ManagerService {
     private readonly userService: UserService,
   ) {}
 
-  async create(createManagerDto: CreateManagerDto): Promise<Manager> {
+  async create(accountId, createManagerDto: CreateManagerDto): Promise<Manager> {
     const { user_id, ...createManager } = createManagerDto;
 
     await this.userService.findOne(user_id);

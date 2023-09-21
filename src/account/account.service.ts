@@ -43,18 +43,6 @@ export class AccountService {
     return newAccount;
   }
 
-  async update(id: number, updateAccountDto: UpdateAccountDto) {
-    await this.getAccount(id, null);
-
-    const updatedAccount = await this.accountRepository
-      .createQueryBuilder()
-      .update(Account, updateAccountDto)
-      .returning('*')
-      .execute();
-
-    return updatedAccount.raw;
-  }
-
   async getAccount(id: number, email: string, withPassword: boolean = false) {
     const account = await this.accountRepository
       .createQueryBuilder('account')
@@ -70,15 +58,29 @@ export class AccountService {
     return account;
   }
 
-  findAll(): Promise<Account[]> {
+  findAll(limit: number, skip: number): Promise<Account[]> {
     return this.accountRepository
       .createQueryBuilder('account')
       .leftJoinAndSelect('account.user', 'user')
       .leftJoinAndSelect('account.role', 'role')
+      .limit(limit)
+      .skip(skip)
       .getMany();
   }
 
   findOne(id: number): Promise<Account> {
     return this.accountRepository.findOneBy({ id });
+  }
+  async update(id: number, updateAccountDto: UpdateAccountDto) {
+    await this.findOne(id);
+
+    const updatedAccount = await this.accountRepository
+      .createQueryBuilder()
+      .update(Account, updateAccountDto)
+      .where('id = :id', { id })
+      .returning('*')
+      .execute();
+
+    return updatedAccount.raw;
   }
 }

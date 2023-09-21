@@ -21,7 +21,8 @@ export class AuthService {
     if (numberOfAccounts === 0) await this.accountService.createSuperUserAccount(email, password);
     const account: Account = await this.accountService.getAccount(null, email, true);
 
-    if (!(await bcrypt.compare(password, account.password))) throw new UnauthorizedException();
+    if (!(await bcrypt.compare(password, account.password)))
+      throw new UnauthorizedException('Wrong password');
 
     const payload = { id: account.id, email: account.email, user_id: account.user?.id };
     const [access_token, refresh_token] = await Promise.all([
