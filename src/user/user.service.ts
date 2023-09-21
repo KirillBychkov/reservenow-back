@@ -77,7 +77,7 @@ export class UserService {
       const reset_token = await this.tokenService.generateToken(
         { id: account.id, email: account.email },
         process.env.RESET_SECRET,
-        60 * 10,
+        60 * 60,
       );
 
       // TODO CREATE OR UPDATE
