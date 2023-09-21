@@ -1,9 +1,8 @@
-export class CreateOrganizationDto {
-  name: string;
-  description?: string;
-  phone: string;
-  lat: number;
-  lon: number;
+export class CreateTrainerDto {
+  user_id: number;
+  hired_at: Date;
+  resigned_at?: Date;
+  price_per_hour: number;
   monday_start_hours?: number;
   monday_end_hours?: number;
   tuesday_start_hours?: number;

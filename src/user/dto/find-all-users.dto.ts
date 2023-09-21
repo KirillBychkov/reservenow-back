@@ -1,4 +1,4 @@
-import { User } from '../entities/user.entity';
+import { Account } from 'src/account/entities/account.entity';
 
 export default class FindAllUsersDto {
   filters: {
@@ -7,5 +7,5 @@ export default class FindAllUsersDto {
     search?: string;
     total: number;
   };
-  data: User[];
+  data: Account[];
 }

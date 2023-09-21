@@ -13,7 +13,7 @@ export class ManagerService {
     private readonly userService: UserService,
   ) {}
 
-  async create(createManagerDto: CreateManagerDto): Promise<Manager> {
+  async create(accountId, createManagerDto: CreateManagerDto): Promise<Manager> {
     const { user_id, ...createManager } = createManagerDto;
 
     await this.userService.findOne(user_id);
@@ -39,12 +39,12 @@ export class ManagerService {
     return manager;
   }
 
-  async update(id: number, updateManagerDto: UpdateManagerDto) {
+  async update(id: number, updatedManagerDto: UpdateManagerDto) {
     await this.findOne(id);
 
     const updated = await this.managerRepository
       .createQueryBuilder()
-      .update(Manager, updateManagerDto)
+      .update(Manager, updatedManagerDto)
       .where('id = :id', { id })
       .returning('*')
       .execute();
