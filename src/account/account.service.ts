@@ -19,12 +19,7 @@ export class AccountService {
     return this.accountRepository.createQueryBuilder('account').getCount();
   }
 
-  async getNewAccount(
-    email: string,
-    password: string,
-    user: User,
-    roleName: string = 'user_viewer',
-  ) {
+  async getNewAccount(email: string, password: string, user: User, roleName: string = 'user_full') {
     if (await this.accountRepository.findOneBy({ email }))
       throw new ConflictException('An account with the given email already exists');
 

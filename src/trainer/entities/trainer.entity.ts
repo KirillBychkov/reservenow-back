@@ -1,3 +1,4 @@
+import { Account } from 'src/account/entities/account.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Entity,
@@ -9,7 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-Entity();
+@Entity()
 export class Trainer {
   @PrimaryGeneratedColumn()
   id: number;
@@ -23,6 +24,9 @@ export class Trainer {
 
   @Column({ nullable: true })
   resigned_at?: Date;
+
+  @OneToOne(() => Account, (account) => account.trainer)
+  account: Account;
 
   @Column('int')
   price_per_hour: number;

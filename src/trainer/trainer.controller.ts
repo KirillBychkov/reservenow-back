@@ -13,11 +13,11 @@ import {
 import { Trainer } from './entities/trainer.entity';
 import { RolesGuard } from 'src/role/role.guard';
 import { AuthGuard } from '@nestjs/passport';
-import { Roles } from 'src/role/role.decorator';
+import { Permissions } from 'src/role/role.decorator';
 
 @ApiTags('Trainer')
 @ApiBearerAuth()
-@Roles('superuser')
+@Permissions('superuser')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('trainer')
 export class TrainerController {
