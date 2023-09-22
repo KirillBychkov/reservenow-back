@@ -1,4 +1,6 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateSupportDto } from './create-support.dto';
+import { SupportStatus } from '../entities/support.entity';
 
-export class UpdateSupportDto extends PartialType(CreateSupportDto) {}
+export class UpdateSupportDto {
+  result_description: string;
+  status: SupportStatus;
+}

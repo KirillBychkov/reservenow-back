@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-enum SupportStatus {
+export enum SupportStatus {
   NEW = 'new',
   IN_PROGRESS = 'in_progress',
   FIXED = 'fixed',

@@ -23,11 +23,11 @@ import { RoleService } from './role.service';
 import RoleDto from './dto/role.dto';
 import { Role } from './entities/role.entity';
 import { RolesGuard } from './role.guard';
-import { Roles } from './role.decorator';
+import { Permissions } from './role.decorator';
 
 @ApiTags('Role')
 @ApiBearerAuth()
-@Roles('superuser')
+@Permissions('role')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('role')
 export class RoleController {

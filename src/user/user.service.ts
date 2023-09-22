@@ -31,7 +31,11 @@ export class UserService {
   async findAll(query: ElementsQueryDto): Promise<FindAllUsersDto> {
     const { search, limit, skip } = query;
 
-    const users = await this.accountService.findAll(limit ?? 10, skip ?? 0);
+    const users = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.account', 'account')
+      .leftJoinAndSelect('account.role', 'role')
+      .getMany();
 
     return { filters: { skip, limit, search, total: users.length }, data: users };
   }
@@ -91,25 +95,12 @@ export class UserService {
     }
   }
 
-  async partiallyUpdateUser(id: number, fieldsToUpdate: any): Promise<User> {
+  async update(id: number, fieldsToUpdate: any): Promise<User> {
     await this.findOne(id);
 
     const updated = await this.userRepository
       .createQueryBuilder()
       .update(User, fieldsToUpdate)
-      .where('id = :id', { id })
-      .returning('*')
-      .execute();
-
-    return updated.raw;
-  }
-
-  async fullyUpdateUser(id: number, updateUserDto: UserDTO): Promise<User> {
-    await this.findOne(id);
-
-    const updated = await this.userRepository
-      .createQueryBuilder()
-      .update(User, updateUserDto)
       .where('id = :id', { id })
       .returning('*')
       .execute();

@@ -21,12 +21,12 @@ import { RentalObjectService } from './rental_object.service';
 import { CreateRentalObjectDto } from './dto/create-rental_object.dto';
 import { UpdateRentalObjectDto } from './dto/update-rental_object.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { Roles } from 'src/role/role.decorator';
+import { Permissions } from 'src/role/role.decorator';
 import { RolesGuard } from 'src/role/role.guard';
 import { RentalObject } from './entities/rental_object.entity';
 
 @ApiTags('RentalObject')
-@Roles('superuser')
+@Permissions('rental_object')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('rental-object')
 export class RentalObjectController {

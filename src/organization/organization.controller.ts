@@ -12,7 +12,7 @@ import {
   ApiOkResponse,
   ApiOperation,
 } from '@nestjs/swagger';
-import { Roles } from 'src/role/role.decorator';
+import { Permissions } from 'src/role/role.decorator';
 import { RolesGuard } from 'src/role/role.guard';
 import { Organization } from './entities/organization.entity';
 import { Role } from 'src/role/entities/role.entity';
@@ -20,8 +20,8 @@ import { Role } from 'src/role/entities/role.entity';
 // TODO: Configure roles
 @ApiTags('Organization')
 @ApiBearerAuth()
+@Permissions('organization')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
-@Roles('superuser')
 @Controller('organization')
 export class OrganizationController {
   constructor(private readonly organizationService: OrganizationService) {}

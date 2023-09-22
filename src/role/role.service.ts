@@ -33,7 +33,7 @@ export class RoleService {
       .returning('*')
       .execute();
 
-    return newRole;
+    return newRole.raw;
   }
 
   async update(id: number, fieldsToUpdate: any) {

@@ -25,14 +25,14 @@ import UserDTO from './dto/update-user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import ElementsQueryDto from './dto/query.dto';
 import { User } from './entities/user.entity';
-import { Roles } from 'src/role/role.decorator';
+import { Permissions } from 'src/role/role.decorator';
 import { RolesGuard } from 'src/role/role.guard';
 import CreateUserDto from './dto/create-user.dto';
 import FindAllUsersDto from './dto/find-all-users.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
-@Roles('superuser')
+@Permissions('users')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('users')
 export class UserController {
@@ -83,17 +83,9 @@ export class UserController {
   @ApiOperation({ summary: 'Update user by their ID' })
   @ApiOkResponse({ description: 'The user has been updated successfully', type: User })
   // @ApiForbiddenResponse({ description: 'Forbidded' })
-  @Put(':id')
-  fullUserUpdate(@Param('id') id: string, @Body() body: UserDTO) {
-    return this.userService.fullyUpdateUser(+id, body);
-  }
-
-  @ApiOperation({ summary: 'Update user by their ID' })
-  @ApiOkResponse({ description: 'The user has been updated successfully', type: User })
-  // @ApiForbiddenResponse({ description: 'Forbidded' })
   @Patch(':id')
-  partialUserUpdate(@Param('id') id: string, @Body() Body: UserDTO) {
-    return this.userService.partiallyUpdateUser(+id, Body);
+  update(@Param('id') id: string, @Body() Body: UserDTO) {
+    return this.userService.update(+id, Body);
   }
 
   @ApiOperation({ summary: 'Delete user by their ID' })
