@@ -1,3 +1,4 @@
+import { Account } from 'src/account/entities/account.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
@@ -20,6 +21,9 @@ export class Manager {
 
   @Column({ nullable: true })
   hired_at: Date;
+
+  @OneToOne(() => Account, (account) => account.manager)
+  account: Account;
 
   @Column({ nullable: true })
   resigned_at?: Date;

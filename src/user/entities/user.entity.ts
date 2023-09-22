@@ -1,7 +1,9 @@
+import { Account } from 'src/account/entities/account.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -29,6 +31,9 @@ export class User {
 
   @Column('text', { nullable: true })
   description?: string;
+
+  @OneToOne(() => Account, (account) => account.user)
+  account: Account;
 
   @CreateDateColumn()
   created_at: Date;

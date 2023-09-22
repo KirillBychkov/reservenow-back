@@ -23,13 +23,13 @@ import { ManagerService } from './manager.service';
 import { CreateManagerDto } from './dto/create-manager.dto';
 import { UpdateManagerDto } from './dto/update-manager.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { Roles } from 'src/role/role.decorator';
+import { Permissions } from 'src/role/role.decorator';
 import { RolesGuard } from 'src/role/role.guard';
 import { Manager } from './entities/manager.entity';
 
 @ApiTags('Manager')
 @ApiBearerAuth()
-@Roles('superuser')
+@Permissions('manager')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('manager')
 export class ManagerController {

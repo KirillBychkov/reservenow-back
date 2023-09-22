@@ -10,7 +10,7 @@ export class RolesGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredRoles = this.reflector.getAllAndOverride<string[]>('roles', [
+    const tag = this.reflector.getAllAndOverride<string>('roles', [
       context.getHandler(),
       context.getClass(),
     ]);
@@ -18,8 +18,9 @@ export class RolesGuard implements CanActivate {
     const { user } = context.switchToHttp().getRequest();
 
     const account = await this.accountService.getAccount(user.id, null);
+    const role = account.role;
 
-    if (!requiredRoles.includes(account.role.name)) return false;
+    if (!role.permissions.includes(tag) && role.name !== 'superuser') return false;
 
     return true;
   }

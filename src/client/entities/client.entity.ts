@@ -1,5 +1,6 @@
 import { Account } from 'src/account/entities/account.entity';
 import {
+  Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
@@ -13,7 +14,19 @@ export class Client {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => Account)
+  @Column()
+  first_name: string;
+
+  @Column()
+  last_name: string;
+
+  @Column()
+  phone: string;
+
+  @Column()
+  description: string;
+
+  @OneToOne(() => Account, { nullable: true })
   @JoinColumn()
   account: Account;
 

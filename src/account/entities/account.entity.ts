@@ -1,4 +1,6 @@
+import { Manager } from 'src/manager/entities/manager.entity';
 import { Role } from 'src/role/entities/role.entity';
+import { Trainer } from 'src/trainer/entities/trainer.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
@@ -29,17 +31,17 @@ export class Account {
   @Column({ nullable: true, select: false })
   password?: string;
 
-  @OneToOne(() => User, { nullable: true })
+  @OneToOne(() => User, (user) => user.account, { nullable: true })
   @JoinColumn()
   user?: User;
 
-  @OneToOne(() => User, { nullable: true })
+  @OneToOne(() => Manager, (manager) => manager.account, { nullable: true })
   @JoinColumn()
-  manager?: User;
+  manager?: Manager;
 
-  @OneToOne(() => User, { nullable: true })
+  @OneToOne(() => Trainer, (trainer) => trainer.account, { nullable: true })
   @JoinColumn()
-  trainer?: User;
+  trainer?: Trainer;
 
   @ManyToOne(() => Role, (role) => role.id)
   role: Role;

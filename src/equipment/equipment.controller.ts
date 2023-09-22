@@ -12,16 +12,15 @@ import {
   ApiOkResponse,
   ApiNoContentResponse,
 } from '@nestjs/swagger';
-import { Roles } from 'src/role/role.decorator';
+import { Permissions } from 'src/role/role.decorator';
 import { RolesGuard } from 'src/role/role.guard';
 import { Equipment } from './entities/equipment.entity';
 import { Role } from 'src/role/entities/role.entity';
 
 @ApiTags('Equipment')
 @ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'))
-@Roles('superuser')
-@UseGuards(RolesGuard)
+@Permissions('equipment')
+@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('equipment')
 export class EquipmentController {
   constructor(private readonly equipmentService: EquipmentService) {}
