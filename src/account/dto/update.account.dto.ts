@@ -1,4 +1,12 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateAccountDto } from './create-account.dto';
+import { Manager } from 'src/manager/entities/manager.entity';
+import { Trainer } from 'src/trainer/entities/trainer.entity';
+import { User } from 'src/user/entities/user.entity';
+import { AccountStatus } from '../entities/account.entity';
 
-export class UpdateAccountDto extends PartialType(CreateAccountDto) {}
+export class UpdateAccountDto {
+  password?: string;
+  user?: User;
+  manager?: Manager;
+  trainer?: Trainer;
+  status?: AccountStatus;
+}

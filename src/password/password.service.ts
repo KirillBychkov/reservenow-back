@@ -4,6 +4,7 @@ import { AccountService } from 'src/account/account.service';
 import { TokenService } from 'src/token/token.service';
 import ChangeDto from './dto/change-password.dto';
 import ConfirmPasswordDto from './dto/confirm-password.dto';
+import { AccountStatus } from 'src/account/entities/account.entity';
 
 @Injectable()
 export class PasswordService {
@@ -45,6 +46,8 @@ export class PasswordService {
       this.tokenService.generateToken(payload, process.env.SECRET, 60 * 15),
       this.tokenService.generateToken(payload, process.env.REFRESH_SECRET, 60 * 60),
     ]);
+
+    await this.accountService.update(payload.id, { status: AccountStatus.ACTIVE });
 
     await this.tokenService.updateToken(payload.id, {
       access_token,

@@ -3,7 +3,6 @@ import * as tmp from 'tmp';
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import UserDTO from './dto/update-user.dto';
 import { DataSource, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { AccountService } from 'src/account/account.service';
@@ -23,7 +22,12 @@ export class UserService {
   ) {}
 
   async findOne(id: number): Promise<User> {
-    const user = await this.userRepository.findOneBy({ id });
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.account', 'account')
+      .leftJoinAndSelect('account.role', 'role')
+      .where('user.id = :id', { id })
+      .getOne();
     if (!user) throw new ConflictException(`A user with id ${id} does not exist`);
     return user;
   }
@@ -83,8 +87,6 @@ export class UserService {
         process.env.RESET_SECRET,
         60 * 60,
       );
-
-      // TODO CREATE OR UPDATE
 
       return { reset_token };
     } catch (error) {

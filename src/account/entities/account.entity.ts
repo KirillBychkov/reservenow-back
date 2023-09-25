@@ -13,7 +13,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-enum AccountStatus {
+export enum AccountStatus {
   PENDING = 'pending',
   ACTIVE = 'active',
   BLOCKED = 'blocked',
@@ -46,7 +46,7 @@ export class Account {
   @ManyToOne(() => Role, (role) => role.id)
   role: Role;
 
-  @Column({ type: 'enum', enum: AccountStatus, default: AccountStatus.ACTIVE })
+  @Column({ type: 'enum', enum: AccountStatus, default: AccountStatus.PENDING })
   status: AccountStatus;
 
   @CreateDateColumn()
