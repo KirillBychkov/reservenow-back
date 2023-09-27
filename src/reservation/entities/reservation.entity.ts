@@ -1,5 +1,8 @@
+import { Equipment } from 'src/equipment/entities/equipment.entity';
+import { Order } from 'src/order/entities/order.entity';
 import { Organization } from 'src/organization/entities/organization.entity';
 import { RentalObject } from 'src/rental_object/entities/rental_object.entity';
+import { Trainer } from 'src/trainer/entities/trainer.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
@@ -18,12 +21,14 @@ export class Reservation {
   @ManyToOne(() => User, (user) => user.id)
   user: User;
 
-  // TODO: Add when trainer entity is implemented
-  //   ManyToOne(() => Trainer, (trainer) => trainer.id)
-  //   user: Trainer;
+  @ManyToOne(() => Trainer, (trainer) => trainer.id, { nullable: true })
+  trainer: Trainer;
 
-  @ManyToOne(() => RentalObject, (rentalObject) => rentalObject.id)
+  @ManyToOne(() => RentalObject, (rentalObject) => rentalObject.id, { nullable: true })
   rental_object: RentalObject;
+
+  @ManyToOne(() => Equipment, (equipment) => equipment.id, { nullable: true })
+  equipment: Equipment;
 
   @ManyToOne(() => Organization, (organization) => organization.id)
   organization: RentalObject;
@@ -40,9 +45,8 @@ export class Reservation {
   @Column()
   price: number;
 
-  // TODO: Add when order is implemented
-  //   @ManyToOne(() => OrderedBulkOperation, (order) => order.id)
-  //   order: Order
+  @ManyToOne(() => Order, (order) => order.id)
+  order: Order;
 
   @CreateDateColumn()
   created_at: Date;

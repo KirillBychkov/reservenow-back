@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CreateReservationDto } from './dto/create-reservation.dto';
+// import { CreateReservationDto } from './dto/create-reservation.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Reservation } from './entities/reservation.entity';
@@ -10,26 +10,26 @@ export class ReservationService {
   constructor(
     @InjectRepository(Reservation) private readonly reservationRepository: Repository<Reservation>,
   ) {}
-  async create(createReservationDto: CreateReservationDto): Promise<Reservation> {
-    const { user_id, rental_object_id, organization_id, ...createReservation } =
-      createReservationDto;
+  // async create(createReservationDto: CreateReservationDto): Promise<Reservation> {
+  //   const { user_id, rental_object_id, organization_id, ...createReservation } =
+  //     createReservationDto;
 
-    // TODO: ADD TRAINER AND ORDER WHEN IMPLEMENTED
-    await Promise.all([
-      this.findOne(user_id),
-      this.findOne(rental_object_id),
-      this.findOne(organization_id),
-    ]);
+  //   // TODO: ADD TRAINER AND ORDER WHEN IMPLEMENTED
+  //   await Promise.all([
+  //     this.findOne(user_id),
+  //     this.findOne(rental_object_id),
+  //     this.findOne(organization_id),
+  //   ]);
 
-    const newReservation = await this.reservationRepository.insert({
-      user: { id: user_id },
-      rental_object: { id: rental_object_id },
-      organization: { id: organization_id },
-      ...createReservation,
-    });
+  //   const newReservation = await this.reservationRepository.insert({
+  //     user: { id: user_id },
+  //     rental_object: { id: rental_object_id },
+  //     organization: { id: organization_id },
+  //     ...createReservation,
+  //   });
 
-    return newReservation.raw;
-  }
+  //   return newReservation.raw;
+  // }
 
   findAll(): Promise<Reservation[]> {
     return this.reservationRepository.find();

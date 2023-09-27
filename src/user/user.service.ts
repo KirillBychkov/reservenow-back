@@ -7,7 +7,7 @@ import { DataSource, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { AccountService } from 'src/account/account.service';
 import { TokenService } from 'src/token/token.service';
-import { Account } from 'src/account/entities/account.entity';
+import { Account, AccountStatus } from 'src/account/entities/account.entity';
 import ElementsQueryDto from './dto/query.dto';
 import FindAllUsersDto from './dto/find-all-users.dto';
 import CreateUserDto from './dto/create-user.dto';
@@ -110,10 +110,10 @@ export class UserService {
     return updated.raw;
   }
 
-  async delete(id: number) {
-    await this.findOne(id);
+  async remove(id: number) {
+    const user = await this.findOne(id);
 
-    await this.userRepository.delete({ id });
+    await this.accountService.update(user.account.id, { status: AccountStatus.DELETED });
     return;
   }
 }
