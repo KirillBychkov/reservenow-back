@@ -29,7 +29,13 @@ export class ManagerService {
   }
 
   findAll(): Promise<Manager[]> {
-    return this.managerRepository.find();
+    const managers = this.managerRepository
+      .createQueryBuilder('manager')
+      .leftJoinAndSelect('manager.user', 'user')
+      .leftJoinAndSelect('manager.account', 'account')
+      .leftJoinAndSelect('account.role', 'role')
+      .getMany();
+    return managers;
   }
 
   async findOne(id: number): Promise<Manager> {

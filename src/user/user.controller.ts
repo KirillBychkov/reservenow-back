@@ -7,7 +7,6 @@ import {
   Res,
   Delete,
   Param,
-  Put,
   Patch,
   UseGuards,
 } from '@nestjs/common';
@@ -57,7 +56,6 @@ export class UserController {
       },
     },
   })
-  // @ApiForbiddenResponse({ description: 'Forbidded' })
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
@@ -65,7 +63,6 @@ export class UserController {
 
   @ApiOperation({ summary: 'Download a file with users in the system' })
   @ApiOkResponse({ description: 'The file with users has been downloaded successfully' })
-  // @ApiForbiddenResponse({ description: 'Forbidded' })
   @Get('export')
   async export(@Res() res: Response, @Query() queryDto: ElementsQueryDto) {
     const file: string = await this.userService.export(queryDto);
@@ -82,7 +79,6 @@ export class UserController {
 
   @ApiOperation({ summary: 'Update user by their ID' })
   @ApiOkResponse({ description: 'The user has been updated successfully', type: User })
-  // @ApiForbiddenResponse({ description: 'Forbidded' })
   @Patch(':id')
   update(@Param('id') id: string, @Body() Body: UserDTO) {
     return this.userService.update(+id, Body);
@@ -92,6 +88,6 @@ export class UserController {
   @ApiNoContentResponse({ description: 'The user has been deleted successfully' })
   @Delete(':id')
   delete(@Param('id') id: string) {
-    return this.userService.delete(+id);
+    return this.userService.remove(+id);
   }
 }
