@@ -1,7 +1,9 @@
+import { User } from 'src/user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -13,6 +15,9 @@ export class Organization {
 
   @Column()
   name: string;
+
+  @ManyToOne(() => User, (user) => user.id)
+  user: User;
 
   @Column({ nullable: true })
   description?: string;

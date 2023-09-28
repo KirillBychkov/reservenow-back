@@ -1,3 +1,4 @@
+import { Client } from 'src/client/entities/client.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
@@ -8,7 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-enum OrderStatus {
+export enum OrderStatus {
   PENDING = 'pending',
   NOT_PAID = 'not_paid',
   PAID = 'paid',
@@ -26,9 +27,10 @@ export class Order {
   @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.PENDING })
   status: OrderStatus;
 
-  //TODO: COLUMN_ID
+  //TODO: GROUP_ID
 
-  //TODO: CLIENT_ID
+  @ManyToOne(() => Client, (client) => client.id)
+  client: Client;
 
   @CreateDateColumn()
   created_at: Date;

@@ -1,9 +1,11 @@
 import { Account } from 'src/account/entities/account.entity';
+import { User } from 'src/user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -13,6 +15,9 @@ import {
 export class Client {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @ManyToOne(() => User, (user) => user.id)
+  user: User;
 
   @Column()
   first_name: string;

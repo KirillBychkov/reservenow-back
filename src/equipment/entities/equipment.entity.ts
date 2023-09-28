@@ -2,12 +2,13 @@ import { User } from 'src/user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
-  Int32,
+  Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
+@Entity()
 export class Equipment {
   @PrimaryGeneratedColumn()
   id: number;

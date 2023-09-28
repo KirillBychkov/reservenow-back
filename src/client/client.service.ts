@@ -1,31 +1,53 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Client } from './entities/client.entity';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class ClientService {
-  constructor(@InjectRepository(Client) private clientRepository: Repository<Client>) {}
+  constructor(
+    @InjectRepository(Client) private readonly clientRepository: Repository<Client>,
+    private readonly userService: UserService,
+  ) {}
 
-  create(createClientDto: CreateClientDto) {
-    return this.clientRepository.insert({ account: { id: createClientDto.account_id } });
+  async create(createClientDto: CreateClientDto): Promise<Client> {
+    const { user_id, ...client } = createClientDto;
+    const user = await this.userService.findOne(user_id);
+
+    const newClient = await this.clientRepository.insert({
+      user,
+      ...client,
+      account: null,
+    });
+    return newClient.raw;
   }
 
-  findAll() {
+  findAll(): Promise<Client[]> {
     return this.clientRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} client`;
+  async findOne(id: number): Promise<Client> {
+    const client = await this.clientRepository.findOneBy({ id });
+    if (!client) throw new ConflictException(`A client with id ${id} does not exist`);
+    return client;
   }
 
-  update(id: number, updateClientDto: UpdateClientDto) {
-    return `This action updates a #${id} client`;
+  async update(id: number, updateClientDto: UpdateClientDto): Promise<Client> {
+    await this.findOne(id);
+
+    const updated = await this.clientRepository
+      .createQueryBuilder()
+      .update(Client, updateClientDto)
+      .where('id = :id', { id })
+      .returning('*')
+      .execute();
+    return updated.raw;
   }
 
   remove(id: number) {
-    return `This action removes a #${id} client`;
+    return this.clientRepository.delete({ id });
   }
 }
