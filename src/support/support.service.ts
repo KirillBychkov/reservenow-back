@@ -26,11 +26,18 @@ export class SupportService {
   }
 
   findAll(): Promise<Support[]> {
-    return this.supportReposity.find();
+    return this.supportReposity
+      .createQueryBuilder('support')
+      .leftJoinAndSelect('support.user', 'user')
+      .getMany();
   }
 
   async findOne(id: number): Promise<Support> {
-    const supportRecord = await this.supportReposity.findOneBy({ id });
+    const supportRecord = await this.supportReposity
+      .createQueryBuilder('support')
+      .where('support.id = :id', { id })
+      .leftJoinAndSelect('support.user', 'user')
+      .getOne();
     if (!supportRecord) throw new ConflictException(`Support record with id ${id} does not exist`);
     return supportRecord;
   }
