@@ -12,8 +12,11 @@ export class OrganizationService {
     private readonly organizationRepository: Repository<Organization>,
   ) {}
 
-  async create(createOrganizationDto: CreateOrganizationDto): Promise<Organization> {
-    const newOrganization = await this.organizationRepository.insert(createOrganizationDto);
+  async create(userId, createOrganizationDto: CreateOrganizationDto): Promise<Organization> {
+    const newOrganization = await this.organizationRepository.insert({
+      user: { id: userId },
+      ...createOrganizationDto,
+    });
 
     return newOrganization.raw;
   }

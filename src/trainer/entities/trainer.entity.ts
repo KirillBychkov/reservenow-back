@@ -20,6 +20,21 @@ export class Trainer {
   user: User;
 
   @Column()
+  first_name: string;
+
+  @Column()
+  last_name: string;
+
+  @Column()
+  phone: string;
+
+  @Column({ nullable: true })
+  description: string;
+
+  @Column({ nullable: true })
+  image?: string;
+
+  @Column()
   hired_at: Date;
 
   @Column({ nullable: true })

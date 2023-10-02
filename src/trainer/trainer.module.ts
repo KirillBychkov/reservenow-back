@@ -5,9 +5,17 @@ import { UserModule } from 'src/user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Trainer } from './entities/trainer.entity';
 import { AccountModule } from 'src/account/account.module';
+import { RoleModule } from 'src/role/role.module';
+import { TokenModule } from 'src/token/token.module';
 
 @Module({
-  imports: [UserModule, AccountModule, TypeOrmModule.forFeature([Trainer])],
+  imports: [
+    TokenModule,
+    RoleModule,
+    UserModule,
+    AccountModule,
+    TypeOrmModule.forFeature([Trainer]),
+  ],
   controllers: [TrainerController],
   providers: [TrainerService],
 })

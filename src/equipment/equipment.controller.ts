@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Req, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { EquipmentService } from './equipment.service';
 import { CreateEquipmentDto } from './dto/create-equipment.dto';
 import { UpdateEquipmentDto } from './dto/update-equipment.dto';
@@ -31,8 +31,8 @@ export class EquipmentController {
     description: 'A new organizations has been created successfully',
     type: Equipment,
   })
-  create(@Body() createEquipmentDto: CreateEquipmentDto) {
-    return this.equipmentService.create(createEquipmentDto);
+  create(@Req() req, @Body() createEquipmentDto: CreateEquipmentDto) {
+    return this.equipmentService.create(req.user.user_id, createEquipmentDto);
   }
 
   @ApiOperation({ summary: 'Get all equipment in the system' })

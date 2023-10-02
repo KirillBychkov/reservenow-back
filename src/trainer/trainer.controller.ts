@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { TrainerService } from './trainer.service';
 import { CreateTrainerDto } from './dto/create-trainer.dto';
 import { UpdateTrainerDto } from './dto/update-trainer.dto';
@@ -26,8 +36,8 @@ export class TrainerController {
   @ApiOperation({ summary: 'Create a new trainer in the system' })
   @ApiCreatedResponse({ description: 'A trainer has been created successfully', type: Trainer })
   @Post()
-  create(@Body() createTrainerDto: CreateTrainerDto) {
-    return this.trainerService.create(createTrainerDto);
+  create(@Request() req, @Body() createTrainerDto: CreateTrainerDto) {
+    return this.trainerService.create(req.user.user_id, createTrainerDto);
   }
 
   @ApiOperation({ summary: 'Get all trainers in the system' })

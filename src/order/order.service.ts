@@ -27,7 +27,7 @@ export class OrderService {
     await queryRunner.startTransaction();
 
     try {
-      // await Promise.all([this.userService.findOne(user_id), this.clientService.findOne(client_id)]);
+      await this.userService.findOne(user_id);
 
       const newClient = await queryRunner.manager.insert(Client, client);
 
