@@ -37,6 +37,7 @@ export class UserService {
 
     const users = await this.userRepository
       .createQueryBuilder('user')
+      .where(`user.first_name || ' ' || user.last_name ILIKE :search `, { search: `%${search}%` })
       .leftJoinAndSelect('user.account', 'account')
       .leftJoinAndSelect('account.role', 'role')
       .getMany();
