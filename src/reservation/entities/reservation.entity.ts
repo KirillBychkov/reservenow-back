@@ -34,12 +34,12 @@ export class Reservation {
   organization: RentalObject;
 
   @Column()
-  reservetion_time_start: Date;
+  reservation_time_start: Date;
 
   @Column()
-  reservetion_time_end: Date;
+  reservation_time_end: Date;
 
-  @Column('text')
+  @Column('text', { nullable: true })
   description: string;
 
   @Column()

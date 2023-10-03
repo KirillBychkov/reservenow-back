@@ -1,5 +1,5 @@
 export class CreateEquipmentDto {
   name: string;
   description: string;
-  price: number;
+  price_per_hour: number;
 }

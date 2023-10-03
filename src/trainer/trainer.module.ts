@@ -18,5 +18,6 @@ import { TokenModule } from 'src/token/token.module';
   ],
   controllers: [TrainerController],
   providers: [TrainerService],
+  exports: [TrainerService],
 })
 export class TrainerModule {}

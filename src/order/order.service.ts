@@ -4,22 +4,30 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from './entities/order.entity';
 import { DataSource, Repository } from 'typeorm';
-import { ClientService } from 'src/client/client.service';
 import { UserService } from 'src/user/user.service';
 import { Reservation } from 'src/reservation/entities/reservation.entity';
 import { Client } from 'src/client/entities/client.entity';
+import { EquipmentService } from 'src/equipment/equipment.service';
+import { RentalObjectService } from 'src/rental_object/rental_object.service';
+import { TrainerService } from 'src/trainer/trainer.service';
+import { DateTime } from 'luxon';
+import { Equipment } from 'src/equipment/entities/equipment.entity';
+import { RentalObject } from 'src/rental_object/entities/rental_object.entity';
+import { Trainer } from 'src/trainer/entities/trainer.entity';
 
 @Injectable()
 export class OrderService {
   constructor(
     @InjectRepository(Order) private readonly orderRepository: Repository<Order>,
     private readonly userService: UserService,
-    private readonly clientService: ClientService,
+    private readonly equipmentService: EquipmentService,
+    private readonly trainerService: TrainerService,
+    private readonly rentalObjectService: RentalObjectService,
     private readonly dataSource: DataSource,
   ) {}
 
-  async create(createOrderDto: CreateOrderDto) {
-    const { user_id, client, reservations } = createOrderDto;
+  async create(userId: number, createOrderDto: CreateOrderDto) {
+    const { client, reservations } = createOrderDto;
 
     const queryRunner = this.dataSource.createQueryRunner();
 
@@ -27,19 +35,51 @@ export class OrderService {
     await queryRunner.startTransaction();
 
     try {
-      await this.userService.findOne(user_id);
+      await this.userService.findOne(userId);
 
       const newClient = await queryRunner.manager.insert(Client, client);
 
       const order = await queryRunner.manager.insert(Order, {
-        user: { id: user_id },
+        user: { id: userId },
         client: { id: newClient.raw.id },
       });
 
       await Promise.all(
-        reservations.map((reservation) =>
-          queryRunner.manager.insert(Reservation, { ...reservation, order: { id: order.raw.id } }),
-        ),
+        reservations.map(async (reservationDto) => {
+          const {
+            equipment_id,
+            rental_object_id,
+            trainer_id,
+            reservation_time_start,
+            reservation_time_end,
+          } = reservationDto;
+
+          const reservationStart = DateTime.fromSQL(reservation_time_start.toString());
+          const reservationEnd = DateTime.fromSQL(reservation_time_end.toString());
+
+          const timeDifference =
+            reservationEnd.diff(reservationStart, 'minutes').toObject().minutes / 60;
+
+          let objectToRent: Equipment | RentalObject | Trainer;
+          if (equipment_id) {
+            objectToRent = await this.equipmentService.findOne(equipment_id);
+          } else if (rental_object_id) {
+            objectToRent = await this.rentalObjectService.findOne(rental_object_id);
+          } else if (trainer_id) {
+            objectToRent = await this.trainerService.findOne(trainer_id);
+          }
+
+          queryRunner.manager.insert(Reservation, {
+            user: { id: userId },
+            equipment: equipment_id ? { id: equipment_id } : null,
+            rental_object: rental_object_id ? { id: rental_object_id } : null,
+            trainer: trainer_id ? { id: trainer_id } : null,
+            reservation_time_start,
+            reservation_time_end,
+            price: Math.floor(objectToRent.price_per_hour * timeDifference),
+            order: { id: order.raw.id },
+          });
+        }),
       );
 
       await queryRunner.commitTransaction();
@@ -61,7 +101,13 @@ export class OrderService {
   }
 
   update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
+    const updated = await this.orderRepository
+      .createQueryBuilder()
+      .update(Order, updateOrderDto)
+      .where('id = :id', { id })
+      .returning('*')
+      .execute();
+    return updated.raw;
   }
 
   remove(id: number) {

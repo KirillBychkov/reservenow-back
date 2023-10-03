@@ -28,7 +28,7 @@ export class Client {
   @Column()
   phone: string;
 
-  @Column()
+  @Column({ nullable: true })
   description: string;
 
   @OneToOne(() => Account, { nullable: true })

@@ -13,22 +13,33 @@ export class OrganizationService {
   ) {}
 
   async create(userId, createOrganizationDto: CreateOrganizationDto): Promise<Organization> {
-    const newOrganization = await this.organizationRepository.insert({
+    const newOrganization = await this.organizationRepository.save({
       user: { id: userId },
       ...createOrganizationDto,
     });
 
-    return newOrganization.raw;
+    return newOrganization;
   }
 
   findAll(): Promise<Organization[]> {
-    return this.organizationRepository.find();
+    const organization = this.organizationRepository
+      .createQueryBuilder('organization')
+      .leftJoinAndSelect('organization.user', 'user')
+      .getMany();
+
+    return organization;
   }
 
   async findOne(id: number): Promise<Organization> {
-    const organizationRecord = await this.organizationRepository.findOneBy({ id });
+    const organizationRecord = await this.organizationRepository
+      .createQueryBuilder('organization')
+      .leftJoinAndSelect('organization.user', 'user')
+      .where('organization.id = :id', { id })
+      .getOne();
+
     if (!organizationRecord)
       throw new ConflictException(`Organization with id ${id} does not exist`);
+
     return organizationRecord;
   }
 
