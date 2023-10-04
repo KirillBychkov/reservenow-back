@@ -2,34 +2,58 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateTrainerDto } from './dto/create-trainer.dto';
 import { UpdateTrainerDto } from './dto/update-trainer.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Trainer } from './entities/trainer.entity';
-import { UserService } from 'src/user/user.service';
 import { AccountService } from 'src/account/account.service';
+import { RoleService } from 'src/role/role.service';
+import { Account } from 'src/account/entities/account.entity';
+import { TokenService } from 'src/token/token.service';
 
 @Injectable()
 export class TrainerService {
   constructor(
     @InjectRepository(Trainer) private trainerRepository: Repository<Trainer>,
-    private readonly userService: UserService,
+    private readonly dataSource: DataSource,
     private readonly accountService: AccountService,
+    private readonly roleService: RoleService,
+    private readonly tokenService: TokenService,
   ) {}
 
-  async create(createTrainerDto: CreateTrainerDto): Promise<Trainer> {
-    const { user_id, ...trainer } = createTrainerDto;
+  async create(userId, createTrainerDto: CreateTrainerDto) {
+    const { email, ...trainer } = createTrainerDto;
+    await this.accountService.checkEmail(email);
 
-    const user = await this.userService.findOne(user_id);
-    if (!(await this.trainerRepository.findOne({ where: { user: { id: user_id } } })))
-      throw new ConflictException('Trainer for the user already exists');
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    const newTrainer = await this.trainerRepository.insert({ user, ...trainer });
+    try {
+      const [newTrainer, role] = await Promise.all([
+        queryRunner.manager.save(Trainer, {
+          user: { id: userId },
+          ...trainer,
+        }),
+        this.roleService.getByName('trainer'),
+      ]);
 
-    await this.accountService.update(user.account.id, {
-      user: null,
-      trainer: newTrainer.raw,
-    });
+      const account = await queryRunner.manager.insert(Account, {
+        email,
+        role,
+        trainer: newTrainer,
+      });
+      await queryRunner.commitTransaction();
 
-    return newTrainer.raw;
+      const reset_token = await this.tokenService.generateToken(
+        { id: account.raw.id, email: account.raw.email },
+        process.env.RESET_SECRET,
+        60 * 60,
+      );
+      return { reset_token };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   findAll(): Promise<Trainer[]> {

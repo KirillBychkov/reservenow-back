@@ -1,5 +1,5 @@
 export class CreateEquipmentDto {
-  user_id: number;
   name: string;
   description: string;
+  price_per_hour: number;
 }

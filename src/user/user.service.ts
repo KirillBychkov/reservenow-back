@@ -11,6 +11,7 @@ import { Account, AccountStatus } from 'src/account/entities/account.entity';
 import ElementsQueryDto from './dto/query.dto';
 import FindAllUsersDto from './dto/find-all-users.dto';
 import CreateUserDto from './dto/create-user.dto';
+import { RoleService } from 'src/role/role.service';
 
 @Injectable()
 export class UserService {
@@ -19,6 +20,7 @@ export class UserService {
     private dataSource: DataSource,
     private accountService: AccountService,
     private tokenService: TokenService,
+    private roleService: RoleService,
   ) {}
 
   async findOne(id: number): Promise<User> {
@@ -34,12 +36,15 @@ export class UserService {
 
   async findAll(query: ElementsQueryDto): Promise<FindAllUsersDto> {
     const { search, limit, skip } = query;
+    console.log(search);
 
     const users = await this.userRepository
       .createQueryBuilder('user')
-      .where(`user.first_name || ' ' || user.last_name ILIKE :search `, { search: `%${search}%` })
       .leftJoinAndSelect('user.account', 'account')
       .leftJoinAndSelect('account.role', 'role')
+      .where(`user.first_name || ' ' || user.last_name ILIKE :search `, {
+        search: `%${search ?? ''}%`,
+      })
       .getMany();
 
     return { filters: { skip, limit, search, total: users.length }, data: users };
@@ -69,6 +74,7 @@ export class UserService {
 
   async create(createUserDTO: CreateUserDto) {
     const { email, user } = createUserDTO;
+    await this.accountService.checkEmail(email);
 
     const queryRunner = await this.dataSource.createQueryRunner();
 
@@ -76,13 +82,15 @@ export class UserService {
     await queryRunner.startTransaction();
 
     try {
-      const newUser = await queryRunner.manager.save(User, user);
+      const [newUser, role] = await Promise.all([
+        queryRunner.manager.save(User, user),
+        this.roleService.getByName('user_full'),
+      ]);
 
-      const accountToCreate = await this.accountService.getNewAccount(email, null, newUser);
-
-      const account = await queryRunner.manager.save(Account, accountToCreate);
+      const account = await queryRunner.manager.save(Account, { email, role, user: newUser });
       await queryRunner.commitTransaction();
 
+      console.log(account);
       const reset_token = await this.tokenService.generateToken(
         { id: account.id, email: account.email },
         process.env.RESET_SECRET,

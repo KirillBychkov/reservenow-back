@@ -1,10 +1,12 @@
 import { Client } from 'src/client/entities/client.entity';
+import { Reservation } from 'src/reservation/entities/reservation.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -28,6 +30,9 @@ export class Order {
   status: OrderStatus;
 
   //TODO: GROUP_ID
+
+  @OneToMany(() => Reservation, (reservation) => reservation.order)
+  reservations: Reservation[];
 
   @ManyToOne(() => Client, (client) => client.id)
   client: Client;

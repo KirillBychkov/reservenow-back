@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { OrganizationService } from './organization.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
@@ -32,8 +32,8 @@ export class OrganizationController {
     description: 'A new organizations has been created successfully',
     type: Organization,
   })
-  create(@Body() createOrganizationDto: CreateOrganizationDto) {
-    return this.organizationService.create(createOrganizationDto);
+  create(@Req() req, @Body() createOrganizationDto: CreateOrganizationDto) {
+    return this.organizationService.create(req.user.user_id, createOrganizationDto);
   }
 
   @ApiOperation({ summary: 'Get all organizations in the system' })

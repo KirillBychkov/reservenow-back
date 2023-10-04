@@ -10,5 +10,6 @@ import { AccountModule } from 'src/account/account.module';
   imports: [AccountModule, OrganizationModule, TypeOrmModule.forFeature([RentalObject])],
   controllers: [RentalObjectController],
   providers: [RentalObjectService],
+  exports: [RentalObjectService],
 })
 export class RentalObjectModule {}

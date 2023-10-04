@@ -9,6 +9,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Req,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -37,8 +38,8 @@ export class OrderController {
   @ApiOperation({ summary: 'Create a new order in the system' })
   @ApiCreatedResponse({ description: 'An order has been created successfully', type: Order })
   @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.orderService.create(createOrderDto);
+  create(@Req() req, @Body() createOrderDto: CreateOrderDto) {
+    return this.orderService.create(+req.user.user_id, createOrderDto);
   }
 
   @ApiOperation({ summary: 'Get all orders in the system' })

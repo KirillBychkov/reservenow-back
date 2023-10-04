@@ -1,5 +1,10 @@
 export class CreateTrainerDto {
-  user_id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  description?: string;
+  image?: string;
   hired_at: Date;
   resigned_at?: Date;
   price_per_hour: number;

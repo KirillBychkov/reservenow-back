@@ -11,6 +11,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
@@ -26,9 +27,10 @@ import { RolesGuard } from 'src/role/role.guard';
 import { RentalObject } from './entities/rental_object.entity';
 
 @ApiTags('RentalObject')
+@ApiBearerAuth()
 @Permissions('rental_object')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
-@Controller('rental-object')
+@Controller('rental_object')
 export class RentalObjectController {
   constructor(private readonly rentalObjectService: RentalObjectService) {}
 

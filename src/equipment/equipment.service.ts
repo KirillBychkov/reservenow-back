@@ -11,12 +11,10 @@ export class EquipmentService {
     @InjectRepository(Equipment) private readonly equipmentRepository: Repository<Equipment>,
   ) {}
 
-  async create(createEquipmentDto: CreateEquipmentDto) {
-    const { user_id, ...createEquipment } = createEquipmentDto;
-
+  async create(userId: number, createEquipmentDto: CreateEquipmentDto) {
     const newEquipment = await this.equipmentRepository.insert({
-      user: { id: user_id },
-      ...createEquipment,
+      user: { id: userId },
+      ...createEquipmentDto,
     });
 
     return newEquipment.raw;

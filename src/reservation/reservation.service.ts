@@ -10,29 +10,9 @@ export class ReservationService {
   constructor(
     @InjectRepository(Reservation) private readonly reservationRepository: Repository<Reservation>,
   ) {}
-  // async create(createReservationDto: CreateReservationDto): Promise<Reservation> {
-  //   const { user_id, rental_object_id, organization_id, ...createReservation } =
-  //     createReservationDto;
 
-  //   // TODO: ADD TRAINER AND ORDER WHEN IMPLEMENTED
-  //   await Promise.all([
-  //     this.findOne(user_id),
-  //     this.findOne(rental_object_id),
-  //     this.findOne(organization_id),
-  //   ]);
-
-  //   const newReservation = await this.reservationRepository.insert({
-  //     user: { id: user_id },
-  //     rental_object: { id: rental_object_id },
-  //     organization: { id: organization_id },
-  //     ...createReservation,
-  //   });
-
-  //   return newReservation.raw;
-  // }
-
-  findAll(): Promise<Reservation[]> {
-    return this.reservationRepository.find();
+  async findAll(orderId: number): Promise<Reservation[]> {
+    return this.reservationRepository.find({ where: { order: { id: orderId } } });
   }
 
   async findOne(id: number): Promise<Reservation> {

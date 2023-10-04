@@ -3,5 +3,4 @@ export class CreateClientDto {
   last_name: string;
   email: string;
   phone: string;
-  user_id: number;
 }
