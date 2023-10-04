@@ -18,7 +18,7 @@ export class RentalObjectService {
     const { organizationId, ...rentalObject } = createRentalObjectDto;
     const organization = await this.organizationService.findOne(organizationId);
 
-    return this.rentalObjectsRepository.create({ organization, ...rentalObject });
+    return this.rentalObjectsRepository.save({ organization, ...rentalObject });
   }
 
   findAll(): Promise<RentalObject[]> {

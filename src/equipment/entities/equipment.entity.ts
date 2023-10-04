@@ -23,7 +23,7 @@ export class Equipment {
   description: string;
 
   @Column()
-  price: number;
+  price_per_hour: number;
 
   @CreateDateColumn()
   created_at: Date;

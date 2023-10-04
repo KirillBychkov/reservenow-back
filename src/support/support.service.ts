@@ -29,6 +29,7 @@ export class SupportService {
     return this.supportReposity
       .createQueryBuilder('support')
       .leftJoinAndSelect('support.user', 'user')
+      .leftJoinAndSelect('user.account', 'account')
       .getMany();
   }
 
@@ -37,6 +38,7 @@ export class SupportService {
       .createQueryBuilder('support')
       .where('support.id = :id', { id })
       .leftJoinAndSelect('support.user', 'user')
+      .leftJoinAndSelect('user.account', 'account')
       .getOne();
     if (!supportRecord) throw new ConflictException(`Support record with id ${id} does not exist`);
     return supportRecord;
