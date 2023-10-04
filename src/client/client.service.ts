@@ -13,17 +13,14 @@ export class ClientService {
     private readonly userService: UserService,
   ) {}
 
-  // async create(createClientDto: CreateClientDto): Promise<Client> {
-  //   const {  ...client } = createClientDto;
-  //   const user = await this.userService.findOne(user_id);
-
-  //   const newClient = await this.clientRepository.insert({
-  //     user,
-  //     ...client,
-  //     account: null,
-  //   });
-  //   return newClient.raw;
-  // }
+  async create(userId, createClientDto: CreateClientDto): Promise<Client> {
+    const newClient = await this.clientRepository.save({
+      user: { id: userId },
+      ...createClientDto,
+      account: null,
+    });
+    return newClient;
+  }
 
   findAll(): Promise<Client[]> {
     return this.clientRepository.find();

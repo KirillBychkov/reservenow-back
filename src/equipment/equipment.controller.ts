@@ -15,7 +15,6 @@ import {
 import { Permissions } from 'src/role/role.decorator';
 import { RolesGuard } from 'src/role/role.guard';
 import { Equipment } from './entities/equipment.entity';
-import { Role } from 'src/role/entities/role.entity';
 
 @ApiTags('Equipment')
 @ApiBearerAuth()
@@ -51,7 +50,7 @@ export class EquipmentController {
 
   @ApiOperation({ summary: 'Update equipment by its id' })
   @Patch(':id')
-  @ApiOkResponse({ description: 'The equipment has been updated successfully', type: Role })
+  @ApiOkResponse({ description: 'The equipment has been updated successfully', type: Equipment })
   update(@Param('id') id: string, @Body() updateEquipmentDto: UpdateEquipmentDto) {
     return this.equipmentService.update(+id, updateEquipmentDto);
   }
