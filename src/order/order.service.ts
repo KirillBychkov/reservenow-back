@@ -100,7 +100,7 @@ export class OrderService {
     return this.orderRepository.findOneBy({ id });
   }
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
+  async update(id: number, updateOrderDto: UpdateOrderDto) {
     const updated = await this.orderRepository
       .createQueryBuilder()
       .update(Order, updateOrderDto)
