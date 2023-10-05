@@ -4,7 +4,6 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from './entities/order.entity';
 import { DataSource, Repository } from 'typeorm';
-import { UserService } from 'src/user/user.service';
 import { Reservation } from 'src/reservation/entities/reservation.entity';
 import { Client } from 'src/client/entities/client.entity';
 import { EquipmentService } from 'src/equipment/equipment.service';
@@ -19,7 +18,6 @@ import { Trainer } from 'src/trainer/entities/trainer.entity';
 export class OrderService {
   constructor(
     @InjectRepository(Order) private readonly orderRepository: Repository<Order>,
-    private readonly userService: UserService,
     private readonly equipmentService: EquipmentService,
     private readonly trainerService: TrainerService,
     private readonly rentalObjectService: RentalObjectService,
@@ -35,8 +33,6 @@ export class OrderService {
     await queryRunner.startTransaction();
 
     try {
-      await this.userService.findOne(userId);
-
       const newClient = await queryRunner.manager.insert(Client, client);
 
       const order = await queryRunner.manager.insert(Order, {

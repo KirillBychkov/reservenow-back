@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { OrderController } from './order.controller';
-import { UserModule } from 'src/user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Order } from './entities/order.entity';
 import { AccountModule } from 'src/account/account.module';
@@ -12,7 +11,6 @@ import { RentalObjectModule } from 'src/rental_object/rental_object.module';
 @Module({
   imports: [
     AccountModule,
-    UserModule,
     EquipmentModule,
     TrainerModule,
     RentalObjectModule,
