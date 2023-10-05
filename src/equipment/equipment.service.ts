@@ -12,12 +12,12 @@ export class EquipmentService {
   ) {}
 
   async create(userId: number, createEquipmentDto: CreateEquipmentDto) {
-    const newEquipment = await this.equipmentRepository.insert({
+    const newEquipment = await this.equipmentRepository.save({
       user: { id: userId },
       ...createEquipmentDto,
     });
 
-    return newEquipment.raw;
+    return newEquipment;
   }
 
   findAll() {

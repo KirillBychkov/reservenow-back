@@ -42,6 +42,8 @@ export class UserService {
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.account', 'account')
       .leftJoinAndSelect('account.role', 'role')
+      .skip(skip ?? 0)
+      .limit(limit ?? 10)
       .where(`user.first_name || ' ' || user.last_name ILIKE :search `, {
         search: `%${search ?? ''}%`,
       })
