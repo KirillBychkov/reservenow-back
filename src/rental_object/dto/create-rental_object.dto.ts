@@ -5,8 +5,7 @@ export class CreateRentalObjectDto {
   description?: string;
   photo?: string;
   phone: string;
-  lat: number;
-  lon: number;
+  address: string;
   monday_start_hours?: number;
   monday_end_hours?: number;
   tuesday_start_hours?: number;
