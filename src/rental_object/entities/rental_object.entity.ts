@@ -31,12 +31,8 @@ export class RentalObject {
   @Column()
   phone: string;
 
-  @Column('float')
-  lat: number;
-
-  @Column('float')
-  lon: number;
-
+  @Column()
+  address: string;
   // TODO: Unsigned int for all columns below
 
   @Column('int', { nullable: true })
