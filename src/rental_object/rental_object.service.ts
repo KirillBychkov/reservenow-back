@@ -1,10 +1,11 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, UseInterceptors } from '@nestjs/common';
 import { CreateRentalObjectDto } from './dto/create-rental_object.dto';
 import { UpdateRentalObjectDto } from './dto/update-rental_object.dto';
 import { RentalObject } from './entities/rental_object.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OrganizationService } from 'src/organization/organization.service';
+import { workingHoursValidation } from 'src/helpers/workingHoursValidation';
 
 @Injectable()
 export class RentalObjectService {
@@ -14,7 +15,10 @@ export class RentalObjectService {
     private readonly organizationService: OrganizationService,
   ) {}
 
+  @UseInterceptors()
   async create(createRentalObjectDto: CreateRentalObjectDto): Promise<RentalObject> {
+    await workingHoursValidation(createRentalObjectDto);
+
     const { organizationId, ...rentalObject } = createRentalObjectDto;
     const organization = await this.organizationService.findOne(organizationId);
 

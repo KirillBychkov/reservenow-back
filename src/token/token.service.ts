@@ -27,7 +27,6 @@ export class TokenService {
   }
 
   updateToken(accountId: number, token: UpdateTokenDto) {
-    console.log(accountId);
     return this.tokenRepository.update({ account: { id: accountId } }, token);
   }
 

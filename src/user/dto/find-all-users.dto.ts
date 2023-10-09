@@ -6,6 +6,7 @@ export default class FindAllUsersDto {
     limit?: number;
     search?: string;
     total: number;
+    received: number;
   };
   data: User[];
 }

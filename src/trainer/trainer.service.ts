@@ -8,6 +8,7 @@ import { AccountService } from 'src/account/account.service';
 import { RoleService } from 'src/role/role.service';
 import { Account } from 'src/account/entities/account.entity';
 import { TokenService } from 'src/token/token.service';
+import { workingHoursValidation } from 'src/helpers/workingHoursValidation';
 
 @Injectable()
 export class TrainerService {
@@ -20,6 +21,8 @@ export class TrainerService {
   ) {}
 
   async create(userId, createTrainerDto: CreateTrainerDto) {
+    await workingHoursValidation(createTrainerDto);
+
     const { email, ...trainer } = createTrainerDto;
     await this.accountService.checkEmail(email);
 
