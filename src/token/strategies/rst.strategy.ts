@@ -12,7 +12,6 @@ export class RstStrategy extends PassportStrategy(Strategy, 'jwt-reset') {
   }
 
   validate(payload: any) {
-    console.log(payload);
     delete payload.exp;
     delete payload.iat;
     return payload;

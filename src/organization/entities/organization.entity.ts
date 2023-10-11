@@ -27,7 +27,6 @@ export class Organization {
 
   @Column()
   address: string;
-  // TODO: Unsigned int for all columns below
 
   @Column('int', { nullable: true })
   monday_start_hours?: number;
