@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Min, Max, ValidateIf } from 'class-validator';
 
 export class CreateRentalObjectDto {
@@ -7,6 +8,9 @@ export class CreateRentalObjectDto {
   description?: string;
   phone: string;
   address: string;
+
+  @ApiProperty({ type: 'string', format: 'binary' })
+  file?: any;
 
   @Min(0)
   @Max(23)

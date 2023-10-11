@@ -9,9 +9,14 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
@@ -19,12 +24,13 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { RentalObjectService } from './rental_object.service';
-import { CreateRentalObjectDto } from './dto/create-rental_object.dto';
 import { UpdateRentalObjectDto } from './dto/update-rental_object.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Permissions } from 'src/role/role.decorator';
 import { RolesGuard } from 'src/role/role.guard';
 import { RentalObject } from './entities/rental_object.entity';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CreateRentalObjectDto } from './dto/create-rental_object.dto';
 
 @ApiTags('RentalObject')
 @ApiBearerAuth()
@@ -34,11 +40,22 @@ import { RentalObject } from './entities/rental_object.entity';
 export class RentalObjectController {
   constructor(private readonly rentalObjectService: RentalObjectService) {}
 
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Create a new rental object in the system' })
   @ApiCreatedResponse({ description: 'A new rental object has been created', type: RentalObject })
   @Post()
-  create(@Body() createRentalObjectDto: CreateRentalObjectDto) {
-    return this.rentalObjectService.create(createRentalObjectDto);
+  @UseInterceptors(FileInterceptor('file'))
+  create(
+    @Body() createRentalObjectDto: CreateRentalObjectDto,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 })],
+        fileIsRequired: false,
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return this.rentalObjectService.create(file, createRentalObjectDto);
   }
 
   @ApiOperation({ summary: 'Get all rental objects in the system' })

@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OrganizationService } from 'src/organization/organization.service';
 import { workingHoursValidation } from 'src/helpers/workingHoursValidation';
+import { StorageService } from 'src/storage/storage.service';
 
 @Injectable()
 export class RentalObjectService {
@@ -13,16 +14,33 @@ export class RentalObjectService {
     @InjectRepository(RentalObject)
     private readonly rentalObjectsRepository: Repository<RentalObject>,
     private readonly organizationService: OrganizationService,
+    private readonly storageService: StorageService,
   ) {}
 
   @UseInterceptors()
-  async create(createRentalObjectDto: CreateRentalObjectDto): Promise<RentalObject> {
+  async create(
+    file: Express.Multer.File,
+    createRentalObjectDto: CreateRentalObjectDto,
+  ): Promise<RentalObject> {
     await workingHoursValidation(createRentalObjectDto);
 
     const { organizationId, ...rentalObject } = createRentalObjectDto;
     const organization = await this.organizationService.findOne(organizationId);
 
-    return this.rentalObjectsRepository.save({ organization, ...rentalObject });
+    const result =
+      file !== undefined
+        ? await this.storageService.s3_upload(
+            file.buffer,
+            `rental_object_${rentalObject.address}.${file.mimetype.split('/')[1]}`,
+            file.mimetype,
+          )
+        : { Location: null };
+
+    return this.rentalObjectsRepository.save({
+      organization,
+      photo: result.Location,
+      ...rentalObject,
+    });
   }
 
   findAll(): Promise<RentalObject[]> {

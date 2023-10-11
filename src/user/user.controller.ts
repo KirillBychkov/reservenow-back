@@ -9,6 +9,10 @@ import {
   Param,
   Patch,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  MaxFileSizeValidator,
+  ParseFilePipe,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -28,6 +32,7 @@ import { Permissions } from 'src/role/role.decorator';
 import { RolesGuard } from 'src/role/role.guard';
 import CreateUserDto from './dto/create-user.dto';
 import FindAllUsersDto from './dto/find-all-users.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -57,7 +62,16 @@ export class UserController {
     },
   })
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
+  @UseInterceptors(FileInterceptor('file'))
+  create(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 })],
+      }),
+    )
+    @Body()
+    createUserDto: CreateUserDto,
+  ) {
     return this.userService.create(createUserDto);
   }
 
