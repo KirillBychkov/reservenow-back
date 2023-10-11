@@ -36,20 +36,25 @@ export class UserService {
 
   async findAll(query: ElementsQueryDto): Promise<FindAllUsersDto> {
     const { search, limit, skip } = query;
-    console.log(search);
+    console.log(limit, skip);
 
     const users = await this.userRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.account', 'account')
       .leftJoinAndSelect('account.role', 'role')
-      .skip(skip ?? 0)
-      .limit(limit ?? 10)
       .where(`user.first_name || ' ' || user.last_name ILIKE :search `, {
         search: `%${search ?? ''}%`,
       })
-      .getMany();
+      .skip(skip ?? 0)
+      .limit(limit ?? 10)
+      .getManyAndCount();
 
-    return { filters: { skip, limit, search, total: users.length }, data: users };
+    console.log(users);
+
+    return {
+      filters: { skip, limit, search, total: users[1], received: users.length },
+      data: users[0],
+    };
   }
 
   async export(query: ElementsQueryDto): Promise<string> {
@@ -92,7 +97,6 @@ export class UserService {
       const account = await queryRunner.manager.save(Account, { email, role, user: newUser });
       await queryRunner.commitTransaction();
 
-      console.log(account);
       const reset_token = await this.tokenService.generateToken(
         { id: account.id, email: account.email },
         process.env.RESET_SECRET,

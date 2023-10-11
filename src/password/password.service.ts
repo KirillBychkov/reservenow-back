@@ -40,8 +40,6 @@ export class PasswordService {
   async confirmReset(body: ConfirmPasswordDto, payload: any) {
     const hashedPass = await bcrypt.hash(body.new_password, 10);
 
-    console.log(payload);
-
     await this.accountService.update(payload.id, { password: hashedPass });
 
     const [access_token, refresh_token] = await Promise.all([
@@ -51,7 +49,6 @@ export class PasswordService {
 
     await this.accountService.update(payload.id, { status: AccountStatus.ACTIVE });
 
-    console.log(payload);
     await this.tokenService.updateToken(payload.id, {
       access_token,
       refresh_token,
