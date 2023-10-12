@@ -9,13 +9,14 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
-  UseInterceptors,
-  UploadedFile,
+  FileTypeValidator,
   ParseFilePipe,
-  MaxFileSizeValidator,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiConsumes,
   ApiCreatedResponse,
   ApiNoContentResponse,
@@ -29,8 +30,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { Permissions } from 'src/role/role.decorator';
 import { RolesGuard } from 'src/role/role.guard';
 import { RentalObject } from './entities/rental_object.entity';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateRentalObjectDto } from './dto/create-rental_object.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('RentalObject')
 @ApiBearerAuth()
@@ -40,22 +41,11 @@ import { CreateRentalObjectDto } from './dto/create-rental_object.dto';
 export class RentalObjectController {
   constructor(private readonly rentalObjectService: RentalObjectService) {}
 
-  @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Create a new rental object in the system' })
   @ApiCreatedResponse({ description: 'A new rental object has been created', type: RentalObject })
   @Post()
-  @UseInterceptors(FileInterceptor('file'))
-  create(
-    @Body() createRentalObjectDto: CreateRentalObjectDto,
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 })],
-        fileIsRequired: false,
-      }),
-    )
-    file: Express.Multer.File,
-  ) {
-    return this.rentalObjectService.create(file, createRentalObjectDto);
+  create(@Body() createRentalObjectDto: CreateRentalObjectDto) {
+    return this.rentalObjectService.create(createRentalObjectDto);
   }
 
   @ApiOperation({ summary: 'Get all rental objects in the system' })
@@ -85,5 +75,32 @@ export class RentalObjectController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.rentalObjectService.remove(+id);
+  }
+
+  @ApiOperation({ summary: 'Create a new image for the rental object' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @Post('/upload/image/:id')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadImage(
+    @Param('id') id: string,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new FileTypeValidator({ fileType: '.(jpg|png|jpeg)' })],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return this.rentalObjectService.uploadImage(+id, file);
   }
 }

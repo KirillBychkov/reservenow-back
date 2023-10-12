@@ -19,6 +19,18 @@ export class Manager {
   @JoinColumn()
   user: User;
 
+  @Column()
+  first_name: string;
+
+  @Column()
+  last_name: string;
+
+  @Column()
+  description: string;
+
+  @Column({ nullable: true })
+  image?: string;
+
   @Column({ nullable: true })
   hired_at: Date;
 

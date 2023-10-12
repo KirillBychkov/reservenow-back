@@ -5,12 +5,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Organization } from './entities/organization.entity';
 import { workingHoursValidation } from 'src/helpers/workingHoursValidation';
+import { RentalObject } from 'src/rental_object/entities/rental_object.entity';
+import { StorageService } from 'src/storage/storage.service';
 
 @Injectable()
 export class OrganizationService {
   constructor(
     @InjectRepository(Organization)
     private readonly organizationRepository: Repository<Organization>,
+    private readonly storageService: StorageService,
   ) {}
 
   async create(userId, createOrganizationDto: CreateOrganizationDto): Promise<Organization> {
@@ -62,5 +65,27 @@ export class OrganizationService {
     await this.findOne(id);
 
     return this.organizationRepository.delete({ id });
+  }
+
+  async uploadImage(id: number, file: Express.Multer.File) {
+    const { photo: oldPhoto } = await this.findOne(id);
+
+    if (oldPhoto !== null) {
+      await this.storageService.s3_delete(new URL(oldPhoto));
+    }
+
+    const photo = await this.storageService.s3_upload(
+      file,
+      `organization/${id}/avatar.${file.originalname.split('.').pop()}`,
+    );
+
+    await this.organizationRepository
+      .createQueryBuilder()
+      .update(RentalObject)
+      .set({ photo: photo.location })
+      .where('id = :id', { id })
+      .execute();
+
+    return { location: photo.location };
   }
 }

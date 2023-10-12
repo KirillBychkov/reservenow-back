@@ -8,12 +8,18 @@ import {
   Delete,
   UseGuards,
   Request,
+  FileTypeValidator,
+  ParseFilePipe,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { TrainerService } from './trainer.service';
 import { CreateTrainerDto } from './dto/create-trainer.dto';
 import { UpdateTrainerDto } from './dto/update-trainer.dto';
 import {
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
@@ -24,6 +30,7 @@ import { Trainer } from './entities/trainer.entity';
 import { RolesGuard } from 'src/role/role.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { Permissions } from 'src/role/role.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Trainer')
 @ApiBearerAuth()
@@ -66,5 +73,32 @@ export class TrainerController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.trainerService.remove(+id);
+  }
+
+  @ApiOperation({ summary: 'Create a new avatar for the trainer' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @Post('/upload/image/:id')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadImage(
+    @Param('id') id: string,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new FileTypeValidator({ fileType: '.(jpg|png|jpeg)' })],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return this.trainerService.uploadImage(+id, file);
   }
 }
