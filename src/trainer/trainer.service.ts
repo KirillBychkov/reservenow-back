@@ -9,6 +9,8 @@ import { RoleService } from 'src/role/role.service';
 import { Account } from 'src/account/entities/account.entity';
 import { TokenService } from 'src/token/token.service';
 import { workingHoursValidation } from 'src/helpers/workingHoursValidation';
+import { StorageService } from 'src/storage/storage.service';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class TrainerService {
@@ -18,6 +20,7 @@ export class TrainerService {
     private readonly accountService: AccountService,
     private readonly roleService: RoleService,
     private readonly tokenService: TokenService,
+    private readonly storageService: StorageService,
   ) {}
 
   async create(userId, createTrainerDto: CreateTrainerDto) {
@@ -91,5 +94,27 @@ export class TrainerService {
 
   remove(id: number) {
     return this.trainerRepository.delete({ id });
+  }
+
+  async uploadImage(id: number, file: Express.Multer.File) {
+    const { image: oldImage } = await this.findOne(id);
+
+    if (oldImage !== null) {
+      await this.storageService.s3_delete(new URL(oldImage));
+    }
+
+    const image = await this.storageService.s3_upload(
+      file,
+      `useravatar/${id}/avatar.${file.originalname.split('.').pop()}`,
+    );
+
+    await this.trainerRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({ image: image.location })
+      .where('id = :id', { id })
+      .execute();
+
+    return { location: image.location };
   }
 }

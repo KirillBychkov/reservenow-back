@@ -5,12 +5,14 @@ import { Manager } from './entities/manager.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserService } from 'src/user/user.service';
+import { StorageService } from 'src/storage/storage.service';
 
 @Injectable()
 export class ManagerService {
   constructor(
     @InjectRepository(Manager) private readonly managerRepository: Repository<Manager>,
     private readonly userService: UserService,
+    private readonly storageService: StorageService,
   ) {}
 
   async create(accountId, createManagerDto: CreateManagerDto): Promise<Manager> {
@@ -61,5 +63,27 @@ export class ManagerService {
     await this.findOne(id);
 
     return this.managerRepository.delete({ id });
+  }
+
+  async uploadImage(id: number, file: Express.Multer.File) {
+    const { image: oldImage } = await this.findOne(id);
+
+    if (oldImage !== null) {
+      await this.storageService.s3_delete(new URL(oldImage));
+    }
+
+    const image = await this.storageService.s3_upload(
+      file,
+      `useravatar/${id}/avatar.${file.originalname.split('.').pop()}`,
+    );
+
+    await this.managerRepository
+      .createQueryBuilder()
+      .update(Manager)
+      .set({ image: image.location })
+      .where('id = :id', { id })
+      .execute();
+
+    return { location: image.location };
   }
 }

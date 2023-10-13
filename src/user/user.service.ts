@@ -12,6 +12,8 @@ import ElementsQueryDto from './dto/query.dto';
 import FindAllUsersDto from './dto/find-all-users.dto';
 import CreateUserDto from './dto/create-user.dto';
 import { RoleService } from 'src/role/role.service';
+import UpdateUserDto from './dto/update-user.dto';
+import { StorageService } from 'src/storage/storage.service';
 
 @Injectable()
 export class UserService {
@@ -21,6 +23,7 @@ export class UserService {
     private accountService: AccountService,
     private tokenService: TokenService,
     private roleService: RoleService,
+    private storageService: StorageService,
   ) {}
 
   async findOne(id: number): Promise<User> {
@@ -45,6 +48,7 @@ export class UserService {
       .where(`user.first_name || ' ' || user.last_name ILIKE :search `, {
         search: `%${search ?? ''}%`,
       })
+      .orderBy('user.created_at', 'ASC')
       .skip(skip ?? 0)
       .limit(limit ?? 10)
       .getManyAndCount();
@@ -112,12 +116,17 @@ export class UserService {
     }
   }
 
-  async update(id: number, fieldsToUpdate: any): Promise<User> {
-    await this.findOne(id);
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    const { image: oldImage } = await this.findOne(id);
+    const { image: newImage } = updateUserDto;
+
+    if (newImage !== undefined) {
+      await this.storageService.s3_delete(new URL(oldImage));
+    }
 
     const updated = await this.userRepository
       .createQueryBuilder()
-      .update(User, fieldsToUpdate)
+      .update(User, updateUserDto)
       .where('id = :id', { id })
       .returning('*')
       .execute();
@@ -130,5 +139,27 @@ export class UserService {
 
     await this.accountService.update(user.account.id, { status: AccountStatus.DELETED });
     return;
+  }
+
+  async uploadImage(id: number, file: Express.Multer.File) {
+    const { image: oldImage } = await this.findOne(id);
+
+    if (oldImage !== null) {
+      await this.storageService.s3_delete(new URL(oldImage));
+    }
+
+    const image = await this.storageService.s3_upload(
+      file,
+      `useravatar/${id}/avatar.${file.originalname.split('.').pop()}`,
+    );
+
+    await this.userRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({ image: image.location })
+      .where('id = :id', { id })
+      .execute();
+
+    return { location: image.location };
   }
 }

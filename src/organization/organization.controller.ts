@@ -1,4 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+  FileTypeValidator,
+  ParseFilePipe,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { OrganizationService } from './organization.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
@@ -11,11 +25,14 @@ import {
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiConsumes,
+  ApiBody,
 } from '@nestjs/swagger';
 import { Permissions } from 'src/role/role.decorator';
 import { RolesGuard } from 'src/role/role.guard';
 import { Organization } from './entities/organization.entity';
 import { Role } from 'src/role/entities/role.entity';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 // TODO: Configure roles
 @ApiTags('Organization')
@@ -62,5 +79,32 @@ export class OrganizationController {
   @ApiNoContentResponse({ description: 'The organization has been deleted successfully' })
   remove(@Param('id') id: string) {
     return this.organizationService.remove(+id);
+  }
+
+  @ApiOperation({ summary: 'Create a new image for the organization' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @Post('/upload/image/:id')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadImage(
+    @Param('id') id: string,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new FileTypeValidator({ fileType: '.(jpg|png|jpeg)' })],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return this.organizationService.uploadImage(+id, file);
   }
 }

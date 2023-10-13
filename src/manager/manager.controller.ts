@@ -5,6 +5,8 @@ import {
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiBody,
+  ApiConsumes,
 } from '@nestjs/swagger';
 import {
   Controller,
@@ -18,6 +20,10 @@ import {
   HttpCode,
   HttpStatus,
   Request,
+  FileTypeValidator,
+  ParseFilePipe,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ManagerService } from './manager.service';
 import { CreateManagerDto } from './dto/create-manager.dto';
@@ -26,6 +32,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { Permissions } from 'src/role/role.decorator';
 import { RolesGuard } from 'src/role/role.guard';
 import { Manager } from './entities/manager.entity';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Manager')
 @ApiBearerAuth()
@@ -69,5 +76,32 @@ export class ManagerController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.managerService.remove(+id);
+  }
+
+  @ApiOperation({ summary: 'Create a new avatar for the manager' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @Post('/upload/image/:id')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadImage(
+    @Param('id') id: string,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new FileTypeValidator({ fileType: '.(jpg|png|jpeg)' })],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return this.managerService.uploadImage(+id, file);
   }
 }

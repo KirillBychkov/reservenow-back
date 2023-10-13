@@ -13,6 +13,7 @@ import {
   UploadedFile,
   MaxFileSizeValidator,
   ParseFilePipe,
+  FileTypeValidator,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -21,6 +22,8 @@ import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiNoContentResponse,
+  ApiBody,
+  ApiConsumes,
 } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { Response } from 'express';
@@ -103,5 +106,32 @@ export class UserController {
   @Delete(':id')
   delete(@Param('id') id: string) {
     return this.userService.remove(+id);
+  }
+
+  @ApiOperation({ summary: 'Create a new avatar for the user' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @Post('/upload/image/:id')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadImage(
+    @Param('id') id: string,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new FileTypeValidator({ fileType: '.(jpg|png|jpeg)' })],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return this.userService.uploadImage(+id, file);
   }
 }

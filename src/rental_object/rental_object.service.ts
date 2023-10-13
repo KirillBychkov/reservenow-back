@@ -18,27 +18,14 @@ export class RentalObjectService {
   ) {}
 
   @UseInterceptors()
-  async create(
-    file: Express.Multer.File,
-    createRentalObjectDto: CreateRentalObjectDto,
-  ): Promise<RentalObject> {
+  async create(createRentalObjectDto: CreateRentalObjectDto): Promise<RentalObject> {
     await workingHoursValidation(createRentalObjectDto);
 
     const { organizationId, ...rentalObject } = createRentalObjectDto;
     const organization = await this.organizationService.findOne(organizationId);
 
-    const result =
-      file !== undefined
-        ? await this.storageService.s3_upload(
-            file.buffer,
-            `rental_object_${rentalObject.address}.${file.mimetype.split('/')[1]}`,
-            file.mimetype,
-          )
-        : { Location: null };
-
     return this.rentalObjectsRepository.save({
       organization,
-      photo: result.Location,
       ...rentalObject,
     });
   }
@@ -54,7 +41,12 @@ export class RentalObjectService {
   }
 
   async update(id: number, updateRentalObjectDto: UpdateRentalObjectDto): Promise<RentalObject> {
-    await this.findOne(id);
+    const { photo: oldPhoto } = await this.findOne(id);
+    const { photo: newPhoto } = updateRentalObjectDto;
+
+    if (newPhoto !== undefined) {
+      await this.storageService.s3_delete(new URL(oldPhoto));
+    }
 
     const updated = await this.rentalObjectsRepository
       .createQueryBuilder()
@@ -70,5 +62,27 @@ export class RentalObjectService {
     await this.findOne(id);
 
     return this.rentalObjectsRepository.delete({ id });
+  }
+
+  async uploadImage(id: number, file: Express.Multer.File) {
+    const { photo: oldPhoto } = await this.findOne(id);
+
+    if (oldPhoto !== null) {
+      await this.storageService.s3_delete(new URL(oldPhoto));
+    }
+
+    const photo = await this.storageService.s3_upload(
+      file,
+      `rentalobject/${id}/photo.${file.originalname.split('.').pop()}`,
+    );
+
+    await this.rentalObjectsRepository
+      .createQueryBuilder()
+      .update(RentalObject)
+      .set({ photo: photo.location })
+      .where('id = :id', { id })
+      .execute();
+
+    return { location: photo.location };
   }
 }
