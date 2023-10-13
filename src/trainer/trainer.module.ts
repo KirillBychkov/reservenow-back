@@ -7,11 +7,13 @@ import { Trainer } from './entities/trainer.entity';
 import { AccountModule } from 'src/account/account.module';
 import { RoleModule } from 'src/role/role.module';
 import { TokenModule } from 'src/token/token.module';
+import { StorageModule } from 'src/storage/storage.module';
 
 @Module({
   imports: [
     TokenModule,
     RoleModule,
+    StorageModule,
     UserModule,
     AccountModule,
     TypeOrmModule.forFeature([Trainer]),

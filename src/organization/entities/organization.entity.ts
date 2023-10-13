@@ -22,6 +22,9 @@ export class Organization {
   @Column({ nullable: true })
   description?: string;
 
+  @Column({ nullable: true })
+  photo?: string;
+
   @Column()
   phone: string;
 
