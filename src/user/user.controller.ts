@@ -36,6 +36,7 @@ import { RolesGuard } from 'src/role/role.guard';
 import CreateUserDto from './dto/create-user.dto';
 import FindAllUsersDto from './dto/find-all-users.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { imageSchema } from 'src/storage/image.schema';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -110,17 +111,7 @@ export class UserController {
 
   @ApiOperation({ summary: 'Create a new avatar for the user' })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
+  @ApiBody(imageSchema)
   @Post('/upload/image/:id')
   @UseInterceptors(FileInterceptor('file'))
   uploadImage(

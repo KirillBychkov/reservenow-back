@@ -8,7 +8,6 @@ import { AccountService } from 'src/account/account.service';
 import { RoleService } from 'src/role/role.service';
 import { Account } from 'src/account/entities/account.entity';
 import { TokenService } from 'src/token/token.service';
-import { workingHoursValidation } from 'src/helpers/workingHoursValidation';
 import { StorageService } from 'src/storage/storage.service';
 import { User } from 'src/user/entities/user.entity';
 
@@ -24,8 +23,6 @@ export class TrainerService {
   ) {}
 
   async create(userId, createTrainerDto: CreateTrainerDto) {
-    await workingHoursValidation(createTrainerDto);
-
     const { email, ...trainer } = createTrainerDto;
     await this.accountService.checkEmail(email);
 
@@ -105,7 +102,7 @@ export class TrainerService {
 
     const image = await this.storageService.s3_upload(
       file,
-      `useravatar/${id}/avatar.${file.originalname.split('.').pop()}`,
+      `traineravatar/${id}/avatar.${file.originalname.split('.').pop()}`,
     );
 
     await this.trainerRepository

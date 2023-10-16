@@ -27,8 +27,6 @@ export class AccountService {
   }
 
   async createSuperUserAccount(email: string, password: string) {
-    await this.checkEmail(email);
-
     const role = await this.roleService.getByName('superuser');
 
     const newAccount = this.accountRepository.insert({

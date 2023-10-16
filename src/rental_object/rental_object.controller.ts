@@ -32,6 +32,8 @@ import { RolesGuard } from 'src/role/role.guard';
 import { RentalObject } from './entities/rental_object.entity';
 import { CreateRentalObjectDto } from './dto/create-rental_object.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { WorkingHoursValidationPipe } from 'src/pipes/workingHoursValidationPipe';
+import { imageSchema } from 'src/storage/image.schema';
 
 @ApiTags('RentalObject')
 @ApiBearerAuth()
@@ -44,7 +46,7 @@ export class RentalObjectController {
   @ApiOperation({ summary: 'Create a new rental object in the system' })
   @ApiCreatedResponse({ description: 'A new rental object has been created', type: RentalObject })
   @Post()
-  create(@Body() createRentalObjectDto: CreateRentalObjectDto) {
+  create(@Body(new WorkingHoursValidationPipe()) createRentalObjectDto: CreateRentalObjectDto) {
     return this.rentalObjectService.create(createRentalObjectDto);
   }
 
@@ -79,17 +81,7 @@ export class RentalObjectController {
 
   @ApiOperation({ summary: 'Create a new image for the rental object' })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
+  @ApiBody(imageSchema)
   @Post('/upload/image/:id')
   @UseInterceptors(FileInterceptor('file'))
   uploadImage(

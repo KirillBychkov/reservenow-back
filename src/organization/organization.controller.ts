@@ -33,6 +33,8 @@ import { RolesGuard } from 'src/role/role.guard';
 import { Organization } from './entities/organization.entity';
 import { Role } from 'src/role/entities/role.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { WorkingHoursValidationPipe } from 'src/pipes/workingHoursValidationPipe';
+import { imageSchema } from 'src/storage/image.schema';
 
 // TODO: Configure roles
 @ApiTags('Organization')
@@ -49,7 +51,10 @@ export class OrganizationController {
     description: 'A new organizations has been created successfully',
     type: Organization,
   })
-  create(@Req() req, @Body() createOrganizationDto: CreateOrganizationDto) {
+  create(
+    @Req() req,
+    @Body(new WorkingHoursValidationPipe()) createOrganizationDto: CreateOrganizationDto,
+  ) {
     return this.organizationService.create(req.user.user_id, createOrganizationDto);
   }
 
@@ -83,17 +88,7 @@ export class OrganizationController {
 
   @ApiOperation({ summary: 'Create a new image for the organization' })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
+  @ApiBody(imageSchema)
   @Post('/upload/image/:id')
   @UseInterceptors(FileInterceptor('file'))
   uploadImage(

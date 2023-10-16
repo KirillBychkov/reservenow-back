@@ -5,6 +5,10 @@ export default class ElementsQueryDto {
   limit?: number;
   @ApiProperty({ description: 'How many posts to skip in the DB (0 by default)' })
   skip?: number;
+  @ApiProperty({
+    description: 'Option which allow you to choose sorting like title:1 ASC or _id:-1 DESC',
+  })
+  sort?: string;
   @ApiProperty({ description: 'Name of the user (empty by default)' })
   search?: string;
 }
