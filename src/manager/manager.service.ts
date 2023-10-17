@@ -74,7 +74,7 @@ export class ManagerService {
 
     const image = await this.storageService.s3_upload(
       file,
-      `useravatar/${id}/avatar.${file.originalname.split('.').pop()}`,
+      `manageravatar/${id}/avatar.${file.originalname.split('.').pop()}`,
     );
 
     await this.managerRepository

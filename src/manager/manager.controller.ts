@@ -33,6 +33,7 @@ import { Permissions } from 'src/role/role.decorator';
 import { RolesGuard } from 'src/role/role.guard';
 import { Manager } from './entities/manager.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { imageSchema } from 'src/storage/image.schema';
 
 @ApiTags('Manager')
 @ApiBearerAuth()
@@ -80,17 +81,7 @@ export class ManagerController {
 
   @ApiOperation({ summary: 'Create a new avatar for the manager' })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
+  @ApiBody(imageSchema)
   @Post('/upload/image/:id')
   @UseInterceptors(FileInterceptor('file'))
   uploadImage(
