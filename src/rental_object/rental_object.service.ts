@@ -6,6 +6,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OrganizationService } from 'src/organization/organization.service';
 import { StorageService } from 'src/storage/storage.service';
+import ElementsQueryDto from './dto/query.dto';
+import FindAllRentalObjectsDto from './dto/find-all-rental_objects.dto';
 
 @Injectable()
 export class RentalObjectService {
@@ -27,8 +29,29 @@ export class RentalObjectService {
     });
   }
 
-  findAll(): Promise<RentalObject[]> {
-    return this.rentalObjectsRepository.find();
+  async findAll(query: ElementsQueryDto): Promise<FindAllRentalObjectsDto> {
+    const { search, limit, sort, skip } = query;
+    const sortFilters = (sort == undefined ? 'created_at:1' : sort).split(':');
+
+    const rental_objects = await this.rentalObjectsRepository
+      .createQueryBuilder('rental_object')
+      .leftJoinAndSelect('rental_object.organization', 'organization')
+      .where('rental_object.name ILIKE :search', { search: `%${search ?? ''}%` })
+      .orderBy(`rental_object.${sortFilters[0]}`, sortFilters[1] === '1' ? 'ASC' : 'DESC')
+      .skip(skip ?? 0)
+      .take(limit ?? 10)
+      .getManyAndCount();
+
+    return {
+      filters: {
+        skip,
+        limit,
+        search,
+        total: rental_objects[1],
+        received: rental_objects[0].length,
+      },
+      data: rental_objects[0],
+    };
   }
 
   async findOne(id: number): Promise<RentalObject> {

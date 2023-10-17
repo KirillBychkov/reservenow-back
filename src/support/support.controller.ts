@@ -10,6 +10,7 @@ import {
   Req,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -25,6 +26,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/role/role.guard';
 import { Permissions } from 'src/role/role.decorator';
 import { Support } from './entities/support.entity';
+import ElementsQueryDto from 'src/user/dto/query.dto';
 
 @ApiTags('Support')
 @ApiBearerAuth()
@@ -44,8 +46,8 @@ export class SupportController {
   @ApiOperation({ summary: 'Get all support records in the system' })
   @ApiOkResponse({ description: 'All support records have been received', type: [Support] })
   @Get()
-  findAll() {
-    return this.supportService.findAll();
+  findAll(@Query() queryDto: ElementsQueryDto) {
+    return this.supportService.findAll(queryDto);
   }
 
   @ApiOperation({ summary: 'Get a support record by its id' })

@@ -102,4 +102,10 @@ export class OrganizationController {
   ) {
     return this.organizationService.uploadImage(+id, file);
   }
+
+  @ApiOperation({ summary: 'Get statistics of the organization' })
+  @Get('/statistics/:id')
+  getStatistics(@Param('id') id: string) {
+    return this.organizationService.getStatistics(+id);
+  }
 }
