@@ -4,7 +4,6 @@ import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Organization } from './entities/organization.entity';
-import { workingHoursValidation } from 'src/helpers/workingHoursValidation';
 import { RentalObject } from 'src/rental_object/entities/rental_object.entity';
 import { StorageService } from 'src/storage/storage.service';
 
@@ -17,7 +16,6 @@ export class OrganizationService {
   ) {}
 
   async create(userId, createOrganizationDto: CreateOrganizationDto): Promise<Organization> {
-    await workingHoursValidation(createOrganizationDto);
     const newOrganization = await this.organizationRepository.save({
       user: { id: userId },
       ...createOrganizationDto,

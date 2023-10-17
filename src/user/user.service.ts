@@ -38,8 +38,9 @@ export class UserService {
   }
 
   async findAll(query: ElementsQueryDto): Promise<FindAllUsersDto> {
-    const { search, limit, skip } = query;
-    console.log(limit, skip);
+    const { search, limit, sort, skip } = query;
+
+    const sortFilters = (sort == undefined ? 'created_at:1' : sort).split(':');
 
     const users = await this.userRepository
       .createQueryBuilder('user')
@@ -48,12 +49,10 @@ export class UserService {
       .where(`user.first_name || ' ' || user.last_name ILIKE :search `, {
         search: `%${search ?? ''}%`,
       })
-      .orderBy('user.created_at', 'ASC')
+      .orderBy(`user.${sortFilters[0]}`, sortFilters[1] === '1' ? 'ASC' : 'DESC')
       .skip(skip ?? 0)
-      .limit(limit ?? 10)
+      .take(limit ?? 10)
       .getManyAndCount();
-
-    console.log(users);
 
     return {
       filters: { skip, limit, search, total: users[1], received: users.length },

@@ -31,6 +31,8 @@ import { RolesGuard } from 'src/role/role.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { Permissions } from 'src/role/role.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { WorkingHoursValidationPipe } from 'src/pipes/workingHoursValidationPipe';
+import { imageSchema } from 'src/storage/image.schema';
 
 @ApiTags('Trainer')
 @ApiBearerAuth()
@@ -43,7 +45,10 @@ export class TrainerController {
   @ApiOperation({ summary: 'Create a new trainer in the system' })
   @ApiCreatedResponse({ description: 'A trainer has been created successfully', type: Trainer })
   @Post()
-  create(@Request() req, @Body() createTrainerDto: CreateTrainerDto) {
+  create(
+    @Request() req,
+    @Body(new WorkingHoursValidationPipe()) createTrainerDto: CreateTrainerDto,
+  ) {
     return this.trainerService.create(req.user.user_id, createTrainerDto);
   }
 
@@ -77,17 +82,7 @@ export class TrainerController {
 
   @ApiOperation({ summary: 'Create a new avatar for the trainer' })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
+  @ApiBody(imageSchema)
   @Post('/upload/image/:id')
   @UseInterceptors(FileInterceptor('file'))
   uploadImage(

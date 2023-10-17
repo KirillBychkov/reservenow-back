@@ -51,8 +51,6 @@ export class AuthService {
       refresh_token: null,
       expires_at: null,
     });
-
-    return;
   }
 
   getAccount(accountId): Promise<Account> {

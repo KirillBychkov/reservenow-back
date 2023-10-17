@@ -5,6 +5,7 @@ export default class FindAllUsersDto {
     skip?: number;
     limit?: number;
     search?: string;
+    sorted?: string;
     total: number;
     received: number;
   };

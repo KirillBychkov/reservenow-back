@@ -5,7 +5,6 @@ import { RentalObject } from './entities/rental_object.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OrganizationService } from 'src/organization/organization.service';
-import { workingHoursValidation } from 'src/helpers/workingHoursValidation';
 import { StorageService } from 'src/storage/storage.service';
 
 @Injectable()
@@ -19,8 +18,6 @@ export class RentalObjectService {
 
   @UseInterceptors()
   async create(createRentalObjectDto: CreateRentalObjectDto): Promise<RentalObject> {
-    await workingHoursValidation(createRentalObjectDto);
-
     const { organizationId, ...rentalObject } = createRentalObjectDto;
     const organization = await this.organizationService.findOne(organizationId);
 
