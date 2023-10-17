@@ -8,12 +8,12 @@ import { User } from './entities/user.entity';
 import { AccountService } from 'src/account/account.service';
 import { TokenService } from 'src/token/token.service';
 import { Account, AccountStatus } from 'src/account/entities/account.entity';
-import ElementsQueryDto from './dto/query.dto';
 import FindAllUsersDto from './dto/find-all-users.dto';
 import CreateUserDto from './dto/create-user.dto';
 import { RoleService } from 'src/role/role.service';
 import UpdateUserDto from './dto/update-user.dto';
 import { StorageService } from 'src/storage/storage.service';
+import ElementsQueryDto from './dto/query.dto';
 
 @Injectable()
 export class UserService {
@@ -55,7 +55,7 @@ export class UserService {
       .getManyAndCount();
 
     return {
-      filters: { skip, limit, search, total: users[1], received: users.length },
+      filters: { skip, limit, search, total: users[1], received: users[0].length },
       data: users[0],
     };
   }

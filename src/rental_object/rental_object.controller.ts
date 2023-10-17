@@ -13,6 +13,7 @@ import {
   ParseFilePipe,
   UploadedFile,
   UseInterceptors,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -34,6 +35,7 @@ import { CreateRentalObjectDto } from './dto/create-rental_object.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { WorkingHoursValidationPipe } from 'src/pipes/workingHoursValidationPipe';
 import { imageSchema } from 'src/storage/image.schema';
+import ElementsQueryDto from './dto/query.dto';
 
 @ApiTags('RentalObject')
 @ApiBearerAuth()
@@ -53,8 +55,8 @@ export class RentalObjectController {
   @ApiOperation({ summary: 'Get all rental objects in the system' })
   @ApiOkResponse({ description: 'All rental objects have been received', type: [RentalObject] })
   @Get()
-  findAll() {
-    return this.rentalObjectService.findAll();
+  findAll(@Query() query: ElementsQueryDto) {
+    return this.rentalObjectService.findAll(query);
   }
 
   @ApiOperation({ summary: 'Get a rental object by its id' })

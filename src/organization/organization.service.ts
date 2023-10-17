@@ -86,4 +86,8 @@ export class OrganizationService {
 
     return { location: photo.location };
   }
+
+  getStatistics(id: number) {
+    return;
+  }
 }
