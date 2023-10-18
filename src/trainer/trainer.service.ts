@@ -9,7 +9,6 @@ import { RoleService } from 'src/role/role.service';
 import { Account } from 'src/account/entities/account.entity';
 import { TokenService } from 'src/token/token.service';
 import { StorageService } from 'src/storage/storage.service';
-import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class TrainerService {
@@ -105,13 +104,14 @@ export class TrainerService {
       `traineravatar/${id}/avatar.${file.originalname.split('.').pop()}`,
     );
 
-    await this.trainerRepository
+    const updated = await this.trainerRepository
       .createQueryBuilder()
-      .update(User)
+      .update(Trainer)
       .set({ image: image.location })
       .where('id = :id', { id })
+      .returning('*')
       .execute();
 
-    return { location: image.location };
+    return updated.raw;
   }
 }

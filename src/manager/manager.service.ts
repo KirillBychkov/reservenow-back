@@ -77,13 +77,14 @@ export class ManagerService {
       `manageravatar/${id}/avatar.${file.originalname.split('.').pop()}`,
     );
 
-    await this.managerRepository
+    const updated = await this.managerRepository
       .createQueryBuilder()
       .update(Manager)
       .set({ image: image.location })
       .where('id = :id', { id })
+      .returning('*')
       .execute();
 
-    return { location: image.location };
+    return updated.raw;
   }
 }
