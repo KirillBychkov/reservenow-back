@@ -96,13 +96,14 @@ export class RentalObjectService {
       `rentalobject/${id}/photo.${file.originalname.split('.').pop()}`,
     );
 
-    await this.rentalObjectsRepository
+    const updated = await this.rentalObjectsRepository
       .createQueryBuilder()
       .update(RentalObject)
       .set({ photo: photo.location })
       .where('id = :id', { id })
+      .returning('*')
       .execute();
 
-    return { location: photo.location };
+    return updated.raw;
   }
 }

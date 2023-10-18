@@ -10,6 +10,8 @@ import FindAllSupportRecordsDto from './dto/find-all-support-records.dto';
 
 @Injectable()
 export class SupportService {
+  storageService: any;
+  rentalObjectsRepository: any;
   constructor(
     @InjectRepository(Support) private readonly supportReposity: Repository<Support>,
     private readonly userService: UserService,
@@ -77,5 +79,25 @@ export class SupportService {
 
     await this.supportReposity.delete({ id });
     return;
+  }
+
+  async uploadImage(id: number, file: Express.Multer.File) {
+    const { file: oldPhoto } = await this.findOne(id);
+
+    if (oldPhoto !== null) {
+      await this.storageService.s3_delete(new URL(oldPhoto));
+    }
+
+    const photo = await this.storageService.s3_upload(file, `support/${id}/${file.originalname}`);
+
+    const updated = await this.rentalObjectsRepository
+      .createQueryBuilder()
+      .update(Support)
+      .set({ photo: photo.location })
+      .where('id = :id', { id })
+      .returning('*')
+      .execute();
+
+    return updated.raw;
   }
 }

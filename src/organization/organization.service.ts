@@ -4,7 +4,6 @@ import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Organization } from './entities/organization.entity';
-import { RentalObject } from 'src/rental_object/entities/rental_object.entity';
 import { StorageService } from 'src/storage/storage.service';
 
 @Injectable()
@@ -77,17 +76,14 @@ export class OrganizationService {
       `organization/${id}/avatar.${file.originalname.split('.').pop()}`,
     );
 
-    await this.organizationRepository
+    const updated = await this.organizationRepository
       .createQueryBuilder()
-      .update(RentalObject)
+      .update(Organization)
       .set({ photo: photo.location })
       .where('id = :id', { id })
+      .returning('*')
       .execute();
 
-    return { location: photo.location };
-  }
-
-  getStatistics(id: number) {
-    return;
+    return updated.raw;
   }
 }
