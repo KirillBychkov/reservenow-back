@@ -11,9 +11,15 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  FileTypeValidator,
+  ParseFilePipe,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
@@ -27,6 +33,8 @@ import { RolesGuard } from 'src/role/role.guard';
 import { Permissions } from 'src/role/role.decorator';
 import { Support } from './entities/support.entity';
 import ElementsQueryDto from 'src/user/dto/query.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { imageSchema } from 'src/storage/image.schema';
 
 @ApiTags('Support')
 @ApiBearerAuth()
@@ -70,5 +78,22 @@ export class SupportController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.supportService.remove(+id);
+  }
+
+  @ApiOperation({ summary: 'Create a new image for the support_record' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody(imageSchema)
+  @Post('/upload/image/:id')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadImage(
+    @Param('id') id: string,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new FileTypeValidator({ fileType: '.(jpg|png|jpeg)' })],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return this.supportService.uploadImage(+id, file);
   }
 }
