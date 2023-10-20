@@ -15,6 +15,7 @@ import {
   ParseFilePipe,
   UploadedFile,
   UseInterceptors,
+  MaxFileSizeValidator,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -35,6 +36,7 @@ import { Support } from './entities/support.entity';
 import ElementsQueryDto from 'src/user/dto/query.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { imageSchema } from 'src/storage/image.schema';
+import FindAllSupportRecordsDto from './dto/find-all-support-records.dto';
 
 @ApiTags('Support')
 @ApiBearerAuth()
@@ -52,7 +54,10 @@ export class SupportController {
   }
 
   @ApiOperation({ summary: 'Get all support records in the system' })
-  @ApiOkResponse({ description: 'All support records have been received', type: [Support] })
+  @ApiOkResponse({
+    description: 'All support records have been received',
+    type: FindAllSupportRecordsDto,
+  })
   @Get()
   findAll(@Query() queryDto: ElementsQueryDto) {
     return this.supportService.findAll(queryDto);
@@ -89,7 +94,10 @@ export class SupportController {
     @Param('id') id: string,
     @UploadedFile(
       new ParseFilePipe({
-        validators: [new FileTypeValidator({ fileType: '.(jpg|png|jpeg)' })],
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 20000 }),
+          new FileTypeValidator({ fileType: '.(jpg|png|jpeg)' }),
+        ],
       }),
     )
     file: Express.Multer.File,
