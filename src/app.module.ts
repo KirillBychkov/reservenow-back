@@ -22,6 +22,8 @@ import { StorageModule } from './storage/storage.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggingInterceptor } from './logging/logging.interceptor';
 import { Log } from './logging/entities/log.entity';
+import { LoggingController } from './logging/logging.controller';
+import { LoggingService } from './logging/logging.service';
 
 @Module({
   imports: [
@@ -51,6 +53,8 @@ import { Log } from './logging/entities/log.entity';
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
     },
+    LoggingService,
   ],
+  controllers: [LoggingController],
 })
 export class AppModule {}

@@ -19,8 +19,8 @@ export class Equipment {
   @Column()
   name: string;
 
-  @Column()
-  description: string;
+  @Column({ nullable: true })
+  description?: string;
 
   @Column()
   price_per_hour: number;

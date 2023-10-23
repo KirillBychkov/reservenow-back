@@ -29,7 +29,7 @@ export class Client {
   phone: string;
 
   @Column({ nullable: true })
-  description: string;
+  description?: string;
 
   @OneToOne(() => Account, { nullable: true })
   @JoinColumn()
