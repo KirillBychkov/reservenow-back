@@ -14,6 +14,7 @@ import {
   UploadedFile,
   UseInterceptors,
   Query,
+  MaxFileSizeValidator,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -90,7 +91,10 @@ export class RentalObjectController {
     @Param('id') id: string,
     @UploadedFile(
       new ParseFilePipe({
-        validators: [new FileTypeValidator({ fileType: '.(jpg|png|jpeg)' })],
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 20000 }),
+          new FileTypeValidator({ fileType: '.(jpg|png|jpeg)' }),
+        ],
       }),
     )
     file: Express.Multer.File,
