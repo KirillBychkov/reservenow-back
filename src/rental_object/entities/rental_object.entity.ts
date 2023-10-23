@@ -16,7 +16,7 @@ export class RentalObject {
   @Column('int')
   price_per_hour: number;
 
-  @ManyToOne(() => Organization, (organization) => organization.id)
+  @ManyToOne(() => Organization, (organization) => organization.rental_objects)
   organization: Organization;
 
   @Column()

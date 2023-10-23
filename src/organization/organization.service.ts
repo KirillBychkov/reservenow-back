@@ -5,6 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Organization } from './entities/organization.entity';
 import { StorageService } from 'src/storage/storage.service';
+import { Reservation } from 'src/reservation/entities/reservation.entity';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class OrganizationService {
@@ -85,5 +87,33 @@ export class OrganizationService {
       .execute();
 
     return updated.raw;
+  }
+
+  async getStatistics(id: number) {
+    const organization = await this.organizationRepository
+      .createQueryBuilder('organization')
+      .leftJoinAndSelect('organization.rental_objects', 'rental_object')
+      .leftJoinAndSelect('organization.reservations', 'reservation')
+      .where('organization.id = :id', { id })
+      .getOne();
+
+    let totalReservationsSum = 0;
+    let totalReservationsAmount = 0;
+    let totalMinutes = 0;
+
+    organization.reservations.forEach((reservation) => {
+      const reservation_time_end = DateTime.fromJSDate(reservation.reservation_time_end);
+      const reservation_time_start = DateTime.fromJSDate(reservation.reservation_time_start);
+
+      totalMinutes += reservation_time_end.diff(reservation_time_start).as('minutes');
+      totalReservationsSum += reservation.price;
+      totalReservationsAmount++;
+    });
+
+    console.log(organization.reservations);
+
+    console.log({ totalReservationsSum, totalReservationsAmount, totalMinutes });
+
+    return;
   }
 }

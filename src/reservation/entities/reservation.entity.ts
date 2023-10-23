@@ -22,13 +22,13 @@ export class Reservation {
   user: User;
 
   @ManyToOne(() => Trainer, (trainer) => trainer.id, { nullable: true })
-  trainer: Trainer;
+  trainer?: Trainer;
 
   @ManyToOne(() => RentalObject, (rentalObject) => rentalObject.id, { nullable: true })
-  rental_object: RentalObject;
+  rental_object?: RentalObject;
 
   @ManyToOne(() => Equipment, (equipment) => equipment.id, { nullable: true })
-  equipment: Equipment;
+  equipment?: Equipment;
 
   @ManyToOne(() => Organization, (organization) => organization.id)
   organization: RentalObject;
@@ -40,7 +40,7 @@ export class Reservation {
   reservation_time_end: Date;
 
   @Column('text', { nullable: true })
-  description: string;
+  description?: string;
 
   @Column()
   price: number;
