@@ -18,8 +18,8 @@ export class LoggingInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap({
-        next: (body) => {
-          log.message = JSON.stringify(body);
+        next: () => {
+          log.message = 'fine';
           this.logRepository.save(log);
         },
         error: (error) => {
