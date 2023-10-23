@@ -19,6 +19,9 @@ import { TrainerModule } from './trainer/trainer.module';
 import { OrderModule } from './order/order.module';
 import { ClientModule } from './client/client.module';
 import { StorageModule } from './storage/storage.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { LoggingInterceptor } from './logging/logging.interceptor';
+import { Log } from './logging/entities/log.entity';
 
 @Module({
   imports: [
@@ -35,12 +38,19 @@ import { StorageModule } from './storage/storage.module';
     RentalObjectModule,
     ManagerModule,
     ScheduleModule.forRoot(),
+    TypeOrmModule.forFeature([Log]),
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({ useFactory: () => dataSourceOptions }),
     TrainerModule,
     OrderModule,
     ClientModule,
     StorageModule,
+  ],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
+    },
   ],
 })
 export class AppModule {}

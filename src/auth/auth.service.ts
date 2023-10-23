@@ -40,6 +40,8 @@ export class AuthService {
       await this.tokenService.updateToken(account.id, token);
     }
 
+    delete account.password;
+
     return { access_token, refresh_token, account };
   }
 

@@ -24,6 +24,7 @@ import {
   ParseFilePipe,
   UploadedFile,
   UseInterceptors,
+  MaxFileSizeValidator,
 } from '@nestjs/common';
 import { ManagerService } from './manager.service';
 import { CreateManagerDto } from './dto/create-manager.dto';
@@ -88,7 +89,10 @@ export class ManagerController {
     @Param('id') id: string,
     @UploadedFile(
       new ParseFilePipe({
-        validators: [new FileTypeValidator({ fileType: '.(jpg|png|jpeg)' })],
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 20000 }),
+          new FileTypeValidator({ fileType: '.(jpg|png|jpeg)' }),
+        ],
       }),
     )
     file: Express.Multer.File,

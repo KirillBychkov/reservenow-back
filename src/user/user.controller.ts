@@ -19,11 +19,11 @@ import {
   ApiBearerAuth,
   ApiOperation,
   ApiTags,
-  ApiCreatedResponse,
   ApiOkResponse,
   ApiNoContentResponse,
   ApiBody,
   ApiConsumes,
+  ApiCreatedResponse,
 } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { Response } from 'express';
@@ -66,16 +66,7 @@ export class UserController {
     },
   })
   @Post()
-  @UseInterceptors(FileInterceptor('file'))
-  create(
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 })],
-      }),
-    )
-    @Body()
-    createUserDto: CreateUserDto,
-  ) {
+  create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
@@ -118,7 +109,10 @@ export class UserController {
     @Param('id') id: string,
     @UploadedFile(
       new ParseFilePipe({
-        validators: [new FileTypeValidator({ fileType: '.(jpg|png|jpeg)' })],
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 20000 }),
+          new FileTypeValidator({ fileType: '.(jpg|png|jpeg)' }),
+        ],
       }),
     )
     file: Express.Multer.File,

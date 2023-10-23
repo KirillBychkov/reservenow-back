@@ -12,6 +12,7 @@ import {
   ParseFilePipe,
   UploadedFile,
   UseInterceptors,
+  MaxFileSizeValidator,
 } from '@nestjs/common';
 import { TrainerService } from './trainer.service';
 import { CreateTrainerDto } from './dto/create-trainer.dto';
@@ -89,7 +90,10 @@ export class TrainerController {
     @Param('id') id: string,
     @UploadedFile(
       new ParseFilePipe({
-        validators: [new FileTypeValidator({ fileType: '.(jpg|png|jpeg)' })],
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 20000 }),
+          new FileTypeValidator({ fileType: '.(jpg|png|jpeg)' }),
+        ],
       }),
     )
     file: Express.Multer.File,
