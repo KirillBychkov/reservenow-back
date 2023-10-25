@@ -13,6 +13,7 @@ import {
   UploadedFile,
   UseInterceptors,
   MaxFileSizeValidator,
+  Query,
 } from '@nestjs/common';
 import { OrganizationService } from './organization.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
@@ -66,6 +67,13 @@ export class OrganizationController {
     return this.organizationService.findAll();
   }
 
+  @ApiOperation({ summary: "Get all users's organizations in the system" })
+  @Get(':userId')
+  @ApiFoundResponse({ description: 'All organizations have been received', type: [Organization] })
+  findAllByUser(@Param('userId') userId: string) {
+    return this.organizationService.findAllByUser(+userId);
+  }
+
   @ApiOperation({ summary: 'Get an organization by its id' })
   @Get(':id')
   @ApiFoundResponse({ description: 'The organization has been received', type: Organization })
@@ -109,7 +117,7 @@ export class OrganizationController {
 
   @ApiOperation({ summary: 'Get statistics of the organization' })
   @Get('/statistics/:id')
-  getStatistics(@Param('id') id: string) {
-    return this.organizationService.getStatistics(+id);
+  getStatistics(@Param('id') id: string, @Query() days: number) {
+    return this.organizationService.getStatistics(+id, days);
   }
 }

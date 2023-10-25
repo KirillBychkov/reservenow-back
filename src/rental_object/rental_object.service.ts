@@ -54,6 +54,35 @@ export class RentalObjectService {
     };
   }
 
+  async findAllByOrganization(
+    organizationId: number,
+    query: ElementsQueryDto,
+  ): Promise<FindAllRentalObjectsDto> {
+    const { search, limit, sort, skip } = query;
+    const sortFilters = (sort === undefined ? 'created_at:1' : sort).split(':');
+
+    const rental_objects = await this.rentalObjectsRepository
+      .createQueryBuilder('rental_object')
+      .leftJoinAndSelect('rental_object.organization', 'organization')
+      .where('rental_object.name ILIKE :search', { search: `%${search ?? ''}%` })
+      .andWhere('rental_object.organization.id = :organizationId', { organizationId })
+      .orderBy(`rental_object.${sortFilters[0]}`, sortFilters[1] === '1' ? 'ASC' : 'DESC')
+      .skip(skip ?? 0)
+      .take(limit ?? 10)
+      .getManyAndCount();
+
+    return {
+      filters: {
+        skip,
+        limit,
+        search,
+        total: rental_objects[1],
+        received: rental_objects[0].length,
+      },
+      data: rental_objects[0],
+    };
+  }
+
   async findOne(id: number): Promise<RentalObject> {
     const rentalObject = this.rentalObjectsRepository.findOneBy({ id });
     if (!rentalObject) throw new ConflictException(`Rental object with id ${id} does not exist`);
