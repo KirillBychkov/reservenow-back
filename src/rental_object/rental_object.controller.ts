@@ -60,6 +60,16 @@ export class RentalObjectController {
     return this.rentalObjectService.findAll(query);
   }
 
+  @ApiOperation({ summary: "Get all user's rental objects in the system" })
+  @ApiOkResponse({ description: 'All rental objects have been received', type: [RentalObject] })
+  @Get(':organizationId')
+  findAllByOrganization(
+    @Param('organizationId') organizationId: string,
+    @Query() query: ElementsQueryDto,
+  ) {
+    return this.rentalObjectService.findAllByOrganization(+organizationId, query);
+  }
+
   @ApiOperation({ summary: 'Get a rental object by its id' })
   @ApiOkResponse({ description: 'The rental object has been received', type: RentalObject })
   @Get(':id')

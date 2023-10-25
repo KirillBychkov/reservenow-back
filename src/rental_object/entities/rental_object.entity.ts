@@ -16,7 +16,9 @@ export class RentalObject {
   @Column('int')
   price_per_hour: number;
 
-  @ManyToOne(() => Organization, (organization) => organization.rental_objects)
+  @ManyToOne(() => Organization, (organization) => organization.rental_objects, {
+    onDelete: 'CASCADE',
+  })
   organization: Organization;
 
   @Column()

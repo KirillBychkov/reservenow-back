@@ -7,14 +7,14 @@ import { Support } from './entities/support.entity';
 import { UserService } from 'src/user/user.service';
 import ElementsQueryDto from 'src/user/dto/query.dto';
 import FindAllSupportRecordsDto from './dto/find-all-support-records.dto';
+import { StorageService } from 'src/storage/storage.service';
 
 @Injectable()
 export class SupportService {
-  storageService: any;
-  rentalObjectsRepository: any;
   constructor(
     @InjectRepository(Support) private readonly supportReposity: Repository<Support>,
     private readonly userService: UserService,
+    private readonly storageService: StorageService,
   ) {}
 
   async create(user_id: number, createSupportDto: CreateSupportDto): Promise<Support> {
@@ -90,10 +90,10 @@ export class SupportService {
 
     const photo = await this.storageService.s3_upload(file, `support/${id}/${file.originalname}`);
 
-    const updated = await this.rentalObjectsRepository
+    const updated = await this.supportReposity
       .createQueryBuilder()
       .update(Support)
-      .set({ photo: photo.location })
+      .set({ file: photo.location })
       .where('id = :id', { id })
       .returning('*')
       .execute();
