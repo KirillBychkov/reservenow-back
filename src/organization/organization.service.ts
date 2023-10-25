@@ -5,7 +5,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Organization } from './entities/organization.entity';
 import { StorageService } from 'src/storage/storage.service';
-import { Reservation } from 'src/reservation/entities/reservation.entity';
 import { DateTime } from 'luxon';
 
 @Injectable()
@@ -29,6 +28,16 @@ export class OrganizationService {
     const organization = this.organizationRepository
       .createQueryBuilder('organization')
       .leftJoinAndSelect('organization.user', 'user')
+      .getMany();
+
+    return organization;
+  }
+
+  async findAllByUser(userId: number): Promise<Organization[]> {
+    const organization = await this.organizationRepository
+      .createQueryBuilder('organization')
+      .leftJoinAndSelect('organization.user', 'user')
+      .where('user.id = :id', { id: userId })
       .getMany();
 
     return organization;
@@ -89,12 +98,15 @@ export class OrganizationService {
     return updated.raw;
   }
 
-  async getStatistics(id: number) {
+  async getStatistics(id: number, days: number) {
     const organization = await this.organizationRepository
       .createQueryBuilder('organization')
       .leftJoinAndSelect('organization.rental_objects', 'rental_object')
       .leftJoinAndSelect('organization.reservations', 'reservation')
       .where('organization.id = :id', { id })
+      .andWhere('reservation.created_at < :date', {
+        date: new Date(new Date().getTime() - days * 24 * 60 * 60 * 1000),
+      })
       .getOne();
 
     let totalReservationsSum = 0;
