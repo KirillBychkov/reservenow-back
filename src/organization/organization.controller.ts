@@ -29,6 +29,7 @@ import {
   ApiOperation,
   ApiConsumes,
   ApiBody,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { Permissions } from 'src/role/role.decorator';
 import { RolesGuard } from 'src/role/role.guard';
@@ -116,8 +117,14 @@ export class OrganizationController {
   }
 
   @ApiOperation({ summary: 'Get statistics of the organization' })
+  @ApiQuery({ name: 'start_date', required: false, type: String })
+  @ApiQuery({ name: 'end_date', required: false, type: String })
   @Get('/statistics/:id')
-  getStatistics(@Param('id') id: string, @Query() days: number) {
-    return this.organizationService.getStatistics(+id, days);
+  getStatistics(
+    @Param('id') id: string,
+    @Query('start_date') start_date?: string,
+    @Query('end_date') end_date?: string,
+  ) {
+    return this.organizationService.getStatistics(+id, start_date, end_date);
   }
 }
