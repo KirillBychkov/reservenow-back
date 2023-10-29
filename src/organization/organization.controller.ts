@@ -14,6 +14,7 @@ import {
   UseInterceptors,
   MaxFileSizeValidator,
   Query,
+  Put,
 } from '@nestjs/common';
 import { OrganizationService } from './organization.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
@@ -39,7 +40,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { WorkingHoursValidationPipe } from 'src/pipes/workingHoursValidationPipe';
 import { imageSchema } from 'src/storage/image.schema';
 
-// TODO: Configure roles
 @ApiTags('Organization')
 @ApiBearerAuth()
 @Permissions('organization')
@@ -99,7 +99,7 @@ export class OrganizationController {
   @ApiOperation({ summary: 'Create a new image for the organization' })
   @ApiConsumes('multipart/form-data')
   @ApiBody(imageSchema)
-  @Post('/upload/image/:id')
+  @Put('/upload/image/:id')
   @UseInterceptors(FileInterceptor('file'))
   uploadImage(
     @Param('id') id: string,

@@ -1,11 +1,12 @@
 import * as bcrypt from 'bcrypt';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AccountService } from 'src/account/account.service';
-import { Account } from 'src/account/entities/account.entity';
+import { Account, AccountStatus } from 'src/account/entities/account.entity';
 import { TokenService } from 'src/token/token.service';
 import SignInDTO from './dto/signin.dto';
 import { DateTime } from 'luxon';
 import AuthDto from './dto/auth.dto';
+import ConfirmPasswordDto from 'src/password/dto/confirm-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -43,6 +44,27 @@ export class AuthService {
     delete account.password;
 
     return { access_token, refresh_token, account };
+  }
+
+  async verify(body: ConfirmPasswordDto, payload: any) {
+    const hashedPass = await bcrypt.hash(body.new_password, 10);
+
+    await this.accountService.update(payload.id, { password: hashedPass });
+
+    const [access_token, refresh_token] = await Promise.all([
+      this.tokenService.generateToken(payload, process.env.SECRET, 60 * 15),
+      this.tokenService.generateToken(payload, process.env.REFRESH_SECRET, 60 * 60),
+    ]);
+
+    await this.accountService.update(payload.id, { status: AccountStatus.ACTIVE });
+
+    await this.tokenService.updateToken(payload.id, {
+      access_token,
+      refresh_token,
+      verify_token: null,
+    });
+
+    return { access_token, refresh_token, account: payload };
   }
 
   async logout(id) {

@@ -16,6 +16,7 @@ import {
   UploadedFile,
   UseInterceptors,
   MaxFileSizeValidator,
+  Put,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -88,7 +89,7 @@ export class SupportController {
   @ApiOperation({ summary: 'Create a new image for the support_record' })
   @ApiConsumes('multipart/form-data')
   @ApiBody(imageSchema)
-  @Post('/upload/image/:id')
+  @Put('/upload/image/:id')
   @UseInterceptors(FileInterceptor('file'))
   uploadImage(
     @Param('id') id: string,

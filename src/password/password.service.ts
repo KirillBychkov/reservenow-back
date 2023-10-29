@@ -5,12 +5,14 @@ import { TokenService } from 'src/token/token.service';
 import ChangeDto from './dto/change-password.dto';
 import ConfirmPasswordDto from './dto/confirm-password.dto';
 import { AccountStatus } from 'src/account/entities/account.entity';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class PasswordService {
   constructor(
     private readonly accountService: AccountService,
     private readonly tokenService: TokenService,
+    private readonly mailService: MailService,
   ) {}
 
   async changePassword(id: number, body: ChangeDto) {
@@ -33,6 +35,14 @@ export class PasswordService {
     );
 
     await this.tokenService.updateToken(account.id, { reset_token });
+
+    await this.mailService.sendMail(
+      email,
+      'Password reset',
+      '<p>Click <a href="http://127.0.0.1:5173/reset-password?reset_token=' +
+        reset_token +
+        '">here</a> to reset your password</p>',
+    );
 
     return { reset_token };
   }

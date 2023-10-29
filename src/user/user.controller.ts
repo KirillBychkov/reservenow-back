@@ -14,6 +14,7 @@ import {
   MaxFileSizeValidator,
   ParseFilePipe,
   FileTypeValidator,
+  Put,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -103,7 +104,7 @@ export class UserController {
   @ApiOperation({ summary: 'Create a new avatar for the user' })
   @ApiConsumes('multipart/form-data')
   @ApiBody(imageSchema)
-  @Post('/upload/image/:id')
+  @Put('/upload/image/:id')
   @UseInterceptors(FileInterceptor('file'))
   uploadImage(
     @Param('id') id: string,
