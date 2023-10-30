@@ -7,12 +7,14 @@ export class VtStrategy extends PassportStrategy(Strategy, 'jwt-verify') {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.REFRESH_SECRET,
-      passReqToCallback: true,
+      secretOrKey: process.env.VERIFY_SECRET,
     });
   }
 
   validate(payload: any) {
+    delete payload.exp;
+    delete payload.iat;
+    console.log(payload);
     return payload;
   }
 }

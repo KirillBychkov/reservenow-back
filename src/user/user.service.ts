@@ -14,16 +14,19 @@ import { RoleService } from 'src/role/role.service';
 import UpdateUserDto from './dto/update-user.dto';
 import { StorageService } from 'src/storage/storage.service';
 import ElementsQueryDto from './dto/query.dto';
+import { DateTime } from 'luxon';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
-    private dataSource: DataSource,
-    private accountService: AccountService,
-    private tokenService: TokenService,
-    private roleService: RoleService,
-    private storageService: StorageService,
+    private readonly dataSource: DataSource,
+    private readonly accountService: AccountService,
+    private readonly tokenService: TokenService,
+    private readonly roleService: RoleService,
+    private readonly storageService: StorageService,
+    private readonly mailService: MailService,
   ) {}
 
   async findOne(id: number): Promise<User> {
@@ -100,13 +103,25 @@ export class UserService {
       const account = await queryRunner.manager.save(Account, { email, role, user: newUser });
       await queryRunner.commitTransaction();
 
-      const reset_token = await this.tokenService.generateToken(
+      const verify_token = await this.tokenService.generateToken(
         { id: account.id, email: account.email },
-        process.env.RESET_SECRET,
+        process.env.VERIFY_SECRET,
         60 * 60,
       );
 
-      return { reset_token };
+      this.tokenService.updateToken(account.id, {
+        verify_token,
+        expires_at: DateTime.utc().plus({ minutes: 60 }).toISO().slice(0, -1),
+      });
+
+      this.mailService.sendMail(
+        account.email,
+        'Verify your account',
+        '<p>Click <a href="http://127.0.0.1:5173/activate-account?verify_token=' +
+          verify_token +
+          '">here</a> to reset your password</p>',
+      );
+      return { verify_token };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       return error;
