@@ -14,6 +14,7 @@ import {
   UseInterceptors,
   MaxFileSizeValidator,
   Query,
+  Put,
 } from '@nestjs/common';
 import { OrganizationService } from './organization.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
@@ -29,6 +30,7 @@ import {
   ApiOperation,
   ApiConsumes,
   ApiBody,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { Permissions } from 'src/role/role.decorator';
 import { RolesGuard } from 'src/role/role.guard';
@@ -38,7 +40,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { WorkingHoursValidationPipe } from 'src/pipes/workingHoursValidationPipe';
 import { imageSchema } from 'src/storage/image.schema';
 
-// TODO: Configure roles
 @ApiTags('Organization')
 @ApiBearerAuth()
 @Permissions('organization')
@@ -98,7 +99,7 @@ export class OrganizationController {
   @ApiOperation({ summary: 'Create a new image for the organization' })
   @ApiConsumes('multipart/form-data')
   @ApiBody(imageSchema)
-  @Post('/upload/image/:id')
+  @Put('/upload/image/:id')
   @UseInterceptors(FileInterceptor('file'))
   uploadImage(
     @Param('id') id: string,
@@ -116,8 +117,14 @@ export class OrganizationController {
   }
 
   @ApiOperation({ summary: 'Get statistics of the organization' })
+  @ApiQuery({ name: 'start_date', required: false, type: String })
+  @ApiQuery({ name: 'end_date', required: false, type: String })
   @Get('/statistics/:id')
-  getStatistics(@Param('id') id: string, @Query() days: number) {
-    return this.organizationService.getStatistics(+id, days);
+  getStatistics(
+    @Param('id') id: string,
+    @Query('start_date') start_date?: string,
+    @Query('end_date') end_date?: string,
+  ) {
+    return this.organizationService.getStatistics(+id, start_date, end_date);
   }
 }

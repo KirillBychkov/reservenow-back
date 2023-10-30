@@ -8,10 +8,11 @@ import { AtStrategy } from './strategies/at.strategy';
 import { RstStrategy } from './strategies/rst.strategy';
 import { TokenController } from './token.controller';
 import { AccountModule } from 'src/account/account.module';
+import { VtStrategy } from './strategies/vt.strategy';
 
 @Module({
   imports: [AccountModule, JwtModule, TypeOrmModule.forFeature([Token])],
-  providers: [TokenService, RtStrategy, AtStrategy, RstStrategy],
+  providers: [TokenService, RtStrategy, AtStrategy, RstStrategy, VtStrategy],
   exports: [TokenService],
   controllers: [TokenController],
 })

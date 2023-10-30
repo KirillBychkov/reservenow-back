@@ -13,6 +13,7 @@ import {
   UploadedFile,
   UseInterceptors,
   MaxFileSizeValidator,
+  Put,
 } from '@nestjs/common';
 import { TrainerService } from './trainer.service';
 import { CreateTrainerDto } from './dto/create-trainer.dto';
@@ -84,7 +85,7 @@ export class TrainerController {
   @ApiOperation({ summary: 'Create a new avatar for the trainer' })
   @ApiConsumes('multipart/form-data')
   @ApiBody(imageSchema)
-  @Post('/upload/image/:id')
+  @Put('/upload/image/:id')
   @UseInterceptors(FileInterceptor('file'))
   uploadImage(
     @Param('id') id: string,

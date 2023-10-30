@@ -15,6 +15,8 @@ export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
     delete payload.exp;
     delete payload.iat;
 
+    console.log(payload);
+
     return payload;
   }
 }

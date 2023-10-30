@@ -22,6 +22,7 @@ import { AuthGuard } from '@nestjs/passport';
 import SignInDTO from './dto/signin.dto';
 import AuthDto from './dto/auth.dto';
 import { Account } from 'src/account/entities/account.entity';
+import ConfirmPasswordDto from 'src/password/dto/confirm-password.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -46,10 +47,10 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Verify email by the token' })
   @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
-  @Get('verify')
-  verify() {
-    return '/auth/verify';
+  @UseGuards(AuthGuard('jwt-verify'))
+  @Post('verify')
+  verify(@Request() req, @Body() body: ConfirmPasswordDto) {
+    return this.authService.verify(body, req.user);
   }
 
   @ApiOperation({ summary: 'Log out from the account' })

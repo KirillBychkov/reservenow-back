@@ -25,6 +25,7 @@ import {
   UploadedFile,
   UseInterceptors,
   MaxFileSizeValidator,
+  Put,
 } from '@nestjs/common';
 import { ManagerService } from './manager.service';
 import { CreateManagerDto } from './dto/create-manager.dto';
@@ -83,7 +84,7 @@ export class ManagerController {
   @ApiOperation({ summary: 'Create a new avatar for the manager' })
   @ApiConsumes('multipart/form-data')
   @ApiBody(imageSchema)
-  @Post('/upload/image/:id')
+  @Put('/upload/image/:id')
   @UseInterceptors(FileInterceptor('file'))
   uploadImage(
     @Param('id') id: string,

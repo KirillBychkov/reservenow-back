@@ -15,6 +15,7 @@ import {
   UseInterceptors,
   Query,
   MaxFileSizeValidator,
+  Put,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -95,7 +96,7 @@ export class RentalObjectController {
   @ApiOperation({ summary: 'Create a new image for the rental object' })
   @ApiConsumes('multipart/form-data')
   @ApiBody(imageSchema)
-  @Post('/upload/image/:id')
+  @Put('/upload/image/:id')
   @UseInterceptors(FileInterceptor('file'))
   uploadImage(
     @Param('id') id: string,

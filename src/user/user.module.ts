@@ -7,9 +7,11 @@ import { AccountModule } from 'src/account/account.module';
 import { TokenModule } from 'src/token/token.module';
 import { RoleModule } from 'src/role/role.module';
 import { StorageModule } from 'src/storage/storage.module';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   imports: [
+    MailModule,
     RoleModule,
     StorageModule,
     TokenModule,
