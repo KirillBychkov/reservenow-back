@@ -20,15 +20,15 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RoleService } from './role.service';
-import RoleDto from './dto/role.dto';
+import RoleDto from './dto/creete-role.dto';
 import { Role } from './entities/role.entity';
-import { RolesGuard } from './role.guard';
-import { Permissions } from './role.decorator';
+import { AbilitiesGuard } from './abilities.guard';
+import { checkAbilites } from './abilities.decorator';
 
 @ApiTags('Role')
 @ApiBearerAuth()
-@Permissions('role')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@checkAbilites({ action: 'manage', subject: 'role' })
+@UseGuards(AuthGuard('jwt'), AbilitiesGuard)
 @Controller('role')
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}

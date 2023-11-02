@@ -30,19 +30,17 @@ import {
 import { RentalObjectService } from './rental_object.service';
 import { UpdateRentalObjectDto } from './dto/update-rental_object.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { Permissions } from 'src/role/role.decorator';
-import { RolesGuard } from 'src/role/role.guard';
 import { RentalObject } from './entities/rental_object.entity';
 import { CreateRentalObjectDto } from './dto/create-rental_object.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { WorkingHoursValidationPipe } from 'src/pipes/workingHoursValidationPipe';
 import { imageSchema } from 'src/storage/image.schema';
 import ElementsQueryDto from './dto/query.dto';
+import { AbilitiesGuard } from 'src/role/abilities.guard';
 
 @ApiTags('RentalObject')
 @ApiBearerAuth()
-@Permissions('rental_object')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(AuthGuard('jwt'), AbilitiesGuard)
 @Controller('rental_object')
 export class RentalObjectController {
   constructor(private readonly rentalObjectService: RentalObjectService) {}

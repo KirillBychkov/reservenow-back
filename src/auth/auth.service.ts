@@ -19,13 +19,23 @@ export class AuthService {
     const { email, password } = signInDTO;
     const numberOfAccounts = await this.accountService.getCount();
 
+    console.log(numberOfAccounts);
+
     if (numberOfAccounts === 0) await this.accountService.createSuperUserAccount(email, password);
     const account: Account = await this.accountService.getAccount(null, email, true);
 
     if (!(await bcrypt.compare(password, account.password)))
       throw new UnauthorizedException('Wrong password');
 
-    const payload = { id: account.id, email: account.email, user_id: account.user?.id };
+    const payload = {
+      id: account.id,
+      email: account.email,
+      user_id: account.user?.id,
+      role_id: account.role?.id,
+    };
+
+    console.log(payload);
+
     const [access_token, refresh_token] = await Promise.all([
       this.tokenService.generateToken(payload, process.env.SECRET, 60 * 15),
       this.tokenService.generateToken(payload, process.env.REFRESH_SECRET, 60 * 60 * 24 * 15),

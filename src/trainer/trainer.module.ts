@@ -8,12 +8,14 @@ import { AccountModule } from 'src/account/account.module';
 import { RoleModule } from 'src/role/role.module';
 import { TokenModule } from 'src/token/token.module';
 import { StorageModule } from 'src/storage/storage.module';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   imports: [
     TokenModule,
     RoleModule,
     StorageModule,
+    MailModule,
     UserModule,
     AccountModule,
     TypeOrmModule.forFeature([Trainer]),

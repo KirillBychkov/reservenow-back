@@ -32,8 +32,6 @@ import UserDTO from './dto/update-user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import ElementsQueryDto from './dto/query.dto';
 import { User } from './entities/user.entity';
-import { Permissions } from 'src/role/role.decorator';
-import { RolesGuard } from 'src/role/role.guard';
 import CreateUserDto from './dto/create-user.dto';
 import FindAllUsersDto from './dto/find-all-users.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -41,8 +39,9 @@ import { imageSchema } from 'src/storage/image.schema';
 
 @ApiTags('Users')
 @ApiBearerAuth()
-@Permissions('users')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+// @Permissions('users')
+// @UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(AuthGuard('jwt'))
 @Controller('users')
 export class UserController {
   constructor(private userService: UserService) {}

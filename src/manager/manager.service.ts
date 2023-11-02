@@ -3,31 +3,68 @@ import { CreateManagerDto } from './dto/create-manager.dto';
 import { UpdateManagerDto } from './dto/update-manager.dto';
 import { Manager } from './entities/manager.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { UserService } from 'src/user/user.service';
+import { DataSource, Repository } from 'typeorm';
 import { StorageService } from 'src/storage/storage.service';
+import { AccountService } from 'src/account/account.service';
+import { RoleService } from 'src/role/role.service';
+import { TokenService } from 'src/token/token.service';
+import { Account } from 'src/account/entities/account.entity';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class ManagerService {
   constructor(
     @InjectRepository(Manager) private readonly managerRepository: Repository<Manager>,
-    private readonly userService: UserService,
+    private readonly mailService: MailService,
+    private readonly dataSource: DataSource,
+    private readonly accountService: AccountService,
+    private readonly roleService: RoleService,
     private readonly storageService: StorageService,
+    private readonly tokenService: TokenService,
   ) {}
 
-  async create(accountId, createManagerDto: CreateManagerDto): Promise<Manager> {
-    const { user_id, ...createManager } = createManagerDto;
+  async create(userId: number, createManagerDto: CreateManagerDto): Promise<any> {
+    const { email, ...manager } = createManagerDto;
+    await this.accountService.checkEmail(email);
 
-    await this.userService.findOne(user_id);
-    if (!(await this.managerRepository.findOne({ where: { user: { id: user_id } } })))
-      throw new ConflictException('Manager for the user already exists');
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    const newManager = await this.managerRepository.insert({
-      user: { id: user_id },
-      ...createManager,
-    });
+    try {
+      const [newManager, role] = await Promise.all([
+        queryRunner.manager.save(Manager, {
+          user: { id: userId },
+          ...manager,
+        }),
+        this.roleService.getByName('trainer'),
+      ]);
 
-    return newManager.raw;
+      const account = await queryRunner.manager.save(Account, {
+        email,
+        role,
+        trainer: newManager,
+      });
+      await queryRunner.commitTransaction();
+
+      const verify_token = await this.tokenService.generateToken(
+        { id: account.id, email: account.email },
+        process.env.VERIFY_TOKEN,
+        60 * 60,
+      );
+
+      this.mailService.sendMail(
+        account.email,
+        'Verify your account',
+        'http://127.0.0.1:5173/activate-account?verify_token=' + verify_token,
+      );
+
+      return { verify_token };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   findAll(): Promise<Manager[]> {
