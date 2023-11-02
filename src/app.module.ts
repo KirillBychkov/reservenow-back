@@ -27,9 +27,9 @@ import { LoggingService } from './logging/logging.service';
 
 @Module({
   imports: [
+    AccountModule,
     UserModule,
     AuthModule,
-    AccountModule,
     EquipmentModule,
     TokenModule,
     PasswordModule,

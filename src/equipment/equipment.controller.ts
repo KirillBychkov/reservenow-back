@@ -12,18 +12,18 @@ import {
   ApiOkResponse,
   ApiNoContentResponse,
 } from '@nestjs/swagger';
-import { Permissions } from 'src/role/role.decorator';
-import { RolesGuard } from 'src/role/role.guard';
 import { Equipment } from './entities/equipment.entity';
+import { AbilitiesGuard } from 'src/role/abilities.guard';
+import { checkAbilites } from 'src/role/abilities.decorator';
 
 @ApiTags('Equipment')
 @ApiBearerAuth()
-@Permissions('equipment')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('equipment')
 export class EquipmentController {
   constructor(private readonly equipmentService: EquipmentService) {}
 
+  @checkAbilites({ action: 'create', subject: 'equipment' })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Create new equipment in the system' })
   @Post()
   @ApiCreatedResponse({
@@ -34,6 +34,8 @@ export class EquipmentController {
     return this.equipmentService.create(req.user.user_id, createEquipmentDto);
   }
 
+  @checkAbilites({ action: 'read', subject: 'equipment' })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Get all equipment in the system' })
   @Get()
   @ApiFoundResponse({ description: 'All equipment have been received', type: [Equipment] })
@@ -41,6 +43,8 @@ export class EquipmentController {
     return this.equipmentService.findAll();
   }
 
+  @checkAbilites({ action: 'read', subject: 'equipment' })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Get equipment by its id' })
   @Get(':id')
   @ApiFoundResponse({ description: 'The equipment has been received', type: Equipment })
@@ -48,6 +52,8 @@ export class EquipmentController {
     return this.equipmentService.findOne(+id);
   }
 
+  @checkAbilites({ action: 'update', subject: 'equipment', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Update equipment by its id' })
   @Patch(':id')
   @ApiOkResponse({ description: 'The equipment has been updated successfully', type: Equipment })
@@ -55,6 +61,8 @@ export class EquipmentController {
     return this.equipmentService.update(+id, updateEquipmentDto);
   }
 
+  @checkAbilites({ action: 'delete', subject: 'equipment', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Delete equipment by its id' })
   @Delete(':id')
   @ApiNoContentResponse({ description: 'The equipment has been deleted successfully' })

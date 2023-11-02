@@ -4,6 +4,7 @@ import { Account, AccountStatus } from './entities/account.entity';
 import { Repository } from 'typeorm';
 import { RoleService } from 'src/role/role.service';
 import { UpdateAccountDto } from './dto/update.account.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AccountService {
@@ -31,7 +32,7 @@ export class AccountService {
 
     const newAccount = this.accountRepository.insert({
       email,
-      password,
+      password: await bcrypt.hash(password, 10),
       status: AccountStatus.ACTIVE,
       role,
     });
@@ -44,6 +45,7 @@ export class AccountService {
       .createQueryBuilder('account')
       .leftJoinAndSelect('account.user', 'user')
       .leftJoinAndSelect('account.role', 'role')
+      .leftJoinAndSelect('role.permissions', 'permissions')
       .where('account.email = :email OR account.id = :id', { id, email })
       .addSelect(withPassword ? 'account.password' : '')
       .getOne();

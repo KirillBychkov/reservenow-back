@@ -29,21 +29,21 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Trainer } from './entities/trainer.entity';
-import { RolesGuard } from 'src/role/role.guard';
 import { AuthGuard } from '@nestjs/passport';
-import { Permissions } from 'src/role/role.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { WorkingHoursValidationPipe } from 'src/pipes/workingHoursValidationPipe';
 import { imageSchema } from 'src/storage/image.schema';
+import { AbilitiesGuard } from 'src/role/abilities.guard';
+import { checkAbilites } from 'src/role/abilities.decorator';
 
 @ApiTags('Trainer')
 @ApiBearerAuth()
-@Permissions('superuser')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('trainer')
 export class TrainerController {
   constructor(private readonly trainerService: TrainerService) {}
 
+  @checkAbilites({ action: 'create', subject: 'Trainer' })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Create a new trainer in the system' })
   @ApiCreatedResponse({ description: 'A trainer has been created successfully', type: Trainer })
   @Post()

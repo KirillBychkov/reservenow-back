@@ -14,7 +14,6 @@ import {
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { Permissions } from 'src/role/role.decorator';
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiTags,
@@ -24,17 +23,18 @@ import {
   ApiOkResponse,
   ApiOperation,
 } from '@nestjs/swagger';
-import { RolesGuard } from 'src/role/role.guard';
 import { Order } from './entities/order.entity';
+import { checkAbilites } from 'src/role/abilities.decorator';
+import { AbilitiesGuard } from 'src/role/abilities.guard';
 
 @ApiTags('Order')
 @ApiBearerAuth()
-@Permissions('order')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
+  @checkAbilites({ action: 'create', subject: 'order' })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Create a new order in the system' })
   @ApiCreatedResponse({ description: 'An order has been created successfully', type: Order })
   @Post()
@@ -42,6 +42,8 @@ export class OrderController {
     return this.orderService.create(+req.user.user_id, createOrderDto);
   }
 
+  @checkAbilites({ action: 'read', subject: 'order' })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Get all orders in the system' })
   @ApiOkResponse({ description: 'All oders have been received', type: [Order] })
   @Get()
@@ -49,6 +51,8 @@ export class OrderController {
     return this.orderService.findAll();
   }
 
+  @checkAbilites({ action: 'read', subject: 'order', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Get an order by its id' })
   @ApiOkResponse({ description: 'The order has been received', type: Order })
   @Get(':id')
@@ -56,6 +60,8 @@ export class OrderController {
     return this.orderService.findOne(+id);
   }
 
+  @checkAbilites({ action: 'update', subject: 'order', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Update an order by its id' })
   @ApiOkResponse({ description: 'The order has been updated successfully', type: Order })
   @Patch(':id')
@@ -63,6 +69,8 @@ export class OrderController {
     return this.orderService.update(+id, updateOrderDto);
   }
 
+  @checkAbilites({ action: 'delete', subject: 'order', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Delete an order by its id' })
   @ApiNoContentResponse({ description: 'The order has been deleted successfully' })
   @HttpCode(HttpStatus.NO_CONTENT)

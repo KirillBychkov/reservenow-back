@@ -7,11 +7,13 @@ import { AccountModule } from 'src/account/account.module';
 import { EquipmentModule } from 'src/equipment/equipment.module';
 import { TrainerModule } from 'src/trainer/trainer.module';
 import { RentalObjectModule } from 'src/rental_object/rental_object.module';
+import { RoleModule } from 'src/role/role.module';
 
 @Module({
   imports: [
     AccountModule,
     EquipmentModule,
+    RoleModule,
     TrainerModule,
     RentalObjectModule,
     TypeOrmModule.forFeature([Order]),

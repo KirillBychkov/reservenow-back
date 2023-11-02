@@ -5,9 +5,10 @@ import { Client } from './entities/client.entity';
 import { UserModule } from 'src/user/user.module';
 import { ClientController } from './client.controller';
 import { AccountModule } from 'src/account/account.module';
+import { RoleModule } from 'src/role/role.module';
 
 @Module({
-  imports: [AccountModule, UserModule, TypeOrmModule.forFeature([Client])],
+  imports: [AccountModule, UserModule, RoleModule, TypeOrmModule.forFeature([Client])],
   controllers: [ClientController],
   providers: [ClientService],
   exports: [ClientService],

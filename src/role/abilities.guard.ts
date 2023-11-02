@@ -1,0 +1,91 @@
+import {
+  ForbiddenError,
+  ForcedSubject,
+  MongoAbility,
+  RawRuleOf,
+  createMongoAbility,
+  subject,
+} from '@casl/ability';
+import { CanActivate, ExecutionContext, Injectable, NotFoundException } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { RoleService } from './role.service';
+import { size, map } from 'lodash';
+import { render } from 'mustache';
+
+import { CHECK_ABILITY, RequiredRule } from './abilities.decorator';
+import { User } from 'src/user/entities/user.entity';
+import { DataSource } from 'typeorm';
+
+export const actions = ['read', 'manage', 'create', 'update', 'delete'] as const;
+
+export const subjects = ['organization', 'user', 'all'] as const;
+
+type Abilities = [
+  (typeof actions)[number],
+  (typeof subjects)[number] | ForcedSubject<Exclude<(typeof subjects)[number], 'all'>>,
+];
+
+export type AppAbility = MongoAbility<Abilities>;
+
+@Injectable()
+export class AbilitiesGuard implements CanActivate {
+  constructor(
+    private readonly dataSource: DataSource,
+    private reflector: Reflector,
+    private roleService: RoleService,
+  ) {}
+
+  createAbility = (rules: RawRuleOf<AppAbility>[]) => createMongoAbility<AppAbility>(rules);
+
+  parseCondition(permissions: any, user: User) {
+    const data = map(permissions, (permission) => {
+      if (size(permission.conditions)) {
+        const parsedCondition = render(permission.conditions['userId'], user);
+
+        return { ...permission, conditions: { userId: Number(parsedCondition) } };
+      }
+      return permission;
+    });
+
+    return data;
+  }
+
+  async getObject(subName: string, id: number) {
+    const subject = await this.dataSource
+      .createQueryRunner()
+      .manager.queryRunner.query(`SELECT * FROM ${subName} WHERE id = ${id}`);
+    if (!subject) throw new NotFoundException(`${subName} not found`);
+    return subject;
+  }
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const rules: any =
+      this.reflector.get<RequiredRule[]>(CHECK_ABILITY, context.getHandler()) || [];
+    console.log(rules);
+    const request = context.switchToHttp().getRequest();
+    const { user } = request;
+    const role = await this.roleService.findOne(user.role_id);
+
+    const parsedPermissions = this.parseCondition(role.permissions, user);
+    console.log(parsedPermissions);
+
+    try {
+      const ability = this.createAbility(Object(parsedPermissions));
+      for (const rule of rules) {
+        let sub = {};
+        if (rule.conditions) {
+          const subId = +request.params['id'];
+          sub = await this.getObject(rule.subject, subId);
+        }
+
+        ForbiddenError.from(ability)
+          .setMessage('You are not allowed to perform this action')
+          .throwUnlessCan(rule.action, subject(rule.subject, sub[0]));
+      }
+      return true;
+    } catch (error) {
+      // console.log(error);
+      return false;
+    }
+  }
+}

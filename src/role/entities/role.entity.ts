@@ -2,9 +2,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Permission } from './permission.entity';
 
 @Entity()
 export class Role {
@@ -14,8 +16,8 @@ export class Role {
   @Column({ unique: true, select: true })
   name: string;
 
-  @Column('varchar', { array: true })
-  permissions: string[];
+  @OneToMany(() => Permission, (permission) => permission.role)
+  permissions: Permission[];
 
   @CreateDateColumn()
   created_at: Date;

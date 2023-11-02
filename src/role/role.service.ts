@@ -2,7 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Role } from './entities/role.entity';
-import RoleDto from './dto/role.dto';
+import RoleDto from './dto/creete-role.dto';
 
 @Injectable()
 export class RoleService {
@@ -14,13 +14,17 @@ export class RoleService {
 
   async getByName(name: string) {
     const role = this.roleRepository.findOneBy({ name });
-    if (!role) throw new ConflictException('An account with the given id does not exist');
+    if (!role) throw new ConflictException('A role with the given id does not exist');
     return role;
   }
 
   async findOne(id: number) {
-    const role = await this.roleRepository.findOneBy({ id });
-    if (!role) throw new ConflictException('An account with the given id does not exist');
+    const role = await this.roleRepository
+      .createQueryBuilder('role')
+      .leftJoinAndSelect('role.permissions', 'permissions')
+      .where('role.id = :id', { id })
+      .getOne();
+    if (!role) throw new ConflictException('A role with the given id does not exist');
     return role;
   }
 

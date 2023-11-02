@@ -24,10 +24,11 @@ export class OrganizationService {
     return newOrganization;
   }
 
-  findAll(): Promise<Organization[]> {
+  findAll(id?: number): Promise<Organization[]> {
     const organization = this.organizationRepository
       .createQueryBuilder('organization')
       .leftJoinAndSelect('organization.user', 'user')
+      .where('organization.userId = :id', { id })
       .getMany();
 
     return organization;
