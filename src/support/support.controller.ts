@@ -31,22 +31,22 @@ import { SupportService } from './support.service';
 import { CreateSupportDto } from './dto/create-support.dto';
 import { UpdateSupportDto } from './dto/update-support.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from 'src/role/role.guard';
-import { Permissions } from 'src/role/role.decorator';
 import { Support } from './entities/support.entity';
 import ElementsQueryDto from 'src/user/dto/query.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { imageSchema } from 'src/storage/image.schema';
 import FindAllSupportRecordsDto from './dto/find-all-support-records.dto';
+import { checkAbilites } from 'src/role/abilities.decorator';
+import { AbilitiesGuard } from 'src/role/abilities.guard';
 
 @ApiTags('Support')
 @ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('support')
 export class SupportController {
   constructor(private readonly supportService: SupportService) {}
 
-  @Permissions('support')
+  @checkAbilites({ action: 'create', subject: 'support' })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Create a new support record in the system' })
   @ApiOkResponse({ description: 'A support record has been created successfully', type: Support })
   @Post()
@@ -54,6 +54,8 @@ export class SupportController {
     return this.supportService.create(req.user.user_id, createSupportDto);
   }
 
+  @checkAbilites({ action: 'read', subject: 'support' })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Get all support records in the system' })
   @ApiOkResponse({
     description: 'All support records have been received',
@@ -64,13 +66,14 @@ export class SupportController {
     return this.supportService.findAll(queryDto);
   }
 
+  @checkAbilites({ action: 'read', subject: 'support' })
   @ApiOperation({ summary: 'Get a support record by its id' })
   @ApiOkResponse({ description: 'The support record has been received', type: Support })
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.supportService.findOne(+id);
   }
-
+  @checkAbilites({ action: 'update', subject: 'support' })
   @ApiOperation({ summary: 'Update a support record by its id' })
   @ApiOkResponse({ description: 'The support record has been updated successfully', type: Support })
   @Patch(':id')
@@ -78,6 +81,7 @@ export class SupportController {
     return this.supportService.update(+id, updateSupportDto);
   }
 
+  @checkAbilites({ action: 'delete', subject: 'support' })
   @ApiOperation({ summary: 'Delete a support record by its id' })
   @ApiNoContentResponse({ description: 'The support record has been deleted successfully' })
   @HttpCode(HttpStatus.NO_CONTENT)

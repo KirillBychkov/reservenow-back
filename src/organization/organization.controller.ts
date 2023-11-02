@@ -32,22 +32,22 @@ import {
   ApiBody,
   ApiQuery,
 } from '@nestjs/swagger';
-import { Permissions } from 'src/role/role.decorator';
-import { RolesGuard } from 'src/role/role.guard';
 import { Organization } from './entities/organization.entity';
 import { Role } from 'src/role/entities/role.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { WorkingHoursValidationPipe } from 'src/pipes/workingHoursValidationPipe';
 import { imageSchema } from 'src/storage/image.schema';
+import { AbilitiesGuard } from 'src/role/abilities.guard';
+import { checkAbilites } from 'src/role/abilities.decorator';
 
 @ApiTags('Organization')
 @ApiBearerAuth()
-@Permissions('organization')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('organization')
 export class OrganizationController {
   constructor(private readonly organizationService: OrganizationService) {}
 
+  @checkAbilites({ action: 'write', subject: 'organization' })
+  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Create a new organization in the system' })
   @Post()
   @ApiCreatedResponse({
@@ -61,20 +61,17 @@ export class OrganizationController {
     return this.organizationService.create(req.user.user_id, createOrganizationDto);
   }
 
-  @ApiOperation({ summary: 'Get all organizations in the system' })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: `Get user's(ALL for superuser) organizations in the system` })
   @Get()
   @ApiFoundResponse({ description: 'All organizations have been received', type: [Organization] })
-  findAll() {
-    return this.organizationService.findAll();
+  findAll(@Req() req) {
+    console.log(req.user);
+    return this.organizationService.findAll(+req.user.user_id);
   }
 
-  @ApiOperation({ summary: "Get all users's organizations in the system" })
-  @Get(':userId')
-  @ApiFoundResponse({ description: 'All organizations have been received', type: [Organization] })
-  findAllByUser(@Param('userId') userId: string) {
-    return this.organizationService.findAllByUser(+userId);
-  }
-
+  @checkAbilites({ action: 'read', subject: 'organization', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Get an organization by its id' })
   @Get(':id')
   @ApiFoundResponse({ description: 'The organization has been received', type: Organization })
@@ -82,6 +79,8 @@ export class OrganizationController {
     return this.organizationService.findOne(+id);
   }
 
+  @checkAbilites({ action: 'update', subject: 'organization', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Update an organization by its id' })
   @Patch(':id')
   @ApiOkResponse({ description: 'The organization has been updated successfully', type: Role })
@@ -89,6 +88,8 @@ export class OrganizationController {
     return this.organizationService.update(+id, updateOrganizationDto);
   }
 
+  @checkAbilites({ action: 'delete', subject: 'organization', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Delete an organization by its id' })
   @Delete(':id')
   @ApiNoContentResponse({ description: 'The organization has been deleted successfully' })
@@ -96,6 +97,8 @@ export class OrganizationController {
     return this.organizationService.remove(+id);
   }
 
+  @checkAbilites({ action: 'update', subject: 'organization', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Create a new image for the organization' })
   @ApiConsumes('multipart/form-data')
   @ApiBody(imageSchema)

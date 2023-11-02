@@ -6,11 +6,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { RentalObject } from './entities/rental_object.entity';
 import { AccountModule } from 'src/account/account.module';
 import { StorageModule } from 'src/storage/storage.module';
+import { RoleModule } from 'src/role/role.module';
 
 @Module({
   imports: [
     AccountModule,
     StorageModule,
+    RoleModule,
     OrganizationModule,
     TypeOrmModule.forFeature([RentalObject]),
   ],

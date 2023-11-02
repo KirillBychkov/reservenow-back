@@ -9,6 +9,7 @@ import { RoleService } from 'src/role/role.service';
 import { Account } from 'src/account/entities/account.entity';
 import { TokenService } from 'src/token/token.service';
 import { StorageService } from 'src/storage/storage.service';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class TrainerService {
@@ -19,6 +20,7 @@ export class TrainerService {
     private readonly roleService: RoleService,
     private readonly tokenService: TokenService,
     private readonly storageService: StorageService,
+    private readonly mailService: MailService,
   ) {}
 
   async create(userId, createTrainerDto: CreateTrainerDto) {
@@ -38,19 +40,26 @@ export class TrainerService {
         this.roleService.getByName('trainer'),
       ]);
 
-      const account = await queryRunner.manager.insert(Account, {
+      const account = await queryRunner.manager.save(Account, {
         email,
         role,
         trainer: newTrainer,
       });
       await queryRunner.commitTransaction();
 
-      const reset_token = await this.tokenService.generateToken(
-        { id: account.raw.id, email: account.raw.email },
-        process.env.RESET_SECRET,
+      const verify_token = await this.tokenService.generateToken(
+        { id: account.id, email: account.email },
+        process.env.VERIFY_TOKEN,
         60 * 60,
       );
-      return { reset_token };
+
+      this.mailService.sendMail(
+        email,
+        'Verify your account',
+        'http://127.0.0.1:5173/activate-account?verify_token=' + verify_token,
+      );
+
+      return { verify_token };
     } catch (error) {
       await queryRunner.rollbackTransaction();
     } finally {
