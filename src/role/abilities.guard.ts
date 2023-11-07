@@ -54,20 +54,19 @@ export class AbilitiesGuard implements CanActivate {
     const subject = await this.dataSource
       .createQueryRunner()
       .manager.queryRunner.query(`SELECT * FROM ${subName} WHERE id = ${id}`);
-    if (!subject) throw new NotFoundException(`${subName} not found`);
+
+    if (!subject.length) throw new NotFoundException(`${subName} not found`);
     return subject;
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const rules: any =
       this.reflector.get<RequiredRule[]>(CHECK_ABILITY, context.getHandler()) || [];
-    console.log(rules);
     const request = context.switchToHttp().getRequest();
     const { user } = request;
     const role = await this.roleService.findOne(user.role_id);
 
     const parsedPermissions = this.parseCondition(role.permissions, user);
-    console.log(parsedPermissions);
 
     try {
       const ability = this.createAbility(Object(parsedPermissions));

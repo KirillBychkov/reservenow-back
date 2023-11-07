@@ -19,8 +19,6 @@ export class AuthService {
     const { email, password } = signInDTO;
     const numberOfAccounts = await this.accountService.getCount();
 
-    console.log(numberOfAccounts);
-
     if (numberOfAccounts === 0) await this.accountService.createSuperUserAccount(email, password);
     const account: Account = await this.accountService.getAccount(null, email, true);
 
@@ -33,8 +31,6 @@ export class AuthService {
       user_id: account.user?.id,
       role_id: account.role?.id,
     };
-
-    console.log(payload);
 
     const [access_token, refresh_token] = await Promise.all([
       this.tokenService.generateToken(payload, process.env.SECRET, 60 * 15),

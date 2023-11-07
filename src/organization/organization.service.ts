@@ -25,13 +25,15 @@ export class OrganizationService {
   }
 
   findAll(id?: number): Promise<Organization[]> {
-    const organization = this.organizationRepository
+    let query = this.organizationRepository
       .createQueryBuilder('organization')
-      .leftJoinAndSelect('organization.user', 'user')
-      .where('organization.userId = :id', { id })
-      .getMany();
+      .leftJoinAndSelect('organization.user', 'user');
 
-    return organization;
+    if (id) {
+      query = query.where('organization.userId = :id', { id });
+    }
+
+    return query.getMany();
   }
 
   async findAllByUser(userId: number): Promise<Organization[]> {

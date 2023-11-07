@@ -33,7 +33,6 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { Organization } from './entities/organization.entity';
-import { Role } from 'src/role/entities/role.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { WorkingHoursValidationPipe } from 'src/pipes/workingHoursValidationPipe';
 import { imageSchema } from 'src/storage/image.schema';
@@ -66,7 +65,6 @@ export class OrganizationController {
   @Get()
   @ApiFoundResponse({ description: 'All organizations have been received', type: [Organization] })
   findAll(@Req() req) {
-    console.log(req.user);
     return this.organizationService.findAll(+req.user.user_id);
   }
 
@@ -83,7 +81,10 @@ export class OrganizationController {
   @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Update an organization by its id' })
   @Patch(':id')
-  @ApiOkResponse({ description: 'The organization has been updated successfully', type: Role })
+  @ApiOkResponse({
+    description: 'The organization has been updated successfully',
+    type: Organization,
+  })
   update(@Param('id') id: string, @Body() updateOrganizationDto: UpdateOrganizationDto) {
     return this.organizationService.update(+id, updateOrganizationDto);
   }

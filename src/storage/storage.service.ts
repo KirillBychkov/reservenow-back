@@ -29,7 +29,6 @@ export class StorageService {
   }
 
   async s3_delete(location: URL) {
-    console.log(location.pathname);
     const params = {
       Bucket: this.AWS_S3_BUCKET,
       Key: location.pathname.slice(-(location.pathname.length - 1)),
