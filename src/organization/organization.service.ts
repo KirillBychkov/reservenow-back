@@ -36,16 +36,6 @@ export class OrganizationService {
     return query.getMany();
   }
 
-  async findAllByUser(userId: number): Promise<Organization[]> {
-    const organization = await this.organizationRepository
-      .createQueryBuilder('organization')
-      .leftJoinAndSelect('organization.user', 'user')
-      .where('user.id = :id', { id: userId })
-      .getMany();
-
-    return organization;
-  }
-
   async findOne(id: number): Promise<Organization> {
     const organizationRecord = await this.organizationRepository
       .createQueryBuilder('organization')
@@ -53,6 +43,7 @@ export class OrganizationService {
       .where('organization.id = :id', { id })
       .getOne();
 
+    console.log(`Organization record ${organizationRecord}`);
     if (!organizationRecord)
       throw new ConflictException(`Organization with id ${id} does not exist`);
 

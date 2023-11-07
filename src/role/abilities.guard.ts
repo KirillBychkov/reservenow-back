@@ -6,7 +6,13 @@ import {
   createMongoAbility,
   subject,
 } from '@casl/ability';
-import { CanActivate, ExecutionContext, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { RoleService } from './role.service';
 import { size, map } from 'lodash';
@@ -77,14 +83,19 @@ export class AbilitiesGuard implements CanActivate {
           sub = await this.getObject(rule.subject, subId);
         }
 
+        console.log('Can access', ability.can(rule.action, subject(rule.subject, sub[0] || {})));
+
         ForbiddenError.from(ability)
           .setMessage('You are not allowed to perform this action')
-          .throwUnlessCan(rule.action, subject(rule.subject, sub[0]));
+          .throwUnlessCan(rule.action, subject(rule.subject, sub[0] || {}));
       }
       return true;
     } catch (error) {
-      // console.log(error);
-      return false;
+      console.log(error);
+      if (error instanceof ForbiddenError) {
+        throw new ForbiddenException(error.message);
+      }
+      throw error;
     }
   }
 }

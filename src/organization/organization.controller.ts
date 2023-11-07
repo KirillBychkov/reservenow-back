@@ -46,7 +46,7 @@ export class OrganizationController {
   constructor(private readonly organizationService: OrganizationService) {}
 
   @checkAbilites({ action: 'write', subject: 'organization' })
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Create a new organization in the system' })
   @Post()
   @ApiCreatedResponse({
@@ -60,7 +60,8 @@ export class OrganizationController {
     return this.organizationService.create(req.user.user_id, createOrganizationDto);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @checkAbilites({ action: 'read', subject: 'organization' })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: `Get user's(ALL for superuser) organizations in the system` })
   @Get()
   @ApiFoundResponse({ description: 'All organizations have been received', type: [Organization] })

@@ -36,16 +36,17 @@ import CreateUserDto from './dto/create-user.dto';
 import FindAllUsersDto from './dto/find-all-users.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { imageSchema } from 'src/storage/image.schema';
+import { AbilitiesGuard } from 'src/role/abilities.guard';
+import { checkAbilites } from 'src/role/abilities.decorator';
 
 @ApiTags('Users')
 @ApiBearerAuth()
-// @Permissions('users')
-// @UseGuards(AuthGuard('jwt'), RolesGuard)
-@UseGuards(AuthGuard('jwt'))
 @Controller('users')
 export class UserController {
   constructor(private userService: UserService) {}
 
+  @checkAbilites({ action: 'manage', subject: 'user' })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Get all users in the system' })
   @ApiOkResponse({ description: 'All users have been received', type: FindAllUsersDto })
   @Get()
@@ -53,6 +54,8 @@ export class UserController {
     return this.userService.findAll(queryDto);
   }
 
+  @checkAbilites({ action: 'manage', subject: 'user' })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Create a new user in the system' })
   @ApiCreatedResponse({
     description: 'A new user has been created successfully',
@@ -70,6 +73,8 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
+  @checkAbilites({ action: 'manage', subject: 'user' })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Download a file with users in the system' })
   @ApiOkResponse({ description: 'The file with users has been downloaded successfully' })
   @Get('export')
@@ -79,6 +84,8 @@ export class UserController {
     res.download(file);
   }
 
+  @checkAbilites({ action: 'manage', subject: 'user' })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Get a user by its id' })
   @ApiOkResponse({ description: 'The user has been received', type: User })
   @Get(':id')
@@ -86,6 +93,8 @@ export class UserController {
     return this.userService.findOne(+id);
   }
 
+  @checkAbilites({ action: 'manage', subject: 'user' })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Update user by their ID' })
   @ApiOkResponse({ description: 'The user has been updated successfully', type: User })
   @Patch(':id')
@@ -93,6 +102,8 @@ export class UserController {
     return this.userService.update(+id, Body);
   }
 
+  @checkAbilites({ action: 'manage', subject: 'user' })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Delete user by their ID' })
   @ApiNoContentResponse({ description: 'The user has been deleted successfully' })
   @Delete(':id')
@@ -100,6 +111,8 @@ export class UserController {
     return this.userService.remove(+id);
   }
 
+  @checkAbilites({ action: 'manage', subject: 'user' })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Create a new avatar for the user' })
   @ApiConsumes('multipart/form-data')
   @ApiBody(imageSchema)
