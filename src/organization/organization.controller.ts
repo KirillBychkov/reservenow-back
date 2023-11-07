@@ -33,7 +33,6 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { Organization } from './entities/organization.entity';
-import { Role } from 'src/role/entities/role.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { WorkingHoursValidationPipe } from 'src/pipes/workingHoursValidationPipe';
 import { imageSchema } from 'src/storage/image.schema';
@@ -47,7 +46,7 @@ export class OrganizationController {
   constructor(private readonly organizationService: OrganizationService) {}
 
   @checkAbilites({ action: 'write', subject: 'organization' })
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Create a new organization in the system' })
   @Post()
   @ApiCreatedResponse({
@@ -61,12 +60,12 @@ export class OrganizationController {
     return this.organizationService.create(req.user.user_id, createOrganizationDto);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @checkAbilites({ action: 'read', subject: 'organization' })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: `Get user's(ALL for superuser) organizations in the system` })
   @Get()
   @ApiFoundResponse({ description: 'All organizations have been received', type: [Organization] })
   findAll(@Req() req) {
-    console.log(req.user);
     return this.organizationService.findAll(+req.user.user_id);
   }
 
@@ -83,7 +82,10 @@ export class OrganizationController {
   @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Update an organization by its id' })
   @Patch(':id')
-  @ApiOkResponse({ description: 'The organization has been updated successfully', type: Role })
+  @ApiOkResponse({
+    description: 'The organization has been updated successfully',
+    type: Organization,
+  })
   update(@Param('id') id: string, @Body() updateOrganizationDto: UpdateOrganizationDto) {
     return this.organizationService.update(+id, updateOrganizationDto);
   }
