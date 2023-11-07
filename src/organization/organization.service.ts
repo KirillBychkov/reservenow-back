@@ -25,23 +25,15 @@ export class OrganizationService {
   }
 
   findAll(id?: number): Promise<Organization[]> {
-    const organization = this.organizationRepository
+    let query = this.organizationRepository
       .createQueryBuilder('organization')
-      .leftJoinAndSelect('organization.user', 'user')
-      .where('organization.userId = :id', { id })
-      .getMany();
+      .leftJoinAndSelect('organization.user', 'user');
 
-    return organization;
-  }
+    if (id) {
+      query = query.where('organization.userId = :id', { id });
+    }
 
-  async findAllByUser(userId: number): Promise<Organization[]> {
-    const organization = await this.organizationRepository
-      .createQueryBuilder('organization')
-      .leftJoinAndSelect('organization.user', 'user')
-      .where('user.id = :id', { id: userId })
-      .getMany();
-
-    return organization;
+    return query.getMany();
   }
 
   async findOne(id: number): Promise<Organization> {
@@ -51,6 +43,7 @@ export class OrganizationService {
       .where('organization.id = :id', { id })
       .getOne();
 
+    console.log(`Organization record ${organizationRecord}`);
     if (!organizationRecord)
       throw new ConflictException(`Organization with id ${id} does not exist`);
 

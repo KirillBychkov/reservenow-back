@@ -14,7 +14,6 @@ export class VtStrategy extends PassportStrategy(Strategy, 'jwt-verify') {
   validate(payload: any) {
     delete payload.exp;
     delete payload.iat;
-    console.log(payload);
     return payload;
   }
 }

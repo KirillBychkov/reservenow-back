@@ -6,7 +6,13 @@ import {
   createMongoAbility,
   subject,
 } from '@casl/ability';
-import { CanActivate, ExecutionContext, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { RoleService } from './role.service';
 import { size, map } from 'lodash';
@@ -54,20 +60,19 @@ export class AbilitiesGuard implements CanActivate {
     const subject = await this.dataSource
       .createQueryRunner()
       .manager.queryRunner.query(`SELECT * FROM ${subName} WHERE id = ${id}`);
-    if (!subject) throw new NotFoundException(`${subName} not found`);
+
+    if (!subject.length) throw new NotFoundException(`${subName} not found`);
     return subject;
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const rules: any =
       this.reflector.get<RequiredRule[]>(CHECK_ABILITY, context.getHandler()) || [];
-    console.log(rules);
     const request = context.switchToHttp().getRequest();
     const { user } = request;
     const role = await this.roleService.findOne(user.role_id);
 
     const parsedPermissions = this.parseCondition(role.permissions, user);
-    console.log(parsedPermissions);
 
     try {
       const ability = this.createAbility(Object(parsedPermissions));
@@ -78,14 +83,19 @@ export class AbilitiesGuard implements CanActivate {
           sub = await this.getObject(rule.subject, subId);
         }
 
+        console.log('Can access', ability.can(rule.action, subject(rule.subject, sub[0] || {})));
+
         ForbiddenError.from(ability)
           .setMessage('You are not allowed to perform this action')
-          .throwUnlessCan(rule.action, subject(rule.subject, sub[0]));
+          .throwUnlessCan(rule.action, subject(rule.subject, sub[0] || {}));
       }
       return true;
     } catch (error) {
-      // console.log(error);
-      return false;
+      console.log(error);
+      if (error instanceof ForbiddenError) {
+        throw new ForbiddenException(error.message);
+      }
+      throw error;
     }
   }
 }

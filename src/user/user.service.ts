@@ -104,7 +104,12 @@ export class UserService {
       await queryRunner.commitTransaction();
 
       const verify_token = await this.tokenService.generateToken(
-        { id: account.id, email: account.email },
+        {
+          id: account.id,
+          email: account.email,
+          user_id: account.user.id,
+          role_id: account.role.id,
+        },
         process.env.VERIFY_SECRET,
         60 * 60,
       );
