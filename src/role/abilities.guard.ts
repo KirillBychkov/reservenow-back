@@ -20,7 +20,7 @@ import { render } from 'mustache';
 
 import { CHECK_ABILITY, RequiredRule } from './abilities.decorator';
 import { User } from 'src/user/entities/user.entity';
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 
 export const actions = ['read', 'manage', 'create', 'update', 'delete'] as const;
 
@@ -57,12 +57,20 @@ export class AbilitiesGuard implements CanActivate {
   }
 
   async getObject(subName: string, id: number) {
-    const subject = await this.dataSource
-      .createQueryRunner()
-      .manager.queryRunner.query(`SELECT * FROM ${subName} WHERE id = ${id}`);
+    const queryRunner = this.dataSource.createQueryRunner();
 
-    if (!subject.length) throw new NotFoundException(`${subName} not found`);
-    return subject;
+    try {
+      await queryRunner.connect();
+      const subject = await queryRunner.query(`SELECT * FROM ${subName} WHERE id = $1`, [id]);
+      queryRunner.release();
+
+      if (!subject.length) throw new NotFoundException(`${subName} not found`);
+      return subject;
+    } catch (err) {
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -83,15 +91,13 @@ export class AbilitiesGuard implements CanActivate {
           sub = await this.getObject(rule.subject, subId);
         }
 
-        console.log('Can access', ability.can(rule.action, subject(rule.subject, sub[0] || {})));
-
+        request.data = sub;
         ForbiddenError.from(ability)
           .setMessage('You are not allowed to perform this action')
           .throwUnlessCan(rule.action, subject(rule.subject, sub[0] || {}));
       }
       return true;
     } catch (error) {
-      console.log(error);
       if (error instanceof ForbiddenError) {
         throw new ForbiddenException(error.message);
       }
