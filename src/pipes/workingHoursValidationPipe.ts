@@ -20,7 +20,11 @@ export class WorkingHoursValidationPipe implements PipeTransform {
     ];
 
     for (let i = 0; i < hours.length; i += 2) {
-      if (!((!hours[i] && !hours[i + 1]) || hours[i + 1] > hours[i])) {
+      if (
+        !((!hours[i] && !hours[i + 1]) || hours[i + 1] > hours[i]) &&
+        hours[i] > 0 &&
+        hours[i + 1] < 24
+      ) {
         throw new BadRequestException('Invalid working hours.');
       }
     }
