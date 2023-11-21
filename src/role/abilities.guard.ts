@@ -20,7 +20,7 @@ import { render } from 'mustache';
 
 import { CHECK_ABILITY, RequiredRule } from './abilities.decorator';
 import { User } from 'src/user/entities/user.entity';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource } from 'typeorm';
 
 export const actions = ['read', 'manage', 'create', 'update', 'delete'] as const;
 
@@ -87,6 +87,7 @@ export class AbilitiesGuard implements CanActivate {
       for (const rule of rules) {
         let sub = {};
         if (rule.conditions) {
+          console.log(rule.conditions);
           const subId = +request.params['id'];
           sub = await this.getObject(rule.subject, subId);
         }

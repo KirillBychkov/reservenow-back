@@ -39,11 +39,11 @@ export class EquipmentController {
   @ApiOperation({ summary: 'Get all equipment in the system' })
   @Get()
   @ApiFoundResponse({ description: 'All equipment have been received', type: [Equipment] })
-  findAll() {
-    return this.equipmentService.findAll();
+  findAll(@Req() req) {
+    return this.equipmentService.findAll(+req.user.user_id);
   }
 
-  @checkAbilites({ action: 'read', subject: 'equipment' })
+  @checkAbilites({ action: 'read', subject: 'equipment', conditions: true })
   @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Get equipment by its id' })
   @Get(':id')

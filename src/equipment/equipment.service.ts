@@ -20,8 +20,17 @@ export class EquipmentService {
     return newEquipment;
   }
 
-  findAll() {
-    return this.equipmentRepository.find();
+  async findAll(id?: number): Promise<Equipment[]> {
+    let query = this.equipmentRepository
+      .createQueryBuilder('equipment')
+      .leftJoinAndSelect('equipment.user', 'user');
+
+    if (id) {
+      query = query.where('equipment.user.id = :id', { id });
+    }
+
+    const result = await query.getMany();
+    return result;
   }
 
   findOne(id: number) {
