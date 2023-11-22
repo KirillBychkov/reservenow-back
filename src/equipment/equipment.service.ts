@@ -4,6 +4,7 @@ import { UpdateEquipmentDto } from './dto/update-equipment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Equipment } from './entities/equipment.entity';
 import { Repository } from 'typeorm';
+import ElementsQueryDto from './dto/query.dto';
 
 @Injectable()
 export class EquipmentService {
@@ -20,16 +21,24 @@ export class EquipmentService {
     return newEquipment;
   }
 
-  async findAll(id?: number): Promise<Equipment[]> {
-    let query = this.equipmentRepository
+  async findAll(query: ElementsQueryDto, id?: number): Promise<Equipment[]> {
+    const { search, limit, sort, skip } = query;
+
+    const sortFilters = (sort == undefined ? 'created_at:1' : sort).split(':');
+
+    let equipment = this.equipmentRepository
       .createQueryBuilder('equipment')
-      .leftJoinAndSelect('equipment.user', 'user');
+      .leftJoinAndSelect('equipment.user', 'user')
+      .where(`equipment.name ILIKE '%${search ?? ''}%'`)
+      .orderBy(`user.${sortFilters[0]}`, sortFilters[1] === '1' ? 'ASC' : 'DESC')
+      .skip(skip ?? 0)
+      .take(limit ?? 10);
 
     if (id) {
-      query = query.where('equipment.user.id = :id', { id });
+      equipment = equipment.andWhere('equipment.user.id = :id', { id });
     }
 
-    const result = await query.getMany();
+    const result = await equipment.getMany();
     return result;
   }
 
