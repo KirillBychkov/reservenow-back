@@ -59,9 +59,20 @@ export class AbilitiesGuard implements CanActivate {
   async getObject(subName: string, id: number) {
     const queryRunner = this.dataSource.createQueryRunner();
 
+    const queries = {
+      rentalObject: `SELECT ro.*, o."userId"
+                     FROM rental_object ro
+                     JOIN organization o ON ro."organizationId" = o.id
+                     WHERE ro.id = $1`,
+      allOther: `SELECT * FROM ${subName} WHERE id = $1`,
+    };
+
     try {
       await queryRunner.connect();
-      const subject = await queryRunner.query(`SELECT * FROM ${subName} WHERE id = $1`, [id]);
+      const subject = await queryRunner.query(
+        subName === 'rental_object' ? queries.rentalObject : queries.allOther,
+        [id],
+      );
       queryRunner.release();
 
       if (!subject.length) throw new NotFoundException(`${subName} not found`);
@@ -80,16 +91,18 @@ export class AbilitiesGuard implements CanActivate {
     const { user } = request;
     const role = await this.roleService.findOne(user.role_id);
 
+    console.log(user);
     const parsedPermissions = this.parseCondition(role.permissions, user);
 
     try {
       const ability = this.createAbility(Object(parsedPermissions));
+      console.log(ability.rules);
       for (const rule of rules) {
         let sub = {};
         if (rule.conditions) {
-          console.log(rule.conditions);
           const subId = +request.params['id'];
           sub = await this.getObject(rule.subject, subId);
+          console.log(sub);
         }
 
         request.data = sub;

@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Equipment } from './entities/equipment.entity';
 import { Repository } from 'typeorm';
 import ElementsQueryDto from './dto/query.dto';
+import FindAllEquipmentDto from './dto/find-all-equipment.dto';
 
 @Injectable()
 export class EquipmentService {
@@ -21,25 +22,28 @@ export class EquipmentService {
     return newEquipment;
   }
 
-  async findAll(query: ElementsQueryDto, id?: number): Promise<Equipment[]> {
+  async findAll(query: ElementsQueryDto, id?: number): Promise<FindAllEquipmentDto> {
     const { search, limit, sort, skip } = query;
 
     const sortFilters = (sort == undefined ? 'created_at:1' : sort).split(':');
 
-    let equipment = this.equipmentRepository
+    let equipmentQuery = this.equipmentRepository
       .createQueryBuilder('equipment')
       .leftJoinAndSelect('equipment.user', 'user')
       .where(`equipment.name ILIKE '%${search ?? ''}%'`)
-      .orderBy(`user.${sortFilters[0]}`, sortFilters[1] === '1' ? 'ASC' : 'DESC')
+      .orderBy(`equipment.${sortFilters[0]}`, sortFilters[1] === '1' ? 'ASC' : 'DESC')
       .skip(skip ?? 0)
       .take(limit ?? 10);
 
     if (id) {
-      equipment = equipment.andWhere('equipment.user.id = :id', { id });
+      equipmentQuery = equipmentQuery.andWhere('equipment.user.id = :id', { id });
     }
 
-    const result = await equipment.getMany();
-    return result;
+    const equipment = await equipmentQuery.getManyAndCount();
+    return {
+      filters: { skip, limit, search, total: equipment[1], received: equipment[0].length },
+      data: equipment[0],
+    };
   }
 
   findOne(id: number) {

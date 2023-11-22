@@ -19,8 +19,6 @@ export class PasswordService {
     const { old_password, new_password } = body;
     const account = await this.accountService.getAccount(id, null, true);
 
-    console.log(!bcrypt.compare(old_password, account.password));
-
     if (!(await bcrypt.compare(old_password, account.password)))
       throw new NotAcceptableException('Passwords do not match');
 
