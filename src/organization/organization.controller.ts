@@ -45,7 +45,7 @@ import { checkAbilites } from 'src/role/abilities.decorator';
 export class OrganizationController {
   constructor(private readonly organizationService: OrganizationService) {}
 
-  @checkAbilites({ action: 'write', subject: 'organization' })
+  @checkAbilites({ action: 'create', subject: 'organization' })
   @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Create a new organization in the system' })
   @Post()
