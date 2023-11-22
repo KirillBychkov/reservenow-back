@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Req, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Req,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Query,
+} from '@nestjs/common';
 import { EquipmentService } from './equipment.service';
 import { CreateEquipmentDto } from './dto/create-equipment.dto';
 import { UpdateEquipmentDto } from './dto/update-equipment.dto';
@@ -15,6 +26,7 @@ import {
 import { Equipment } from './entities/equipment.entity';
 import { AbilitiesGuard } from 'src/role/abilities.guard';
 import { checkAbilites } from 'src/role/abilities.decorator';
+import ElementsQueryDto from './dto/query.dto';
 
 @ApiTags('Equipment')
 @ApiBearerAuth()
@@ -39,8 +51,8 @@ export class EquipmentController {
   @ApiOperation({ summary: 'Get all equipment in the system' })
   @Get()
   @ApiFoundResponse({ description: 'All equipment have been received', type: [Equipment] })
-  findAll(@Req() req) {
-    return this.equipmentService.findAll(+req.user.user_id);
+  findAll(@Req() req, @Query() queryDTO: ElementsQueryDto) {
+    return this.equipmentService.findAll(queryDTO, +req.user.user_id);
   }
 
   @checkAbilites({ action: 'read', subject: 'equipment', conditions: true })

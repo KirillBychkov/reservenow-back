@@ -19,14 +19,9 @@ export class SupportService {
 
   async create(user_id: number, createSupportDto: CreateSupportDto): Promise<Support> {
     const user = await this.userService.findOne(user_id);
-    const newSupportRecord = await this.supportReposity
-      .createQueryBuilder()
-      .insert()
-      .into(Support)
-      .values({ user, ...createSupportDto })
-      .returning('*')
-      .execute();
-    return newSupportRecord.raw;
+    const newSupportRecord = await this.supportReposity.save({ user, ...createSupportDto });
+
+    return newSupportRecord;
   }
 
   async findAll(query: ElementsQueryDto): Promise<FindAllSupportRecordsDto> {
@@ -57,6 +52,7 @@ export class SupportService {
       .leftJoinAndSelect('support.user', 'user')
       .leftJoinAndSelect('user.account', 'account')
       .getOne();
+
     if (!supportRecord) throw new ConflictException(`Support record with id ${id} does not exist`);
     return supportRecord;
   }
