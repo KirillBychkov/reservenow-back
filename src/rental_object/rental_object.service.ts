@@ -20,8 +20,8 @@ export class RentalObjectService {
 
   @UseInterceptors()
   async create(createRentalObjectDto: CreateRentalObjectDto): Promise<RentalObject> {
-    const { organizationId, ...rentalObject } = createRentalObjectDto;
-    const organization = await this.organizationService.findOne(organizationId);
+    const { organization_id, ...rentalObject } = createRentalObjectDto;
+    const organization = await this.organizationService.findOne(organization_id);
 
     return this.rentalObjectsRepository.save({
       organization,
@@ -55,7 +55,7 @@ export class RentalObjectService {
   }
 
   async findAllByOrganization(
-    organizationId: number,
+    organization_id: number,
     query: ElementsQueryDto,
   ): Promise<FindAllRentalObjectsDto> {
     const { search, limit, sort, skip } = query;
@@ -65,7 +65,7 @@ export class RentalObjectService {
       .createQueryBuilder('rental_object')
       .leftJoinAndSelect('rental_object.organization', 'organization')
       .where('rental_object.name ILIKE :search', { search: `%${search ?? ''}%` })
-      .andWhere('rental_object.organization.id = :organizationId', { organizationId })
+      .andWhere('rental_object.organization.id = :organization_id', { organization_id })
       .orderBy(`rental_object.${sortFilters[0]}`, sortFilters[1] === '1' ? 'ASC' : 'DESC')
       .skip(skip ?? 0)
       .take(limit ?? 10)
