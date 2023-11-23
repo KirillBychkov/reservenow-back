@@ -79,7 +79,7 @@ export class RentalObject {
   @Column('int', { nullable: true })
   sunday_end_hours?: number;
 
-  @Column({ nullable: true })
+  @Column({ default: false })
   is_deleted: boolean;
 
   @CreateDateColumn()
