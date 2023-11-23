@@ -16,6 +16,7 @@ import {
   Query,
   MaxFileSizeValidator,
   Put,
+  Req,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -37,14 +38,16 @@ import { WorkingHoursValidationPipe } from 'src/pipes/workingHoursValidationPipe
 import { imageSchema } from 'src/storage/image.schema';
 import ElementsQueryDto from './dto/query.dto';
 import { AbilitiesGuard } from 'src/role/abilities.guard';
+import { checkAbilites } from 'src/role/abilities.decorator';
 
 @ApiTags('RentalObject')
 @ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'), AbilitiesGuard)
 @Controller('rental_object')
 export class RentalObjectController {
   constructor(private readonly rentalObjectService: RentalObjectService) {}
 
+  @checkAbilites({ action: 'create', subject: 'rental_object' })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Create a new rental object in the system' })
   @ApiCreatedResponse({ description: 'A new rental object has been created', type: RentalObject })
   @Post()
@@ -52,23 +55,27 @@ export class RentalObjectController {
     return this.rentalObjectService.create(createRentalObjectDto);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Get all rental objects in the system' })
   @ApiOkResponse({ description: 'All rental objects have been received', type: [RentalObject] })
   @Get()
-  findAll(@Query() query: ElementsQueryDto) {
-    return this.rentalObjectService.findAll(query);
+  findAll(@Req() req, @Query() query: ElementsQueryDto) {
+    return this.rentalObjectService.findAll(query, +req.user.user_id);
   }
 
-  @ApiOperation({ summary: "Get all user's rental objects in the system" })
-  @ApiOkResponse({ description: 'All rental objects have been received', type: [RentalObject] })
-  @Get(':organizationId')
-  findAllByOrganization(
-    @Param('organizationId') organizationId: string,
-    @Query() query: ElementsQueryDto,
-  ) {
-    return this.rentalObjectService.findAllByOrganization(+organizationId, query);
-  }
-
+  // @checkAbilites({ action: 'read', subject: 'rental_object', conditions: true })
+  // @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
+  // @ApiOperation({ summary: "Get all user's rental objects in the system" })
+  // @ApiOkResponse({ description: 'All rental objects have been received', type: [RentalObject] })
+  // @Get(':organizationId')
+  // findAllByOrganization(
+  //   @Param('organizationId') organizationId: string,
+  //   @Query() query: ElementsQueryDto,
+  // ) {
+  //   return this.rentalObjectService.findAllByOrganization(+organizationId, query);
+  // }
+  @checkAbilites({ action: 'read', subject: 'rental_object', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Get a rental object by its id' })
   @ApiOkResponse({ description: 'The rental object has been received', type: RentalObject })
   @Get(':id')
@@ -76,6 +83,8 @@ export class RentalObjectController {
     this.rentalObjectService.findOne(+id);
   }
 
+  @checkAbilites({ action: 'update', subject: 'rental_object', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Update a rental object by its id' })
   @ApiOkResponse({ description: 'The rental object has been updated', type: RentalObject })
   @Patch(':id')
@@ -83,6 +92,8 @@ export class RentalObjectController {
     return this.rentalObjectService.update(+id, updateRentalObjectDto);
   }
 
+  @checkAbilites({ action: 'delete', subject: 'rental_object', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Delete a rental object by its id' })
   @ApiNoContentResponse({ description: 'The rental object has been deleted' })
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -91,6 +102,8 @@ export class RentalObjectController {
     return this.rentalObjectService.remove(+id);
   }
 
+  @checkAbilites({ action: 'update', subject: 'rental_object', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Create a new image for the rental object' })
   @ApiConsumes('multipart/form-data')
   @ApiBody(imageSchema)

@@ -91,20 +91,16 @@ export class AbilitiesGuard implements CanActivate {
     const { user } = request;
     const role = await this.roleService.findOne(user.role_id);
 
-    console.log(user);
     const parsedPermissions = this.parseCondition(role.permissions, user);
 
     try {
       const ability = this.createAbility(Object(parsedPermissions));
-      console.log(ability.rules);
       for (const rule of rules) {
         let sub = {};
         if (rule.conditions) {
-          const subId = +request.params['id'];
+          const subId = +request.params['id'] ?? +request.query['organizationId'];
           sub = await this.getObject(rule.subject, subId);
-          console.log(sub);
         }
-
         request.data = sub;
         ForbiddenError.from(ability)
           .setMessage('You are not allowed to perform this action')

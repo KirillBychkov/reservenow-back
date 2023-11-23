@@ -60,8 +60,7 @@ export class OrganizationController {
     return this.organizationService.create(req.user.user_id, createOrganizationDto);
   }
 
-  @checkAbilites({ action: 'read', subject: 'organization' })
-  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
+  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: `Get user's(ALL for superuser) organizations in the system` })
   @Get()
   @ApiFoundResponse({ description: 'All organizations have been received', type: [Organization] })
