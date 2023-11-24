@@ -1,12 +1,15 @@
-import { Min, Max, ValidateIf } from 'class-validator';
+import { Min, Max, ValidateIf, IsInt } from 'class-validator';
 
 export class CreateRentalObjectDto {
-  price_per_hour: number;
   organization_id: number;
   name: string;
   description?: string;
-  phone: string;
+  phone?: string;
   address: string;
+
+  @Min(0)
+  @IsInt()
+  price_per_hour: number;
 
   @Min(0)
   @Max(23)

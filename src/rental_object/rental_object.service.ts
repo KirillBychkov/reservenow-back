@@ -29,57 +29,41 @@ export class RentalObjectService {
     });
   }
 
-  async findAll(query: ElementsQueryDto): Promise<FindAllRentalObjectsDto> {
-    const { search, limit, sort, skip } = query;
+  async findAll(query: ElementsQueryDto, userId?: number): Promise<FindAllRentalObjectsDto> {
+    const { organizationId, search, limit, sort, skip } = query;
     const sortFilters = (sort == undefined ? 'created_at:1' : sort).split(':');
 
-    const rental_objects = await this.rentalObjectsRepository
+    let rentalObjectsQuery = this.rentalObjectsRepository
       .createQueryBuilder('rental_object')
       .leftJoinAndSelect('rental_object.organization', 'organization')
+      .leftJoinAndSelect('organization.user', 'user')
       .where('rental_object.name ILIKE :search', { search: `%${search ?? ''}%` })
       .orderBy(`rental_object.${sortFilters[0]}`, sortFilters[1] === '1' ? 'ASC' : 'DESC')
       .skip(skip ?? 0)
-      .take(limit ?? 10)
-      .getManyAndCount();
+      .take(limit ?? 10);
+
+    if (userId) {
+      rentalObjectsQuery = rentalObjectsQuery.andWhere('organization.user.id = :userId', {
+        userId,
+      });
+    }
+    if (organizationId) {
+      rentalObjectsQuery = rentalObjectsQuery.andWhere('organization.id = :organizationId', {
+        organizationId,
+      });
+    }
+
+    const rentalObjects = await rentalObjectsQuery.getManyAndCount();
 
     return {
       filters: {
         skip,
         limit,
         search,
-        total: rental_objects[1],
-        received: rental_objects[0].length,
+        total: rentalObjects[1],
+        received: rentalObjects[0].length,
       },
-      data: rental_objects[0],
-    };
-  }
-
-  async findAllByOrganization(
-    organization_id: number,
-    query: ElementsQueryDto,
-  ): Promise<FindAllRentalObjectsDto> {
-    const { search, limit, sort, skip } = query;
-    const sortFilters = (sort === undefined ? 'created_at:1' : sort).split(':');
-
-    const rental_objects = await this.rentalObjectsRepository
-      .createQueryBuilder('rental_object')
-      .leftJoinAndSelect('rental_object.organization', 'organization')
-      .where('rental_object.name ILIKE :search', { search: `%${search ?? ''}%` })
-      .andWhere('rental_object.organization.id = :organization_id', { organization_id })
-      .orderBy(`rental_object.${sortFilters[0]}`, sortFilters[1] === '1' ? 'ASC' : 'DESC')
-      .skip(skip ?? 0)
-      .take(limit ?? 10)
-      .getManyAndCount();
-
-    return {
-      filters: {
-        skip,
-        limit,
-        search,
-        total: rental_objects[1],
-        received: rental_objects[0].length,
-      },
-      data: rental_objects[0],
+      data: rentalObjects[0],
     };
   }
 
@@ -110,7 +94,7 @@ export class RentalObjectService {
   async remove(id: number) {
     await this.findOne(id);
 
-    return this.rentalObjectsRepository.delete({ id });
+    return this.rentalObjectsRepository.update(id, { is_deleted: true });
   }
 
   async uploadImage(id: number, file: Express.Multer.File) {
