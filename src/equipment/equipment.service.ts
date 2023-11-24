@@ -31,6 +31,7 @@ export class EquipmentService {
       .createQueryBuilder('equipment')
       .leftJoinAndSelect('equipment.user', 'user')
       .where(`equipment.name ILIKE '%${search ?? ''}%'`)
+      .where('equipment.is_deleted = false')
       .orderBy(`equipment.${sortFilters[0]}`, sortFilters[1] === '1' ? 'ASC' : 'DESC')
       .skip(skip ?? 0)
       .take(limit ?? 10);
@@ -69,6 +70,6 @@ export class EquipmentService {
   async remove(id: number) {
     await this.findOne(id);
 
-    return this.equipmentRepository.delete({ id });
+    return this.equipmentRepository.update(id, { is_deleted: true });
   }
 }

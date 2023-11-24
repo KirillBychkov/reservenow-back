@@ -25,6 +25,9 @@ export class Equipment {
   @Column()
   price_per_hour: number;
 
+  @Column({ default: false })
+  is_deleted?: boolean;
+
   @CreateDateColumn()
   created_at: Date;
 

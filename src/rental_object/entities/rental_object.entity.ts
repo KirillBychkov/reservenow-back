@@ -79,6 +79,9 @@ export class RentalObject {
   @Column('int', { nullable: true })
   sunday_end_hours?: number;
 
+  @Column({ default: false })
+  is_deleted: boolean;
+
   @CreateDateColumn()
   created_at: Date;
 

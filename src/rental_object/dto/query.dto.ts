@@ -1,6 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export default class ElementsQueryDto {
+  @ApiProperty({
+    description: 'Id of the organization you want to get rental_objects for',
+    required: false,
+  })
+  organizationId?: number;
+
   @ApiProperty({ description: 'How many rental objects to receive from the DB (10 by default)' })
   limit?: number;
   @ApiProperty({ description: 'How many rental objects to skip in the DB (0 by default)' })
