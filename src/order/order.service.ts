@@ -33,11 +33,11 @@ export class OrderService {
     await queryRunner.startTransaction();
 
     try {
-      const newClient = await queryRunner.manager.insert(Client, client);
+      const newClient = await queryRunner.manager.save(Client, client);
 
-      const order = await queryRunner.manager.insert(Order, {
+      const order = await queryRunner.manager.save(Order, {
         user: { id: userId },
-        client: { id: newClient.raw.id },
+        client: { id: newClient.id },
       });
 
       await Promise.all(
@@ -52,6 +52,8 @@ export class OrderService {
 
           const reservationStart = DateTime.fromSQL(reservation_time_start.toString());
           const reservationEnd = DateTime.fromSQL(reservation_time_end.toString());
+
+          console.log(reservationStart, reservationEnd);
 
           const timeDifference =
             reservationEnd.diff(reservationStart, 'minutes').toObject().minutes / 60;
@@ -73,7 +75,7 @@ export class OrderService {
             reservation_time_start,
             reservation_time_end,
             price: Math.floor(objectToRent.price_per_hour * timeDifference),
-            order: { id: order.raw.id },
+            order: { id: order.id },
           });
         }),
       );
@@ -88,8 +90,16 @@ export class OrderService {
     }
   }
 
-  findAll(): Promise<Order[]> {
-    return this.orderRepository.find();
+  findAll(userId: number): Promise<Order[]> {
+    const query = this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.reservations', 'reservation');
+
+    if (userId) {
+      query.where('order.user.id = :userId', { userId });
+    }
+
+    return query.getMany();
   }
 
   findOne(id: number) {

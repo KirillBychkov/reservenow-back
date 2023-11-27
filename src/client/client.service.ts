@@ -22,8 +22,12 @@ export class ClientService {
     return newClient;
   }
 
-  findAll(): Promise<Client[]> {
-    return this.clientRepository.find();
+  findAll(userId: number): Promise<Client[]> {
+    const query = this.clientRepository.createQueryBuilder('client');
+
+    if (userId) query.where('client.user.id = :userId', { userId });
+
+    return query.getMany();
   }
 
   async findOne(id: number): Promise<Client> {

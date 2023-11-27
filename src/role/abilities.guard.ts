@@ -64,7 +64,7 @@ export class AbilitiesGuard implements CanActivate {
                      FROM rental_object ro
                      JOIN organization o ON ro."organizationId" = o.id
                      WHERE ro.id = $1`,
-      allOther: `SELECT * FROM ${subName} WHERE id = $1`,
+      allOther: `SELECT * FROM "${subName}" WHERE id = $1`,
     };
 
     try {
