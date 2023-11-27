@@ -66,7 +66,7 @@ export class OrganizationService {
   async remove(id: number) {
     await this.findOne(id);
 
-    return this.organizationRepository.delete({ id });
+    this.organizationRepository.delete({ id });
   }
 
   async uploadImage(id: number, file: Express.Multer.File) {
