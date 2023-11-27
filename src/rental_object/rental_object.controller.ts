@@ -80,7 +80,7 @@ export class RentalObjectController {
   @ApiOkResponse({ description: 'The rental object has been received', type: RentalObject })
   @Get(':id')
   findOne(@Param('id') id: string) {
-    this.rentalObjectService.findOne(+id);
+    return this.rentalObjectService.findOne(+id);
   }
 
   @checkAbilites({ action: 'update', subject: 'rental_object', conditions: true })
