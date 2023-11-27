@@ -68,7 +68,8 @@ export class RentalObjectService {
   }
 
   async findOne(id: number): Promise<RentalObject> {
-    const rentalObject = this.rentalObjectsRepository.findOneBy({ id });
+    const rentalObject = await this.rentalObjectsRepository.findOneBy({ id });
+    console.log(rentalObject);
     if (!rentalObject) throw new ConflictException(`Rental object with id ${id} does not exist`);
     return rentalObject;
   }

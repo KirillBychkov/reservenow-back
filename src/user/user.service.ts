@@ -114,7 +114,7 @@ export class UserService {
         60 * 60,
       );
 
-      this.tokenService.updateToken(account.id, {
+      this.tokenService.createToken(account.id, {
         verify_token,
         expires_at: DateTime.utc().plus({ minutes: 60 }).toISO().slice(0, -1),
       });
