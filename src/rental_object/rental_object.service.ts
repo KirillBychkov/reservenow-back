@@ -4,10 +4,10 @@ import { UpdateRentalObjectDto } from './dto/update-rental_object.dto';
 import { RentalObject } from './entities/rental_object.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { OrganizationService } from 'src/organization/organization.service';
 import { StorageService } from 'src/storage/storage.service';
 import ElementsQueryDto from './dto/query.dto';
 import FindAllRentalObjectsDto from './dto/find-all-rental_objects.dto';
+import { OrganizationService } from 'src/organization/organization.service';
 
 @Injectable()
 export class RentalObjectService {
@@ -69,7 +69,6 @@ export class RentalObjectService {
 
   async findOne(id: number): Promise<RentalObject> {
     const rentalObject = await this.rentalObjectsRepository.findOneBy({ id });
-    console.log(rentalObject);
     if (!rentalObject) throw new ConflictException(`Rental object with id ${id} does not exist`);
     return rentalObject;
   }

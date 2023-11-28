@@ -32,12 +32,12 @@ export class ClientController {
   }
 
   @checkAbilites({ action: 'read', subject: 'client' })
-  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
+  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Get all clients in the system' })
   @Get()
   @ApiFoundResponse({ description: 'All clients have been received', type: [Client] })
-  findAll() {
-    return this.clientService.findAll();
+  findAll(@Req() req) {
+    return this.clientService.findAll(req.user.user_id);
   }
 
   @checkAbilites({ action: 'read', subject: 'client', conditions: true })

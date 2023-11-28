@@ -42,13 +42,12 @@ export class OrderController {
     return this.orderService.create(+req.user.user_id, createOrderDto);
   }
 
-  @checkAbilites({ action: 'read', subject: 'order' })
-  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Get all orders in the system' })
+  @UseGuards(AuthGuard('jwt'))
   @ApiOkResponse({ description: 'All oders have been received', type: [Order] })
   @Get()
-  findAll() {
-    return this.orderService.findAll();
+  findAll(@Req() req) {
+    return this.orderService.findAll(+req.user.user_id);
   }
 
   @checkAbilites({ action: 'read', subject: 'order', conditions: true })
