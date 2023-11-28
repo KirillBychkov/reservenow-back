@@ -93,6 +93,9 @@ export class OrganizationService {
   }
 
   async getStatistics(id: number, start_date: string, end_date: string) {
+    const start_date_iso = DateTime.fromISO(start_date);
+    const end_date_iso = DateTime.fromISO(end_date);
+
     const organization = await this.organizationRepository
       .createQueryBuilder('organization')
       .leftJoinAndSelect('organization.rental_objects', 'rental_object')
@@ -108,6 +111,10 @@ export class OrganizationService {
       .where('organization.id = :id', { id })
       .getOne();
 
+    const timeDifference = start_date
+      ? start_date_iso.diff(end_date_iso, ['months', 'days'])
+      : null;
+
     let totalReservationsSum = 0;
     let totalReservationsAmount = 0;
     let totalMinutes = 0;
@@ -121,7 +128,9 @@ export class OrganizationService {
       totalReservationsAmount++;
     }
 
-    return { totalReservationsSum, totalReservationsAmount, totalMinutes };
+    console.log({ totalMinutes, totalReservationsAmount, totalReservationsSum });
+
+    // return { totalReservationsSum, totalReservationsAmount, totalMinutes };
     return;
   }
 }

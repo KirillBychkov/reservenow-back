@@ -93,7 +93,7 @@ export class UserController {
     return this.userService.findOne(+id);
   }
 
-  @checkAbilites({ action: 'manage', subject: 'user' })
+  @checkAbilites({ action: 'update', subject: 'user', conditions: true })
   @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Update user by their ID' })
   @ApiOkResponse({ description: 'The user has been updated successfully', type: User })
@@ -111,7 +111,7 @@ export class UserController {
     return this.userService.remove(+id);
   }
 
-  @checkAbilites({ action: 'manage', subject: 'user' })
+  @checkAbilites({ action: 'update', subject: 'user', conditions: true })
   @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Create a new avatar for the user' })
   @ApiConsumes('multipart/form-data')

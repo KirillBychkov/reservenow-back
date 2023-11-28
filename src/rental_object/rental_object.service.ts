@@ -4,10 +4,10 @@ import { UpdateRentalObjectDto } from './dto/update-rental_object.dto';
 import { RentalObject } from './entities/rental_object.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { OrganizationService } from 'src/organization/organization.service';
 import { StorageService } from 'src/storage/storage.service';
 import ElementsQueryDto from './dto/query.dto';
 import FindAllRentalObjectsDto from './dto/find-all-rental_objects.dto';
+import { OrganizationService } from 'src/organization/organization.service';
 
 @Injectable()
 export class RentalObjectService {
