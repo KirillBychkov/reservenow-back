@@ -48,7 +48,13 @@ export class AbilitiesGuard implements CanActivate {
       if (size(permission.conditions)) {
         const parsedCondition = render(permission.conditions['userId'], user);
 
-        return { ...permission, conditions: { userId: Number(parsedCondition) } };
+        return {
+          ...permission,
+          conditions:
+            permission.subject === 'user'
+              ? { id: Number(parsedCondition) }
+              : { userId: Number(parsedCondition) },
+        };
       }
       return permission;
     });
@@ -64,7 +70,7 @@ export class AbilitiesGuard implements CanActivate {
                      FROM rental_object ro
                      JOIN organization o ON ro."organizationId" = o.id
                      WHERE ro.id = $1`,
-      allOther: `SELECT * FROM ${subName} WHERE id = $1`,
+      allOther: `SELECT * FROM "${subName}" WHERE id = $1`,
     };
 
     try {
@@ -101,6 +107,11 @@ export class AbilitiesGuard implements CanActivate {
           const subId = +request.params['id'] ?? +request.query['organizationId'];
           sub = await this.getObject(rule.subject, subId);
         }
+        // console.log(ability.can(rule.action, subject(rule.subject, sub[0] || {})));
+
+        console.log(parsedPermissions);
+        console.log(sub[0]);
+
         request.data = sub;
         ForbiddenError.from(ability)
           .setMessage('You are not allowed to perform this action')
