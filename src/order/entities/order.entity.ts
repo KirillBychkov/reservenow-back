@@ -18,6 +18,11 @@ export enum OrderStatus {
   REJECTED = 'rejected',
 }
 
+export enum OrderPaymentMethod {
+  CASH = 'cash',
+  CARD = 'card',
+}
+
 @Entity()
 export class Order {
   @PrimaryGeneratedColumn()
@@ -28,6 +33,9 @@ export class Order {
 
   @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.PENDING })
   status: OrderStatus;
+
+  @Column({ type: 'enum', enum: OrderPaymentMethod })
+  payment_method: OrderPaymentMethod;
 
   //TODO: GROUP_ID
 
