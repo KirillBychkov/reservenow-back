@@ -148,7 +148,7 @@ export class UserService {
       .returning('*')
       .execute();
 
-    return updated.raw;
+    return updated.raw[0];
   }
 
   async remove(id: number) {

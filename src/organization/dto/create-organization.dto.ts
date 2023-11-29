@@ -1,8 +1,10 @@
-import { Min, Max, ValidateIf } from 'class-validator';
+import { Min, Max, ValidateIf, IsMobilePhone } from 'class-validator';
 
 export class CreateOrganizationDto {
   name: string;
   description?: string;
+
+  @IsMobilePhone('uk-UA')
   phone: string;
   address: string;
 

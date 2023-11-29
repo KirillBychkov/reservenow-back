@@ -119,14 +119,14 @@ export class OrganizationService {
     let totalReservationsAmount = 0;
     let totalMinutes = 0;
 
-    for (const reservation of organization.reservations) {
-      const reservationTimeEnd = DateTime.fromJSDate(reservation.reservation_time_end);
-      const reservationTimeStart = DateTime.fromJSDate(reservation.reservation_time_start);
+    // for (const reservation of organization.reservations) {
+    //   const reservationTimeEnd = DateTime.fromJSDate(reservation.reservation_time_end);
+    //   const reservationTimeStart = DateTime.fromJSDate(reservation.reservation_time_start);
 
-      totalMinutes += reservationTimeEnd.diff(reservationTimeStart).as('minutes');
-      totalReservationsSum += reservation.price;
-      totalReservationsAmount++;
-    }
+    //   totalMinutes += reservationTimeEnd.diff(reservationTimeStart).as('minutes');
+    //   totalReservationsSum += reservation.price;
+    //   totalReservationsAmount++;
+    // }
 
     console.log({ totalMinutes, totalReservationsAmount, totalReservationsSum });
 

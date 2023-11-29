@@ -1,4 +1,5 @@
 import { Organization } from 'src/organization/entities/organization.entity';
+import { Reservation } from 'src/reservation/entities/reservation.entity';
 import {
   Entity,
   Column,
@@ -6,6 +7,7 @@ import {
   UpdateDateColumn,
   PrimaryGeneratedColumn,
   ManyToOne,
+  OneToMany,
 } from 'typeorm';
 
 @Entity()
@@ -20,6 +22,9 @@ export class RentalObject {
     onDelete: 'CASCADE',
   })
   organization: Organization;
+
+  @OneToMany(() => Reservation, (reservation) => reservation.rental_object)
+  reservations: Reservation[];
 
   @Column()
   name: string;

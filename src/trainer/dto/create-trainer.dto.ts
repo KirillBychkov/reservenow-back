@@ -1,10 +1,13 @@
-import { Min, Max, ValidateIf } from 'class-validator';
+import { Min, Max, ValidateIf, IsMobilePhone } from 'class-validator';
 
 export class CreateTrainerDto {
   email: string;
   first_name: string;
   last_name: string;
+
+  @IsMobilePhone('uk-UA')
   phone: string;
+
   description?: string;
   image?: string;
   hired_at: Date;
