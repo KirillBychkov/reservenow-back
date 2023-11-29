@@ -50,8 +50,8 @@ export class OrderService {
             reservation_time_end,
           } = reservationDto;
 
-          const reservationStart = DateTime.fromSQL(reservation_time_start.toString());
-          const reservationEnd = DateTime.fromSQL(reservation_time_end.toString());
+          const reservationStart = DateTime.fromISO(reservation_time_start.toString());
+          const reservationEnd = DateTime.fromISO(reservation_time_end.toString());
 
           const timeDifference =
             reservationEnd.diff(reservationStart, 'minutes').toObject().minutes / 60;
