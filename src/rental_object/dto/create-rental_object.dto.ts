@@ -1,9 +1,11 @@
-import { Min, Max, ValidateIf, IsInt } from 'class-validator';
+import { Min, Max, ValidateIf, IsInt, IsMobilePhone } from 'class-validator';
 
 export class CreateRentalObjectDto {
   organization_id: number;
   name: string;
   description?: string;
+
+  @IsMobilePhone('uk-UA')
   phone?: string;
   address: string;
 

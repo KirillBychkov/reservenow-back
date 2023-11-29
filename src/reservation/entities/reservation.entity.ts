@@ -30,8 +30,8 @@ export class Reservation {
   @ManyToOne(() => Equipment, (equipment) => equipment.id, { nullable: true })
   equipment?: Equipment;
 
-  @ManyToOne(() => Organization, (organization) => organization.id)
-  organization: RentalObject;
+  // @ManyToOne(() => Organization, (organization) => organization.id, )
+  // organization: RentalObject;
 
   @Column()
   reservation_time_start: Date;

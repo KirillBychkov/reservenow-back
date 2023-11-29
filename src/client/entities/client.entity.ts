@@ -1,4 +1,5 @@
 import { Account } from 'src/account/entities/account.entity';
+import { Order } from 'src/order/entities/order.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
@@ -6,6 +7,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -25,11 +27,14 @@ export class Client {
   @Column()
   last_name: string;
 
-  @Column()
+  @Column({ unique: true })
   phone: string;
 
   @Column({ nullable: true })
   description?: string;
+
+  @OneToMany(() => Order, (order) => order.client)
+  orders: Order[];
 
   @OneToOne(() => Account, { nullable: true })
   @JoinColumn()

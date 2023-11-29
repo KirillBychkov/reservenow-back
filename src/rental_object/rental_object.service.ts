@@ -68,7 +68,14 @@ export class RentalObjectService {
   }
 
   async findOne(id: number): Promise<RentalObject> {
-    const rentalObject = await this.rentalObjectsRepository.findOneBy({ id });
+    const rentalObject = await this.rentalObjectsRepository
+      .createQueryBuilder('rental_object')
+      .leftJoinAndSelect('rental_object.organization', 'organization')
+      .leftJoinAndSelect('organization.user', 'user')
+      .leftJoinAndSelect('rental_object.reservations', 'reservation')
+      .where('rental_object.id = :id', { id })
+      .getOne();
+
     if (!rentalObject) throw new ConflictException(`Rental object with id ${id} does not exist`);
     return rentalObject;
   }

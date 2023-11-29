@@ -25,8 +25,8 @@ export class Organization {
   @OneToMany(() => RentalObject, (rentalObject) => rentalObject.organization)
   rental_objects: RentalObject[];
 
-  @OneToMany(() => Reservation, (reservation) => reservation.organization)
-  reservations: Reservation[];
+  // @OneToMany(() => Reservation, (reservation) => reservation.organization)
+  // reservations: Reservation[];
 
   @Column({ nullable: true })
   description?: string;

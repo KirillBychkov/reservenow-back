@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+  Query,
+} from '@nestjs/common';
 import { ClientService } from './client.service';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { CreateClientDto } from './dto/create-client.dto';
@@ -15,6 +26,7 @@ import {
 import { Client } from './entities/client.entity';
 import { checkAbilites } from 'src/role/abilities.decorator';
 import { AbilitiesGuard } from 'src/role/abilities.guard';
+import ElementsQueryDto from './dto/query.dto';
 
 @ApiTags('Client')
 @ApiBearerAuth()
@@ -36,8 +48,8 @@ export class ClientController {
   @ApiOperation({ summary: 'Get all clients in the system' })
   @Get()
   @ApiFoundResponse({ description: 'All clients have been received', type: [Client] })
-  findAll(@Req() req) {
-    return this.clientService.findAll(req.user.user_id);
+  findAll(@Req() req, @Query() query: ElementsQueryDto) {
+    return this.clientService.findAll(req.user.user_id, query);
   }
 
   @checkAbilites({ action: 'read', subject: 'client', conditions: true })
