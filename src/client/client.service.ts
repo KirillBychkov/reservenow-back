@@ -66,6 +66,15 @@ export class ClientService {
     return client;
   }
 
+  async findOneByPhone(phone: string): Promise<Client> {
+    const client = await this.clientRepository
+      .createQueryBuilder('client')
+      .where('client.phone = :phone', { phone })
+      .getOne();
+
+    return client;
+  }
+
   async update(id: number, updateClientDto: UpdateClientDto): Promise<Client> {
     await this.findOne(id);
 

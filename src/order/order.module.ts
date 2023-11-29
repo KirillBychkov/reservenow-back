@@ -8,6 +8,7 @@ import { EquipmentModule } from 'src/equipment/equipment.module';
 import { TrainerModule } from 'src/trainer/trainer.module';
 import { RentalObjectModule } from 'src/rental_object/rental_object.module';
 import { RoleModule } from 'src/role/role.module';
+import { ClientModule } from 'src/client/client.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { RoleModule } from 'src/role/role.module';
     EquipmentModule,
     RoleModule,
     TrainerModule,
+    ClientModule,
     RentalObjectModule,
     TypeOrmModule.forFeature([Order]),
   ],

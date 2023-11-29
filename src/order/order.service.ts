@@ -13,6 +13,7 @@ import { DateTime } from 'luxon';
 import { Equipment } from 'src/equipment/entities/equipment.entity';
 import { RentalObject } from 'src/rental_object/entities/rental_object.entity';
 import { Trainer } from 'src/trainer/entities/trainer.entity';
+import { ClientService } from 'src/client/client.service';
 
 @Injectable()
 export class OrderService {
@@ -21,6 +22,7 @@ export class OrderService {
     private readonly equipmentService: EquipmentService,
     private readonly trainerService: TrainerService,
     private readonly rentalObjectService: RentalObjectService,
+    private readonly clientService: ClientService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -33,11 +35,13 @@ export class OrderService {
     await queryRunner.startTransaction();
 
     try {
-      const newClient = await queryRunner.manager.save(Client, client);
+      const clientRecord =
+        (await this.clientService.findOneByPhone(client.phone)) ??
+        (await queryRunner.manager.save(Client, client));
 
       const order = await queryRunner.manager.save(Order, {
         user: { id: userId },
-        client: { id: newClient.id },
+        client: { id: clientRecord.id },
       });
 
       await Promise.all(
@@ -79,7 +83,8 @@ export class OrderService {
       );
 
       await queryRunner.commitTransaction();
-      return order;
+
+      return await this.findOne(order.id);
     } catch (error) {
       await queryRunner.rollbackTransaction();
       if (error.code === '23505')
@@ -93,7 +98,9 @@ export class OrderService {
   findAll(userId: number): Promise<Order[]> {
     const query = this.orderRepository
       .createQueryBuilder('order')
-      .leftJoinAndSelect('order.reservations', 'reservation');
+      .leftJoinAndSelect('order.reservations', 'reservation')
+      .leftJoinAndSelect('order.user', 'user')
+      .leftJoinAndSelect('order.client', 'client');
 
     if (userId) {
       query.where('order.user.id = :userId', { userId });
@@ -103,7 +110,13 @@ export class OrderService {
   }
 
   findOne(id: number) {
-    return this.orderRepository.findOneBy({ id });
+    return this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.reservations', 'reservation')
+      .leftJoinAndSelect('order.user', 'user')
+      .leftJoinAndSelect('order.client', 'client')
+      .where('order.id = :id', { id })
+      .getOne();
   }
 
   async update(id: number, updateOrderDto: UpdateOrderDto) {
