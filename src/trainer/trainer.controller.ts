@@ -42,7 +42,7 @@ import { checkAbilites } from 'src/role/abilities.decorator';
 export class TrainerController {
   constructor(private readonly trainerService: TrainerService) {}
 
-  @checkAbilites({ action: 'create', subject: 'Trainer' })
+  @checkAbilites({ action: 'create', subject: 'trainer' })
   @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Create a new trainer in the system' })
   @ApiCreatedResponse({ description: 'A trainer has been created successfully', type: Trainer })

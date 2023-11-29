@@ -31,6 +31,7 @@ export class TrainerService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
+    console.log('called');
     try {
       const [newTrainer, role] = await Promise.all([
         queryRunner.manager.save(Trainer, {
@@ -39,6 +40,7 @@ export class TrainerService {
         }),
         this.roleService.getByName('trainer'),
       ]);
+      console.log(role);
 
       const account = await queryRunner.manager.save(Account, {
         email,
@@ -59,8 +61,10 @@ export class TrainerService {
         'http://127.0.0.1:5173/activate-account?verify_token=' + verify_token,
       );
 
+      console.log(verify_token);
       return { verify_token };
     } catch (error) {
+      console.log(error);
       await queryRunner.rollbackTransaction();
     } finally {
       await queryRunner.release();

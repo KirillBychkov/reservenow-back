@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -53,8 +53,6 @@ export class OrderService {
           const reservationStart = DateTime.fromSQL(reservation_time_start.toString());
           const reservationEnd = DateTime.fromSQL(reservation_time_end.toString());
 
-          console.log(reservationStart, reservationEnd);
-
           const timeDifference =
             reservationEnd.diff(reservationStart, 'minutes').toObject().minutes / 60;
 
@@ -84,6 +82,8 @@ export class OrderService {
       return order;
     } catch (error) {
       await queryRunner.rollbackTransaction();
+      if (error.code === '23505')
+        throw new ConflictException(`Client with phone number '${client.phone}' already exists`);
       throw error;
     } finally {
       await queryRunner.release();
