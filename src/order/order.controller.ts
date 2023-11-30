@@ -10,6 +10,7 @@ import {
   HttpCode,
   HttpStatus,
   Req,
+  Query,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -26,6 +27,7 @@ import {
 import { Order } from './entities/order.entity';
 import { checkAbilites } from 'src/role/abilities.decorator';
 import { AbilitiesGuard } from 'src/role/abilities.guard';
+import ElementsQueryDto from './dto/query.dto';
 
 @ApiTags('Order')
 @ApiBearerAuth()
@@ -46,8 +48,8 @@ export class OrderController {
   @UseGuards(AuthGuard('jwt'))
   @ApiOkResponse({ description: 'All oders have been received', type: [Order] })
   @Get()
-  findAll(@Req() req) {
-    return this.orderService.findAll(+req.user.user_id);
+  findAll(@Req() req, @Query() query: ElementsQueryDto) {
+    return this.orderService.findAll(query, +req.user.user_id);
   }
 
   @checkAbilites({ action: 'read', subject: 'order', conditions: true })

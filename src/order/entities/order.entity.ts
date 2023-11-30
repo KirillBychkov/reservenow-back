@@ -39,6 +39,9 @@ export class Order {
 
   //TODO: GROUP_ID
 
+  @Column({ nullable: true })
+  order_sum: number;
+
   @OneToMany(() => Reservation, (reservation) => reservation.order)
   reservations: Reservation[];
 
