@@ -7,5 +7,5 @@ export class CreateClientDto {
   @IsMobilePhone('uk-UA')
   phone: string;
 
-  description: string;
+  description?: string;
 }

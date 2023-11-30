@@ -5,7 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Organization } from './entities/organization.entity';
 import { StorageService } from 'src/storage/storage.service';
-import { DateTime } from 'luxon';
+import { DateTime, Interval, Duration } from 'luxon';
+import { time } from 'console';
 
 @Injectable()
 export class OrganizationService {
@@ -93,14 +94,11 @@ export class OrganizationService {
   }
 
   async getStatistics(id: number, start_date: string, end_date: string) {
-    const start_date_iso = DateTime.fromISO(start_date);
-    const end_date_iso = DateTime.fromISO(end_date);
-
     const organization = await this.organizationRepository
       .createQueryBuilder('organization')
       .leftJoinAndSelect('organization.rental_objects', 'rental_object')
       .leftJoinAndSelect(
-        'organization.reservations',
+        'rental_object.reservations',
         'reservation',
         start_date ? 'reservation.created_at BETWEEN :start_date AND :end_date' : '',
         {
@@ -108,25 +106,37 @@ export class OrganizationService {
           end_date: end_date ? new Date(end_date) : DateTime.now().toISO(),
         },
       )
+      .leftJoinAndSelect('reservation.order', 'order')
+      .leftJoinAndSelect('order.user', 'user')
       .where('organization.id = :id', { id })
       .getOne();
 
-    const timeDifference = start_date
-      ? start_date_iso.diff(end_date_iso, ['months', 'days'])
-      : null;
+    const start_date_iso = DateTime.fromISO(start_date ?? organization.created_at.toISOString());
+    const end_date_iso = DateTime.fromISO(end_date ?? DateTime.local().toUTC().toISO());
+
+    const timeIntervals = Interval.fromDateTimes(
+      end_date_iso.minus({ months: 11 }).startOf('month'),
+      end_date_iso.endOf('month'),
+    ).splitBy(Duration.fromObject({ weeks: 1 }));
+
+    console.log(timeIntervals.map((interval) => interval.toISO()));
 
     let totalReservationsSum = 0;
     let totalReservationsAmount = 0;
     let totalMinutes = 0;
 
-    // for (const reservation of organization.reservations) {
-    //   const reservationTimeEnd = DateTime.fromJSDate(reservation.reservation_time_end);
-    //   const reservationTimeStart = DateTime.fromJSDate(reservation.reservation_time_start);
+    const rental_objects = organization.rental_objects;
 
-    //   totalMinutes += reservationTimeEnd.diff(reservationTimeStart).as('minutes');
-    //   totalReservationsSum += reservation.price;
-    //   totalReservationsAmount++;
-    // }
+    rental_objects.forEach((rental_object) => {
+      rental_object.reservations.forEach((reservation) => {
+        const reservationTimeEnd = DateTime.fromJSDate(reservation.reservation_time_end);
+        const reservationTimeStart = DateTime.fromJSDate(reservation.reservation_time_start);
+
+        totalMinutes += reservationTimeEnd.diff(reservationTimeStart).as('minutes');
+        totalReservationsSum += reservation.price;
+        totalReservationsAmount++;
+      });
+    });
 
     console.log({ totalMinutes, totalReservationsAmount, totalReservationsSum });
 
