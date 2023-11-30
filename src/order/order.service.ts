@@ -14,6 +14,7 @@ import { Equipment } from 'src/equipment/entities/equipment.entity';
 import { RentalObject } from 'src/rental_object/entities/rental_object.entity';
 import { Trainer } from 'src/trainer/entities/trainer.entity';
 import { ClientService } from 'src/client/client.service';
+import ElementsQueryDto from './dto/query.dto';
 
 @Injectable()
 export class OrderService {
@@ -27,7 +28,7 @@ export class OrderService {
   ) {}
 
   async create(userId: number, createOrderDto: CreateOrderDto) {
-    const { client, reservations } = createOrderDto;
+    const { client, reservations, ...statusAndPaymentMathod } = createOrderDto;
 
     const queryRunner = this.dataSource.createQueryRunner();
 
@@ -42,7 +43,10 @@ export class OrderService {
       const order = await queryRunner.manager.save(Order, {
         user: { id: userId },
         client: { id: clientRecord.id },
+        ...statusAndPaymentMathod,
       });
+
+      let order_sum = 0;
 
       await Promise.all(
         reservations.map(async (reservationDto) => {
@@ -69,6 +73,9 @@ export class OrderService {
             objectToRent = await this.trainerService.findOne(trainer_id);
           }
 
+          const price = Math.floor(objectToRent.price_per_hour * timeDifference);
+          order_sum += price;
+
           queryRunner.manager.insert(Reservation, {
             user: { id: userId },
             equipment: equipment_id ? { id: equipment_id } : null,
@@ -76,9 +83,11 @@ export class OrderService {
             trainer: trainer_id ? { id: trainer_id } : null,
             reservation_time_start,
             reservation_time_end,
-            price: Math.floor(objectToRent.price_per_hour * timeDifference),
+            price,
             order: { id: order.id },
           });
+
+          queryRunner.manager.update(Order, { id: order.id }, { order_sum });
         }),
       );
 
@@ -95,18 +104,30 @@ export class OrderService {
     }
   }
 
-  findAll(userId: number): Promise<Order[]> {
-    const query = this.orderRepository
+  async findAll(query: ElementsQueryDto, userId: number): Promise<Order[]> {
+    const { rental_object_id, equipment_id, trainer_id, limit, skip, sort } = query;
+
+    const sortFilters = (sort == undefined ? 'created_at:1' : sort).split(':');
+
+    const orderQuery = this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.reservations', 'reservation')
       .leftJoinAndSelect('order.user', 'user')
-      .leftJoinAndSelect('order.client', 'client');
+      .leftJoinAndSelect('order.client', 'client')
+      .leftJoinAndSelect('reservation.equipment', 'equipment')
+      .leftJoinAndSelect('reservation.rental_object', 'rental_object')
+      .leftJoinAndSelect('reservation.trainer', 'trainer')
+      .orderBy(`rental_object.${sortFilters[0]}`, sortFilters[1] === '1' ? 'ASC' : 'DESC')
+      .skip(skip ?? 0)
+      .take(limit ?? 10);
 
-    if (userId) {
-      query.where('order.user.id = :userId', { userId });
-    }
+    if (userId) orderQuery.where('order.user.id = :userId', { userId });
+    if (equipment_id) orderQuery.andWhere('equipment.id = :equipment_id', { equipment_id });
+    if (trainer_id) orderQuery.andWhere('trainer.id = :trainer_id', { trainer_id });
+    if (rental_object_id)
+      orderQuery.andWhere('rental_object.id = :rental_object_id', { rental_object_id });
 
-    return query.getMany();
+    return orderQuery.getMany();
   }
 
   findOne(id: number) {

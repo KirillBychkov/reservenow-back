@@ -5,5 +5,5 @@ export class CreateReservationDto {
   // organization_id: number;
   reservation_time_start: Date;
   reservation_time_end: Date;
-  description: string;
+  description?: string;
 }

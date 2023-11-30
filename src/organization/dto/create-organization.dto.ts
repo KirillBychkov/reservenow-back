@@ -6,6 +6,7 @@ export class CreateOrganizationDto {
 
   @IsMobilePhone('uk-UA')
   phone: string;
+
   address: string;
 
   @Min(0)
