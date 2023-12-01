@@ -1,5 +1,4 @@
 import { RentalObject } from 'src/rental_object/entities/rental_object.entity';
-import { Reservation } from 'src/reservation/entities/reservation.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,

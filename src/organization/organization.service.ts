@@ -6,13 +6,16 @@ import { Repository } from 'typeorm';
 import { Organization } from './entities/organization.entity';
 import { StorageService } from 'src/storage/storage.service';
 import { DateTime, Interval, Duration } from 'luxon';
-import { time } from 'console';
+import { ClientService } from 'src/client/client.service';
+import { Client } from 'src/client/entities/client.entity';
 
 @Injectable()
 export class OrganizationService {
   constructor(
     @InjectRepository(Organization)
     private readonly organizationRepository: Repository<Organization>,
+    @InjectRepository(Client) private readonly clientRepository: Repository<Client>,
+    private readonly clientService: ClientService,
     private readonly storageService: StorageService,
   ) {}
 
@@ -94,7 +97,7 @@ export class OrganizationService {
   }
 
   async getStatistics(id: number, start_date: string, end_date: string) {
-    const organization = await this.organizationRepository
+    const organizationQuery = this.organizationRepository
       .createQueryBuilder('organization')
       .leftJoinAndSelect('organization.rental_objects', 'rental_object')
       .leftJoinAndSelect(
@@ -111,36 +114,120 @@ export class OrganizationService {
       .where('organization.id = :id', { id })
       .getOne();
 
+    const clientsQuery = this.clientRepository
+      .createQueryBuilder('client')
+      .leftJoinAndSelect('client.orders', 'order')
+      .leftJoinAndSelect('order.reservations', 'reservation')
+      .leftJoinAndSelect('reservation.equipment', 'equipment')
+      .leftJoinAndSelect('reservation.rental_object', 'rental_object')
+      .leftJoinAndSelect('reservation.trainer', 'trainer')
+      .where('rental_object.organization.id = :id', { id })
+      .getMany();
+
+    const [organization, clients] = await Promise.all([organizationQuery, clientsQuery]);
+
     const start_date_iso = DateTime.fromISO(start_date ?? organization.created_at.toISOString());
     const end_date_iso = DateTime.fromISO(end_date ?? DateTime.local().toUTC().toISO());
 
     const timeIntervals = Interval.fromDateTimes(
       end_date_iso.minus({ months: 11 }).startOf('month'),
       end_date_iso.endOf('month'),
-    ).splitBy(Duration.fromObject({ weeks: 1 }));
-
-    console.log(timeIntervals.map((interval) => interval.toISO()));
-
-    let totalReservationsSum = 0;
-    let totalReservationsAmount = 0;
-    let totalMinutes = 0;
+    )
+      .splitBy(Duration.fromObject({ weeks: 1 }))
+      .map((interval): [Interval, any[]] => [interval, []]);
 
     const rental_objects = organization.rental_objects;
 
-    rental_objects.forEach((rental_object) => {
-      rental_object.reservations.forEach((reservation) => {
-        const reservationTimeEnd = DateTime.fromJSDate(reservation.reservation_time_end);
-        const reservationTimeStart = DateTime.fromJSDate(reservation.reservation_time_start);
+    const top_objects = [];
 
-        totalMinutes += reservationTimeEnd.diff(reservationTimeStart).as('minutes');
-        totalReservationsSum += reservation.price;
-        totalReservationsAmount++;
+    const top_clients = clients
+      .map((client) => {
+        return {
+          name: `${client.first_name} ${client.last_name}`,
+          total_revenue: client.orders.reduce(
+            (prev, curr) =>
+              (prev += curr.reservations.reduce((prev, curr) => (prev += curr.price), 0)),
+            0,
+          ),
+        };
+      })
+      .sort((a, b) => b.total_revenue - a.total_revenue)
+      .slice(0, 4);
+
+    rental_objects.forEach((rental_object) => {
+      top_objects.push({
+        id: rental_object.id,
+        name: rental_object.name,
+        total_reservations: rental_object.reservations.length,
+        empty_days: 0,
+        load: 0.5,
+        total_revenue: rental_object.reservations.reduce((prev, curr) => (prev += curr.price), 0),
+      });
+      rental_object.reservations.forEach((reservation) => {
+        const reservationTimeStart = DateTime.fromJSDate(reservation.reservation_time_start);
+        const reservationTimeEnd = DateTime.fromJSDate(reservation.reservation_time_end);
+        const dateIndex = timeIntervals.findIndex((interval) =>
+          interval[0].contains(reservationTimeEnd),
+        );
+
+        const rentalObjIndex = timeIntervals[dateIndex][1].findIndex(
+          (rentalObj) => rentalObj.rentalObject.id === rental_object.id,
+        );
+
+        if (rentalObjIndex === -1) {
+          timeIntervals[dateIndex][1].push({
+            rentalObject: rental_object,
+            totalObjectReservationsSum: reservation.price,
+            totalObjectReservationsAmount: 1,
+            totalObjectMinutes: reservationTimeEnd.diff(reservationTimeStart).as('minutes'),
+          });
+        } else {
+          timeIntervals[dateIndex][1][rentalObjIndex].totalObjectReservationsSum +=
+            reservation.price;
+          timeIntervals[dateIndex][1][rentalObjIndex].totalObjectReservationsAmount++;
+          timeIntervals[dateIndex][1][rentalObjIndex].totalObjectMinutes += reservationTimeEnd
+            .diff(reservationTimeStart)
+            .as('minutes');
+        }
       });
     });
 
-    console.log({ totalMinutes, totalReservationsAmount, totalReservationsSum });
+    const reservationPerWeek = timeIntervals.map((interval) => {
+      return {
+        week: interval[0].toISODate(),
+        total_revenue: interval[1].reduce(
+          (prev, curr) => prev + curr.totalObjectReservationsSum,
+          0,
+        ),
+        total_reservations: interval[1].reduce(
+          (prev, curr) => prev + curr.totalObjectReservationsAmount,
+          0,
+        ),
+        total_hours: interval[1].reduce((prev, curr) => prev + curr.totalObjectMinutes, 0) / 60,
+      };
+    });
 
-    // return { totalReservationsSum, totalReservationsAmount, totalMinutes };
-    return;
+    const totals = reservationPerWeek.reduce(
+      (prev, curr) => {
+        return {
+          total_revenue: prev.total_revenue + curr.total_revenue,
+          total_reservations: prev.total_reservations + curr.total_reservations,
+          total_hours: prev.total_hours + curr.total_hours,
+        };
+      },
+      {
+        total_revenue: 0,
+        total_reservations: 0,
+        total_hours: 0,
+      },
+    );
+
+    return {
+      organization,
+      ...totals,
+      statistics_per_period: reservationPerWeek,
+      top_objects,
+      top_clients,
+    };
   }
 }

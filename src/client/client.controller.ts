@@ -27,6 +27,7 @@ import { Client } from './entities/client.entity';
 import { checkAbilites } from 'src/role/abilities.decorator';
 import { AbilitiesGuard } from 'src/role/abilities.guard';
 import ElementsQueryDto from './dto/query.dto';
+import ReservationQueryDto from './dto/reservations-query.dto';
 
 @ApiTags('Client')
 @ApiBearerAuth()
@@ -59,6 +60,15 @@ export class ClientController {
   @ApiFoundResponse({ description: 'The client has been received', type: Client })
   findOne(@Param('id') id: string) {
     return this.clientService.findOne(+id);
+  }
+
+  @checkAbilites({ action: 'read', subject: 'client', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
+  @ApiOperation({ summary: 'Get clients reservations by his id' })
+  @Get('/:id/reservations')
+  @ApiFoundResponse({ description: 'The client has been received', type: Client })
+  getClientsReservations(@Param('id') id: string, @Query() query: ReservationQueryDto) {
+    return this.clientService.getReservations(+id, query);
   }
 
   @checkAbilites({ action: 'update', subject: 'client', conditions: true })

@@ -6,9 +6,16 @@ import { UserModule } from 'src/user/user.module';
 import { ClientController } from './client.controller';
 import { AccountModule } from 'src/account/account.module';
 import { RoleModule } from 'src/role/role.module';
+import { ReservationModule } from 'src/reservation/reservation.module';
 
 @Module({
-  imports: [AccountModule, UserModule, RoleModule, TypeOrmModule.forFeature([Client])],
+  imports: [
+    AccountModule,
+    UserModule,
+    ReservationModule,
+    RoleModule,
+    TypeOrmModule.forFeature([Client]),
+  ],
   controllers: [ClientController],
   providers: [ClientService],
   exports: [ClientService],
