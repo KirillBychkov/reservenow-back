@@ -1,17 +1,19 @@
-import { Account } from 'src/account/entities/account.entity';
 import { Order } from 'src/order/entities/order.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
   ManyToOne,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
+export enum ClientStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+}
 
 @Entity()
 export class Client {
@@ -36,9 +38,8 @@ export class Client {
   @OneToMany(() => Order, (order) => order.client)
   orders: Order[];
 
-  @OneToOne(() => Account, { nullable: true })
-  @JoinColumn()
-  account: Account;
+  @Column({ type: 'enum', enum: ClientStatus, default: ClientStatus.ACTIVE })
+  status: ClientStatus;
 
   @CreateDateColumn()
   created_at: Date;
