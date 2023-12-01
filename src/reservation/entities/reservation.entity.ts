@@ -1,6 +1,5 @@
 import { Equipment } from 'src/equipment/entities/equipment.entity';
 import { Order } from 'src/order/entities/order.entity';
-import { Organization } from 'src/organization/entities/organization.entity';
 import { RentalObject } from 'src/rental_object/entities/rental_object.entity';
 import { Trainer } from 'src/trainer/entities/trainer.entity';
 import { User } from 'src/user/entities/user.entity';

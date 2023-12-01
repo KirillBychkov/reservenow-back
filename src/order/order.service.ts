@@ -38,7 +38,7 @@ export class OrderService {
     try {
       const clientRecord =
         (await this.clientService.findOneByPhone(client.phone)) ??
-        (await queryRunner.manager.save(Client, client));
+        (await queryRunner.manager.save(Client, { ...client, userId }));
 
       const order = await queryRunner.manager.save(Order, {
         user: { id: userId },
