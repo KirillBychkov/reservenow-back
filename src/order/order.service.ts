@@ -106,7 +106,7 @@ export class OrderService {
   }
 
   async findAll(query: ElementsQueryDto, userId: number): Promise<FindAllOrdersDto> {
-    const { rental_object_id, equipment_id, trainer_id, limit, skip, sort } = query;
+    const { rental_object_id, equipment_id, search, trainer_id, limit, skip, sort } = query;
 
     const sortFilters = (sort == undefined ? 'created_at:1' : sort).split(':');
 
@@ -122,7 +122,11 @@ export class OrderService {
       .skip(skip ?? 0)
       .take(limit ?? 10);
 
-    if (userId) orderQuery.where('order.user.id = :userId', { userId });
+    if (search?.length === 12 || search?.length === 13)
+      orderQuery.andWhere(`client.phone = :phone`, { phone: search });
+    if (search?.length < 12) orderQuery.andWhere('order.id = :id', { id: search });
+
+    if (userId) orderQuery.andWhere('order.user.id = :userId', { userId });
     if (equipment_id) orderQuery.andWhere('equipment.id = :equipment_id', { equipment_id });
     if (trainer_id) orderQuery.andWhere('trainer.id = :trainer_id', { trainer_id });
     if (rental_object_id)
