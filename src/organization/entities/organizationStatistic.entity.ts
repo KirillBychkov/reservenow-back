@@ -20,7 +20,7 @@ export class OrganizationStatistic {
   total_hours: number;
 
   @Column('float')
-  organizational_load: number;
+  organization_load: number;
 
   @Column('jsonb')
   statistics_per_period: string;
