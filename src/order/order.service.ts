@@ -15,6 +15,7 @@ import { RentalObject } from 'src/rental_object/entities/rental_object.entity';
 import { Trainer } from 'src/trainer/entities/trainer.entity';
 import { ClientService } from 'src/client/client.service';
 import ElementsQueryDto from './dto/query.dto';
+import FindAllOrdersDto from './dto/find-all-orders.dto';
 
 @Injectable()
 export class OrderService {
@@ -104,7 +105,7 @@ export class OrderService {
     }
   }
 
-  async findAll(query: ElementsQueryDto, userId: number): Promise<Order[]> {
+  async findAll(query: ElementsQueryDto, userId: number): Promise<FindAllOrdersDto> {
     const { rental_object_id, equipment_id, trainer_id, limit, skip, sort } = query;
 
     const sortFilters = (sort == undefined ? 'created_at:1' : sort).split(':');
@@ -117,7 +118,7 @@ export class OrderService {
       .leftJoinAndSelect('reservation.equipment', 'equipment')
       .leftJoinAndSelect('reservation.rental_object', 'rental_object')
       .leftJoinAndSelect('reservation.trainer', 'trainer')
-      .orderBy(`rental_object.${sortFilters[0]}`, sortFilters[1] === '1' ? 'ASC' : 'DESC')
+      .orderBy(`order.${sortFilters[0]}`, sortFilters[1] === '1' ? 'ASC' : 'DESC')
       .skip(skip ?? 0)
       .take(limit ?? 10);
 
@@ -127,7 +128,12 @@ export class OrderService {
     if (rental_object_id)
       orderQuery.andWhere('rental_object.id = :rental_object_id', { rental_object_id });
 
-    return orderQuery.getMany();
+    const orders = await orderQuery.getManyAndCount();
+
+    return {
+      filters: { skip, limit, total: orders[1], received: orders[0].length },
+      data: orders[0],
+    };
   }
 
   findOne(id: number) {

@@ -12,6 +12,8 @@ export default class ElementsQueryDto {
   limit?: number;
   @ApiProperty({ description: 'How many orders to skip in the DB (0 by default)' })
   skip?: number;
+  @ApiProperty({ description: 'Name of the order' })
+  search?: string;
   @ApiProperty({
     description: 'Option which allow you to choose sorting like title:1 ASC or _id:-1 DESC',
   })
