@@ -61,11 +61,25 @@ export class ClientService {
       });
     }
 
-    const clients = await clientsQuery.getManyAndCount();
+    const fetchedClients = await clientsQuery.getManyAndCount();
+    const clients = fetchedClients[0].map((client) => {
+      const totals = client.orders.reduce(
+        (prev, curr) => {
+          return {
+            total_reservation_sum:
+              prev.total_reservation_sum +
+              curr.reservations.reduce((prev, curr) => (prev += curr.price), 0),
+            total_reservation_amount: prev.total_reservation_amount + curr.reservations.length,
+          };
+        },
+        { total_reservation_sum: 0, total_reservation_amount: 0 },
+      );
+      return { ...client, ...totals };
+    });
 
     return {
-      filters: { skip, limit, search, total: clients[1], received: clients[0].length },
-      data: clients[0],
+      filters: { skip, limit, search, total: fetchedClients[1], received: clients.length },
+      data: clients,
     };
   }
 

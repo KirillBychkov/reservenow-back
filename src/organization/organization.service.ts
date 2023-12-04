@@ -6,16 +6,18 @@ import { Repository } from 'typeorm';
 import { Organization } from './entities/organization.entity';
 import { StorageService } from 'src/storage/storage.service';
 import { DateTime, Interval, Duration } from 'luxon';
-import { ClientService } from 'src/client/client.service';
 import { Client } from 'src/client/entities/client.entity';
+import { OrganizationStatistic } from './entities/organizationStatistic.entity';
 
 @Injectable()
 export class OrganizationService {
   constructor(
+    @InjectRepository(OrganizationStatistic)
+    private readonly organizationStatisticRepository: Repository<OrganizationStatistic>,
     @InjectRepository(Organization)
     private readonly organizationRepository: Repository<Organization>,
     @InjectRepository(Client) private readonly clientRepository: Repository<Client>,
-    private readonly clientService: ClientService,
+
     private readonly storageService: StorageService,
   ) {}
 
@@ -126,7 +128,7 @@ export class OrganizationService {
 
     const [organization, clients] = await Promise.all([organizationQuery, clientsQuery]);
 
-    const start_date_iso = DateTime.fromISO(start_date ?? organization.created_at.toISOString());
+    // const start_date_iso = DateTime.fromISO(start_date ?? organization.created_at.toISOString());
     const end_date_iso = DateTime.fromISO(end_date ?? DateTime.local().toUTC().toISO());
 
     const timeIntervals = Interval.fromDateTimes(
@@ -222,12 +224,15 @@ export class OrganizationService {
       },
     );
 
-    return {
-      organization,
+    const stats = await this.organizationStatisticRepository.save({
+      organization: { id },
+      statistics_per_period: JSON.stringify(reservationPerWeek),
       ...totals,
-      statistics_per_period: reservationPerWeek,
-      top_objects,
-      top_clients,
-    };
+      organization_load: 0,
+      top_objects: JSON.stringify(top_objects, null, 2),
+      top_clients: JSON.stringify(top_clients, null, 2),
+    });
+
+    return stats;
   }
 }

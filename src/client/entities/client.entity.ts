@@ -46,4 +46,10 @@ export class Client {
 
   @UpdateDateColumn()
   updated_at: Date;
+
+  @Column({ type: 'float', nullable: true, select: false })
+  total_reservation_sum: number;
+
+  @Column({ type: 'int', nullable: true, select: false })
+  total_reservation_amount: number;
 }
