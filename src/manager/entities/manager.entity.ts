@@ -4,7 +4,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -15,8 +15,7 @@ export class Manager {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => User)
-  @JoinColumn()
+  @ManyToOne(() => User, (user) => user.id, { onDelete: 'CASCADE' })
   user: User;
 
   @Column()
@@ -26,6 +25,9 @@ export class Manager {
   last_name: string;
 
   @Column()
+  phone: string;
+
+  @Column({ nullable: true })
   description: string;
 
   @Column({ nullable: true })
@@ -34,7 +36,7 @@ export class Manager {
   @Column({ nullable: true })
   hired_at: Date;
 
-  @OneToOne(() => Account, (account) => account.manager)
+  @OneToOne(() => Account, (account) => account.manager, { onDelete: 'CASCADE' })
   account: Account;
 
   @Column({ nullable: true })

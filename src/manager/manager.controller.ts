@@ -26,6 +26,7 @@ import {
   UseInterceptors,
   MaxFileSizeValidator,
   Put,
+  Req,
 } from '@nestjs/common';
 import { ManagerService } from './manager.service';
 import { CreateManagerDto } from './dto/create-manager.dto';
@@ -52,13 +53,12 @@ export class ManagerController {
     return this.managerService.create(+req.user.user_id, createManagerDto);
   }
 
-  @checkAbilites({ action: 'read', subject: 'manager' })
-  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
+  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Get all managers in the system' })
   @ApiOkResponse({ description: 'All managers have been received', type: [Manager] })
   @Get()
-  findAll() {
-    return this.managerService.findAll();
+  findAll(@Req() req) {
+    return this.managerService.findAll(+req.user.user_id);
   }
 
   @checkAbilites({ action: 'read', subject: 'manager', conditions: true })

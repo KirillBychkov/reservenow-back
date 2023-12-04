@@ -122,9 +122,9 @@ export class OrderService {
       .skip(skip ?? 0)
       .take(limit ?? 10);
 
-    if (search?.length === 12 || search?.length === 13)
-      orderQuery.andWhere(`client.phone = :phone`, { phone: search });
-    if (search?.length < 12) orderQuery.andWhere('order.id = :id', { id: search });
+    if (search?.length >= 10)
+      orderQuery.andWhere(`client.phone ILIKE :phone`, { phone: `%${search}` });
+    if (search?.length < 10) orderQuery.andWhere('order.id = :id', { id: search });
 
     if (userId) orderQuery.andWhere('order.user.id = :userId', { userId });
     if (equipment_id) orderQuery.andWhere('equipment.id = :equipment_id', { equipment_id });

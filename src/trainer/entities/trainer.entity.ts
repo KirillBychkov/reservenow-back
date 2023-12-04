@@ -34,7 +34,7 @@ export class Trainer {
   @Column({ nullable: true })
   image?: string;
 
-  @Column()
+  @Column({ nullable: true })
   hired_at: Date;
 
   @Column({ nullable: true })
