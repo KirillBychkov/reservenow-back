@@ -106,7 +106,8 @@ export class OrderService {
   }
 
   async findAll(query: ElementsQueryDto, userId: number): Promise<FindAllOrdersDto> {
-    const { rental_object_id, equipment_id, search, trainer_id, limit, skip, sort } = query;
+    const { rental_object_id, equipment_id, client_id, search, trainer_id, limit, skip, sort } =
+      query;
 
     const sortFilters = (sort == undefined ? 'created_at:1' : sort).split(':');
 
@@ -131,6 +132,7 @@ export class OrderService {
     if (trainer_id) orderQuery.andWhere('trainer.id = :trainer_id', { trainer_id });
     if (rental_object_id)
       orderQuery.andWhere('rental_object.id = :rental_object_id', { rental_object_id });
+    if (client_id) orderQuery.andWhere('client.id = :client_id', { client_id });
 
     const orders = await orderQuery.getManyAndCount();
 
