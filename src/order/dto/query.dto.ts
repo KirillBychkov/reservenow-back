@@ -7,12 +7,14 @@ export default class ElementsQueryDto {
   equipment_id?: number;
   @ApiProperty({ description: 'Id of the trainers you want to get all orders for' })
   trainer_id?: number;
+  @ApiProperty({ description: 'Id of the client you want to get all orders for' })
+  client_id?: number;
 
   @ApiProperty({ description: 'How many orders to receive from the DB (10 by default)' })
   limit?: number;
   @ApiProperty({ description: 'How many orders to skip in the DB (0 by default)' })
   skip?: number;
-  @ApiProperty({ description: 'Name of the order' })
+  @ApiProperty({ description: "Id of the order or client's phone number" })
   search?: string;
   @ApiProperty({
     description: 'Option which allow you to choose sorting like title:1 ASC or _id:-1 DESC',

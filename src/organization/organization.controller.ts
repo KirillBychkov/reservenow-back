@@ -123,9 +123,10 @@ export class OrganizationController {
   @ApiOperation({ summary: 'Get statistics of the organization' })
   @ApiQuery({ name: 'start_date', required: false, type: String })
   @ApiQuery({ name: 'end_date', required: false, type: String })
+  @checkAbilites({ action: 'read', subject: 'organization', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @Get('/:id/statistics')
   getStatistics(
-    @Req() req,
     @Param('id') id: string,
     @Query('start_date') start_date?: string,
     @Query('end_date') end_date?: string,

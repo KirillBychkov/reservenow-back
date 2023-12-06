@@ -28,12 +28,19 @@ import { checkAbilites } from 'src/role/abilities.decorator';
 import { AbilitiesGuard } from 'src/role/abilities.guard';
 import ElementsQueryDto from './dto/query.dto';
 import ReservationQueryDto from './dto/reservations-query.dto';
+import { FindByPhoneQueryDto } from './dto/find-by-phone-query.dto';
 
 @ApiTags('Client')
 @ApiBearerAuth()
 @Controller('client')
 export class ClientController {
   constructor(private readonly clientService: ClientService) {}
+  @ApiOperation({ summary: 'Get a client by their phone number' })
+  @Get('/byPhone')
+  @ApiFoundResponse({ description: 'The client has been received', type: Client })
+  findOneByPhone(@Query() phone: FindByPhoneQueryDto) {
+    return this.clientService.findOneByPhone(phone);
+  }
 
   @checkAbilites({ action: 'create', subject: 'client' })
   @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
@@ -55,7 +62,7 @@ export class ClientController {
 
   @checkAbilites({ action: 'read', subject: 'client', conditions: true })
   @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
-  @ApiOperation({ summary: 'Get a client by its id' })
+  @ApiOperation({ summary: 'Get a client by their id' })
   @Get(':id')
   @ApiFoundResponse({ description: 'The client has been received', type: Client })
   findOne(@Param('id') id: string) {
@@ -64,7 +71,7 @@ export class ClientController {
 
   @checkAbilites({ action: 'read', subject: 'client', conditions: true })
   @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
-  @ApiOperation({ summary: 'Get clients reservations by his id' })
+  @ApiOperation({ summary: 'Get clients reservations by their id' })
   @Get('/:id/reservations')
   @ApiFoundResponse({ description: 'The client has been received', type: Client })
   getClientsReservations(@Param('id') id: string, @Query() query: ReservationQueryDto) {
@@ -73,7 +80,7 @@ export class ClientController {
 
   @checkAbilites({ action: 'update', subject: 'client', conditions: true })
   @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
-  @ApiOperation({ summary: 'Update a client by its id' })
+  @ApiOperation({ summary: 'Update a client by their id' })
   @Patch(':id')
   @ApiOkResponse({ description: 'The client has been updated successfully', type: Client })
   update(@Param('id') id: string, @Body() updateClientDto: UpdateClientDto) {
@@ -82,7 +89,7 @@ export class ClientController {
 
   @checkAbilites({ action: 'delete', subject: 'client', conditions: true })
   @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
-  @ApiOperation({ summary: 'Delete a client by its id' })
+  @ApiOperation({ summary: 'Delete a client by their id' })
   @Delete(':id')
   @ApiNoContentResponse({ description: 'The client has been deleted successfully' })
   remove(@Param('id') id: string) {

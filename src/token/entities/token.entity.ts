@@ -14,7 +14,7 @@ export class Token {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => Account)
+  @OneToOne(() => Account, { onDelete: 'CASCADE' })
   @JoinColumn()
   account: Account;
 

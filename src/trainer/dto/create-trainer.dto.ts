@@ -10,7 +10,7 @@ export class CreateTrainerDto {
 
   description?: string;
   image?: string;
-  hired_at: Date;
+  hired_at?: Date;
   resigned_at?: Date;
   price_per_hour: number;
 
