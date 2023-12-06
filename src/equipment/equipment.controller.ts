@@ -46,8 +46,7 @@ export class EquipmentController {
     return this.equipmentService.create(req.user.user_id, createEquipmentDto);
   }
 
-  @checkAbilites({ action: 'read', subject: 'equipment' })
-  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
+  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Get all equipment in the system' })
   @Get()
   @ApiFoundResponse({ description: 'All equipment have been received', type: [Equipment] })

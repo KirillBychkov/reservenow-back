@@ -38,8 +38,8 @@ export class OrderService {
 
     try {
       const clientRecord =
-        (await this.clientService.findOneByPhone(client.phone)) ??
-        (await queryRunner.manager.save(Client, { ...client, userId }));
+        (await this.clientService.findOneByPhone({ phone: client.phone })) ??
+        (await queryRunner.manager.save(Client, { ...client, user: { id: userId } }));
 
       const order = await queryRunner.manager.save(Order, {
         user: { id: userId },
@@ -106,7 +106,8 @@ export class OrderService {
   }
 
   async findAll(query: ElementsQueryDto, userId: number): Promise<FindAllOrdersDto> {
-    const { rental_object_id, equipment_id, search, trainer_id, limit, skip, sort } = query;
+    const { rental_object_id, equipment_id, client_id, search, trainer_id, limit, skip, sort } =
+      query;
 
     const sortFilters = (sort == undefined ? 'created_at:1' : sort).split(':');
 
@@ -122,15 +123,16 @@ export class OrderService {
       .skip(skip ?? 0)
       .take(limit ?? 10);
 
-    if (search?.length === 12 || search?.length === 13)
-      orderQuery.andWhere(`client.phone = :phone`, { phone: search });
-    if (search?.length < 12) orderQuery.andWhere('order.id = :id', { id: search });
+    if (search?.length >= 10)
+      orderQuery.andWhere(`client.phone ILIKE :phone`, { phone: `%${search}` });
+    if (search?.length < 10) orderQuery.andWhere('order.id = :id', { id: search });
 
     if (userId) orderQuery.andWhere('order.user.id = :userId', { userId });
     if (equipment_id) orderQuery.andWhere('equipment.id = :equipment_id', { equipment_id });
     if (trainer_id) orderQuery.andWhere('trainer.id = :trainer_id', { trainer_id });
     if (rental_object_id)
       orderQuery.andWhere('rental_object.id = :rental_object_id', { rental_object_id });
+    if (client_id) orderQuery.andWhere('client.id = :client_id', { client_id });
 
     const orders = await orderQuery.getManyAndCount();
 

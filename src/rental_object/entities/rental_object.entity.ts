@@ -92,4 +92,24 @@ export class RentalObject {
 
   @UpdateDateColumn()
   update_at: Date;
+
+  public get total_hours(): number {
+    const daysOfWeek = [
+      'sunday',
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+    ];
+    return daysOfWeek.reduce((acc, day) => {
+      const start = this[`${day}_start_hours`];
+      const end = this[`${day}_end_hours`];
+      if (start && end) {
+        return acc + (end - start);
+      }
+      return acc;
+    }, 0);
+  }
 }

@@ -14,6 +14,7 @@ import {
   UseInterceptors,
   MaxFileSizeValidator,
   Put,
+  Req,
 } from '@nestjs/common';
 import { TrainerService } from './trainer.service';
 import { CreateTrainerDto } from './dto/create-trainer.dto';
@@ -57,10 +58,12 @@ export class TrainerController {
   @ApiOperation({ summary: 'Get all trainers in the system' })
   @ApiOkResponse({ description: 'All trainers have been received', type: [Trainer] })
   @Get()
-  findAll() {
-    return this.trainerService.findAll();
+  findAll(@Req() req) {
+    return this.trainerService.findAll(+req.user.user_id);
   }
 
+  @checkAbilites({ action: 'read', subject: 'trainer', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Get a trainer by its id' })
   @ApiOkResponse({ description: 'The trainer has been received', type: Trainer })
   @Get(':id')
@@ -68,6 +71,8 @@ export class TrainerController {
     return this.trainerService.findOne(+id);
   }
 
+  @checkAbilites({ action: 'update', subject: 'trainer', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Update a trainer by its id' })
   @ApiOkResponse({ description: 'The trainer has been updated successfully', type: Trainer })
   @Patch(':id')
@@ -75,6 +80,8 @@ export class TrainerController {
     return this.trainerService.update(+id, updateTrainerDto);
   }
 
+  @checkAbilites({ action: 'delete', subject: 'trainer', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Delete a trainer by its id' })
   @ApiNoContentResponse({ description: 'The trainer has been deleted successfully' })
   @Delete(':id')
@@ -82,6 +89,8 @@ export class TrainerController {
     return this.trainerService.remove(+id);
   }
 
+  @checkAbilites({ action: 'update', subject: 'trainer', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Create a new avatar for the trainer' })
   @ApiConsumes('multipart/form-data')
   @ApiBody(imageSchema)

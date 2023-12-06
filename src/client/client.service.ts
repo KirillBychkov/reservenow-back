@@ -10,6 +10,7 @@ import FindAllСlientsDto from './dto/find-all-clients.dto';
 import { ReservationService } from 'src/reservation/reservation.service';
 import ReservationQueryDto from './dto/reservations-query.dto';
 import FindAllReservationsByClientDto from 'src/reservation/dto/find-reservations-by-client.dto';
+import { FindByPhoneQueryDto } from './dto/find-by-phone-query.dto';
 
 @Injectable()
 export class ClientService {
@@ -99,9 +100,12 @@ export class ClientService {
     return client;
   }
 
-  async findOneByPhone(phone: string): Promise<Client> {
+  async findOneByPhone(phoneQuery: FindByPhoneQueryDto): Promise<Client> {
+    const { phone } = phoneQuery;
     const client = await this.clientRepository
       .createQueryBuilder('client')
+      .leftJoinAndSelect('client.orders', 'order')
+      .leftJoinAndSelect('order.reservations', 'reservation')
       .where('client.phone = :phone', { phone })
       .getOne();
 

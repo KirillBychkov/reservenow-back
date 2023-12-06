@@ -10,6 +10,7 @@ import { RoleService } from 'src/role/role.service';
 import { TokenService } from 'src/token/token.service';
 import { Account } from 'src/account/entities/account.entity';
 import { MailService } from 'src/mail/mail.service';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class ManagerService {
@@ -33,25 +34,27 @@ export class ManagerService {
 
     try {
       const [newManager, role] = await Promise.all([
-        queryRunner.manager.save(Manager, {
-          user: { id: userId },
-          ...manager,
-        }),
+        queryRunner.manager.save(Manager, { ...manager, user: { id: userId } }),
         this.roleService.getByName('trainer'),
       ]);
 
       const account = await queryRunner.manager.save(Account, {
         email,
         role,
-        trainer: newManager,
+        manager: newManager,
       });
       await queryRunner.commitTransaction();
 
       const verify_token = await this.tokenService.generateToken(
         { id: account.id, email: account.email },
-        process.env.VERIFY_TOKEN,
+        process.env.VERIFY_SECRET,
         60 * 60,
       );
+
+      this.tokenService.createToken(account.id, {
+        verify_token,
+        expires_at: DateTime.utc().plus({ minutes: 60 }).toISO().slice(0, -1),
+      });
 
       this.mailService.sendMail(
         account.email,
@@ -61,23 +64,31 @@ export class ManagerService {
 
       return { verify_token };
     } catch (error) {
+      console.log(error);
       await queryRunner.rollbackTransaction();
     } finally {
       await queryRunner.release();
     }
   }
 
-  findAll(): Promise<Manager[]> {
+  findAll(userId: number): Promise<Manager[]> {
     return this.managerRepository
       .createQueryBuilder('manager')
       .leftJoinAndSelect('manager.user', 'user')
       .leftJoinAndSelect('manager.account', 'account')
       .leftJoinAndSelect('account.role', 'role')
+      .where('user.id = :userId', { userId })
       .getMany();
   }
 
   async findOne(id: number): Promise<Manager> {
-    const manager = await this.managerRepository.findOneBy({ id });
+    const manager = await this.managerRepository
+      .createQueryBuilder('manager')
+      .leftJoinAndSelect('manager.user', 'user')
+      .leftJoinAndSelect('manager.account', 'account')
+      .leftJoinAndSelect('account.role', 'role')
+      .where('id = :id', { id })
+      .getOne();
     if (!manager) throw new ConflictException(`Manager with id ${id} does not exist`);
 
     return manager;

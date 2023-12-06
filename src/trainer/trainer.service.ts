@@ -10,6 +10,7 @@ import { Account } from 'src/account/entities/account.entity';
 import { TokenService } from 'src/token/token.service';
 import { StorageService } from 'src/storage/storage.service';
 import { MailService } from 'src/mail/mail.service';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class TrainerService {
@@ -49,9 +50,14 @@ export class TrainerService {
 
       const verify_token = await this.tokenService.generateToken(
         { id: account.id, email: account.email },
-        process.env.VERIFY_TOKEN,
+        process.env.VERIFY_SECRET,
         60 * 60,
       );
+
+      this.tokenService.createToken(account.id, {
+        verify_token,
+        expires_at: DateTime.utc().plus({ minutes: 60 }).toISO().slice(0, -1),
+      });
 
       this.mailService.sendMail(
         email,
@@ -61,18 +67,20 @@ export class TrainerService {
 
       return { verify_token };
     } catch (error) {
+      console.log(error);
       await queryRunner.rollbackTransaction();
     } finally {
       await queryRunner.release();
     }
   }
 
-  findAll(): Promise<Trainer[]> {
+  findAll(userId: number): Promise<Trainer[]> {
     const trainers = this.trainerRepository
       .createQueryBuilder('trainer')
       .leftJoinAndSelect('trainer.user', 'user')
       .leftJoinAndSelect('trainer.account', 'account')
       .leftJoinAndSelect('account.role', 'role')
+      .where('user.id = :id', { id: userId })
       .getMany();
 
     return trainers;
