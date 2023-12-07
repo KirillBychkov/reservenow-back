@@ -93,7 +93,16 @@ export class RentalObject {
   @UpdateDateColumn()
   update_at: Date;
 
-  public get total_hours(): number {
+  @Column({ type: 'float', nullable: true, select: false })
+  total_reservation_sum: number;
+
+  @Column({ type: 'int', nullable: true, select: false })
+  total_reservation_amount: number;
+
+  @Column({ type: 'int', nullable: true, select: false })
+  total_clients_amount: number;
+
+  public get total_working_hours_per_week(): number {
     const daysOfWeek = [
       'sunday',
       'monday',

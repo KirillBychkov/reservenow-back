@@ -112,6 +112,7 @@ export class OrganizationService {
         .diff(DateTime.fromISO(previousStats?.created_at.toISOString()))
         .as('days') < 1
     ) {
+      console.log(previousStats);
       return previousStats;
     }
 
@@ -176,7 +177,8 @@ export class OrganizationService {
 
     rental_objects.forEach((rental_object) => {
       const notEmptyDays = new Set();
-      const totalWokringHours = rental_object.total_hours * Math.ceil(daysDifference.as('weeks'));
+      const totalWokringHours =
+        rental_object.total_working_hours_per_week * Math.ceil(daysDifference.as('weeks'));
       let totalObjectMinutes = 0;
       totalRentalObjectsHours += totalWokringHours;
 
@@ -250,14 +252,27 @@ export class OrganizationService {
       },
     );
 
-    const stats = await this.organizationStatisticRepository.save({
+    const statsObject = {
       organization: { id },
       statistics_per_period: JSON.stringify(reservationPerWeek),
       ...totals,
       organization_load: (totals.total_hours / totalRentalObjectsHours) * 100,
       top_objects: JSON.stringify(top_objects, null, 2),
       top_clients: JSON.stringify(top_clients, null, 2),
-    });
+    };
+
+    if (previousStats) {
+      const updated = await this.organizationStatisticRepository
+        .createQueryBuilder()
+        .update(OrganizationStatistic, statsObject)
+        .where('id = :id', { id: previousStats.id })
+        .returning('*')
+        .execute();
+
+      return updated.raw;
+    }
+
+    const stats = await this.organizationStatisticRepository.save(statsObject);
 
     return stats;
   }

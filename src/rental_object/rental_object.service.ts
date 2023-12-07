@@ -73,11 +73,27 @@ export class RentalObjectService {
       .leftJoinAndSelect('rental_object.organization', 'organization')
       .leftJoinAndSelect('organization.user', 'user')
       .leftJoinAndSelect('rental_object.reservations', 'reservation')
+      .leftJoinAndSelect('reservation.order', 'order')
+      .leftJoinAndSelect('order.client', 'client')
       .where('rental_object.id = :id', { id })
       .getOne();
-
     if (!rentalObject) throw new ConflictException(`Rental object with id ${id} does not exist`);
-    return rentalObject;
+
+    const clientsSet = new Set();
+    let totalPrice = 0;
+
+    rentalObject.reservations.forEach((reservation) => {
+      clientsSet.add(reservation.order.client);
+      totalPrice += reservation.price;
+    });
+
+    return {
+      ...rentalObject,
+      total_reservation_sum: totalPrice,
+      total_reservation_amount: rentalObject.reservations.length,
+      total_clients_amount: clientsSet.size,
+      total_working_hours_per_week: rentalObject.total_working_hours_per_week,
+    };
   }
 
   async update(id: number, updateRentalObjectDto: UpdateRentalObjectDto): Promise<RentalObject> {
