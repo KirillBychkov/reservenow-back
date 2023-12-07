@@ -106,6 +106,10 @@ export class ClientService {
       .createQueryBuilder('client')
       .leftJoinAndSelect('client.orders', 'order')
       .leftJoinAndSelect('order.reservations', 'reservation')
+      .select('client.*')
+      .addSelect('SUM(reservation.price)', 'total_reservation_sum')
+      .addSelect('COUNT(reservation.id)', 'total_reservation_amount')
+      .groupBy('client.id')
       .where('client.phone = :phone', { phone })
       .getOne();
 
