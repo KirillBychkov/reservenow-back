@@ -112,7 +112,6 @@ export class OrganizationService {
         .diff(DateTime.fromISO(previousStats?.created_at.toISOString()))
         .as('days') < 1
     ) {
-      console.log(previousStats);
       return previousStats;
     }
 
