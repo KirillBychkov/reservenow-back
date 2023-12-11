@@ -55,13 +55,14 @@ export class TrainerController {
     return this.trainerService.create(req.user.user_id, createTrainerDto);
   }
 
-  @ApiOperation({ summary: 'Get all trainers in the system' })
+  @UseGuards(AuthGuard('jwt'))
   @ApiOkResponse({ description: 'All trainers have been received', type: [Trainer] })
   @Get()
   findAll(@Req() req) {
     return this.trainerService.findAll(+req.user.user_id);
   }
 
+  @ApiOperation({ summary: 'Get all trainers in the system' })
   @checkAbilites({ action: 'read', subject: 'trainer', conditions: true })
   @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Get a trainer by its id' })
