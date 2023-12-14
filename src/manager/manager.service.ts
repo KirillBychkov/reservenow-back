@@ -87,7 +87,7 @@ export class ManagerService {
       .leftJoinAndSelect('manager.user', 'user')
       .leftJoinAndSelect('manager.account', 'account')
       .leftJoinAndSelect('account.role', 'role')
-      .where('id = :id', { id })
+      .where('manager.id = :id', { id })
       .getOne();
     if (!manager) throw new ConflictException(`Manager with id ${id} does not exist`);
 
