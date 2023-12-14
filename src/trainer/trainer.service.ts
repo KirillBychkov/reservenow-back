@@ -87,7 +87,10 @@ export class TrainerService {
   }
 
   async findOne(id: number): Promise<Trainer> {
-    const trainer = await this.trainerRepository.findOneBy({ id });
+    const trainer = await this.trainerRepository
+      .createQueryBuilder('trainer')
+      .leftJoinAndSelect('trainer.account', 'accoun')
+      .getOne();
     if (!trainer) throw new ConflictException(`A trainer with id ${id} does not exist`);
     return trainer;
   }
