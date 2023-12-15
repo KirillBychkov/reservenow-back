@@ -89,10 +89,24 @@ export class TrainerService {
   async findOne(id: number): Promise<Trainer> {
     const trainer = await this.trainerRepository
       .createQueryBuilder('trainer')
-      .leftJoinAndSelect('trainer.account', 'accoun')
+      .leftJoinAndSelect('trainer.account', 'account')
+      .leftJoinAndSelect('trainer.reservations', 'reservation')
+      .leftJoinAndSelect('reservation.order', 'order')
+      .leftJoinAndSelect('order.client', 'client')
+      .where('trainer.id = :id', { id })
       .getOne();
+
     if (!trainer) throw new ConflictException(`A trainer with id ${id} does not exist`);
-    return trainer;
+
+    const clientsSet = new Set();
+    let totalPrice = 0;
+
+    trainer.reservations.forEach((reservation) => {
+      clientsSet.add(reservation.order.client);
+      totalPrice += reservation.price;
+    });
+
+    return { ...trainer, total_reservation_sum: totalPrice, total_clients_amount: clientsSet.size };
   }
 
   async update(id: number, updateTrainerDto: UpdateTrainerDto): Promise<Trainer> {
