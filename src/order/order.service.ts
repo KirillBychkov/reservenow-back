@@ -31,6 +31,8 @@ export class OrderService {
   async create(userId: number, createOrderDto: CreateOrderDto) {
     const { client, reservations, ...statusAndPaymentMathod } = createOrderDto;
 
+    if (reservations.length === 0) throw new ConflictException('Reservations array is empty');
+
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -57,6 +59,7 @@ export class OrderService {
             trainer_id,
             reservation_time_start,
             reservation_time_end,
+            description,
           } = reservationDto;
 
           const reservationStart = DateTime.fromISO(reservation_time_start.toString());
@@ -74,6 +77,8 @@ export class OrderService {
             objectToRent = await this.trainerService.findOne(trainer_id);
           }
 
+          if (!objectToRent) throw new ConflictException('Object to rent not found');
+
           const price = Math.floor(objectToRent.price_per_hour * timeDifference);
           order_sum += price;
 
@@ -82,6 +87,7 @@ export class OrderService {
             equipment: equipment_id ? { id: equipment_id } : null,
             rental_object: rental_object_id ? { id: rental_object_id } : null,
             trainer: trainer_id ? { id: trainer_id } : null,
+            description,
             reservation_time_start,
             reservation_time_end,
             price,
@@ -148,6 +154,9 @@ export class OrderService {
       .leftJoinAndSelect('order.reservations', 'reservation')
       .leftJoinAndSelect('order.user', 'user')
       .leftJoinAndSelect('order.client', 'client')
+      .leftJoinAndSelect('reservation.equipment', 'equipment')
+      .leftJoinAndSelect('reservation.rental_object', 'rental_object')
+      .leftJoinAndSelect('reservation.trainer', 'trainer')
       .where('order.id = :id', { id })
       .getOne();
   }
