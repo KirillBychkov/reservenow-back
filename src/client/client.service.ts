@@ -102,6 +102,7 @@ export class ClientService {
 
   async findOneByPhone(phoneQuery: FindByPhoneQueryDto): Promise<Client> {
     const { phone } = phoneQuery;
+
     const client = await this.clientRepository
       .createQueryBuilder('client')
       .leftJoinAndSelect('client.orders', 'order')
@@ -111,7 +112,7 @@ export class ClientService {
       .addSelect('COUNT(reservation.id)', 'total_reservation_amount')
       .groupBy('client.id')
       .where('client.phone = :phone', { phone })
-      .getOne();
+      .getRawOne();
 
     return client;
   }
