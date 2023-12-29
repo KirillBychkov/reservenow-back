@@ -79,7 +79,11 @@ export class OrderService {
 
           if (!objectToRent) throw new ConflictException('Object to rent not found');
 
-          const price = Math.floor(objectToRent.price_per_hour * timeDifference);
+          let price = 0;
+          if ('price' in objectToRent) price = objectToRent.price;
+          else if ('price_per_hour' in objectToRent)
+            price = Math.floor(objectToRent.price_per_hour * timeDifference);
+
           order_sum += price;
 
           queryRunner.manager.insert(Reservation, {

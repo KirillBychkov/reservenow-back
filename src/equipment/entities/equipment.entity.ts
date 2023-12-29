@@ -23,7 +23,7 @@ export class Equipment {
   description?: string;
 
   @Column()
-  price_per_hour: number;
+  price: number;
 
   @Column({ default: false })
   is_deleted?: boolean;
