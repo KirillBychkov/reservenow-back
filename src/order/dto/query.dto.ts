@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsDateString, IsOptional } from 'class-validator';
 
 export default class ElementsQueryDto {
   @ApiProperty({ description: 'Id of the rental object you want to get all orders for' })
@@ -20,4 +21,15 @@ export default class ElementsQueryDto {
     description: 'Option which allow you to choose sorting like title:1 ASC or _id:-1 DESC',
   })
   sort?: string;
+
+  // Time range
+  @ApiProperty({ description: 'Date from which you want to get orders' })
+  @IsDateString()
+  @IsOptional()
+  start_date?: string;
+
+  @ApiProperty({ description: 'Date to which you want to get orders.' })
+  @IsDateString()
+  @IsOptional()
+  end_date?: string;
 }
