@@ -15,11 +15,11 @@ export class CreateReservationDto {
 
   @IsDateString()
   @IsOptional()
-  reservation_time_start?: Date;
+  reservation_time_start?: string;
 
   @IsDateString()
   @IsOptional()
-  reservation_time_end?: Date;
+  reservation_time_end?: string;
 
   @IsString()
   @IsOptional()

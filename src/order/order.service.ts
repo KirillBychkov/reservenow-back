@@ -43,8 +43,8 @@ export class OrderService {
     let rentHours = 0;
 
     if (reservation_time_start && reservation_time_end) {
-      const reservationStart = DateTime.fromISO(reservation_time_start.toString());
-      const reservationEnd = DateTime.fromISO(reservation_time_end.toString());
+      const reservationStart = DateTime.fromISO(reservation_time_start);
+      const reservationEnd = DateTime.fromISO(reservation_time_end);
       rentHours = reservationEnd.diff(reservationStart, 'minutes').toObject().minutes / 60;
     }
 
