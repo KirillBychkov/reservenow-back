@@ -16,6 +16,7 @@ import { Trainer } from 'src/trainer/entities/trainer.entity';
 import { ClientService } from 'src/client/client.service';
 import ElementsQueryDto from './dto/query.dto';
 import FindAllOrdersDto from './dto/find-all-orders.dto';
+import { CreateReservationDto } from 'src/reservation/dto/create-reservation.dto';
 
 @Injectable()
 export class OrderService {
@@ -27,6 +28,45 @@ export class OrderService {
     private readonly clientService: ClientService,
     private readonly dataSource: DataSource,
   ) {}
+
+  private async calculateObjectToRentPrice(reservationDto: CreateReservationDto) {
+    const {
+      equipment_id,
+      rental_object_id,
+      trainer_id,
+      reservation_time_start,
+      reservation_time_end,
+    } = reservationDto;
+
+    let objectToRent: Equipment | RentalObject | Trainer;
+    let price = 0;
+    let rentHours = 0;
+
+    if (reservation_time_start && reservation_time_end) {
+      const reservationStart = DateTime.fromISO(reservation_time_start.toString());
+      const reservationEnd = DateTime.fromISO(reservation_time_end.toString());
+      rentHours = reservationEnd.diff(reservationStart, 'minutes').toObject().minutes / 60;
+    }
+
+    if (trainer_id) {
+      objectToRent = await this.trainerService.findOne(trainer_id);
+    } else if (rental_object_id) {
+      objectToRent = await this.rentalObjectService.findOne(rental_object_id);
+    } else if (equipment_id) {
+      objectToRent = await this.equipmentService.findOne(equipment_id);
+    }
+
+    if (!objectToRent) throw new ConflictException('Object to rent not found');
+
+    if ('price_per_hour' in objectToRent) {
+      if (!rentHours) throw new ConflictException('Reservation time is not specified');
+      price = Math.floor(objectToRent.price_per_hour * rentHours);
+    } else if ('price' in objectToRent) {
+      price = objectToRent.price;
+    }
+
+    return price;
+  }
 
   async create(userId: number, createOrderDto: CreateOrderDto) {
     const { client, reservations, ...statusAndPaymentMathod } = createOrderDto;
@@ -62,28 +102,7 @@ export class OrderService {
             description,
           } = reservationDto;
 
-          const reservationStart = DateTime.fromISO(reservation_time_start.toString());
-          const reservationEnd = DateTime.fromISO(reservation_time_end.toString());
-
-          const timeDifference =
-            reservationEnd.diff(reservationStart, 'minutes').toObject().minutes / 60;
-
-          let objectToRent: Equipment | RentalObject | Trainer;
-          if (equipment_id) {
-            objectToRent = await this.equipmentService.findOne(equipment_id);
-          } else if (rental_object_id) {
-            objectToRent = await this.rentalObjectService.findOne(rental_object_id);
-          } else if (trainer_id) {
-            objectToRent = await this.trainerService.findOne(trainer_id);
-          }
-
-          if (!objectToRent) throw new ConflictException('Object to rent not found');
-
-          let price = 0;
-          if ('price' in objectToRent) price = objectToRent.price;
-          else if ('price_per_hour' in objectToRent)
-            price = Math.floor(objectToRent.price_per_hour * timeDifference);
-
+          const price = await this.calculateObjectToRentPrice(reservationDto);
           order_sum += price;
 
           queryRunner.manager.insert(Reservation, {
