@@ -32,10 +32,10 @@ export class Reservation {
   // @ManyToOne(() => Organization, (organization) => organization.id, )
   // organization: RentalObject;
 
-  @Column()
+  @Column({ nullable: true })
   reservation_time_start: Date;
 
-  @Column()
+  @Column({ nullable: true })
   reservation_time_end: Date;
 
   @Column('text', { nullable: true })
@@ -51,5 +51,5 @@ export class Reservation {
   created_at: Date;
 
   @UpdateDateColumn()
-  update_at: Date;
+  updated_at: Date;
 }
