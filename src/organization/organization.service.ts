@@ -163,6 +163,7 @@ export class OrganizationService {
     const top_clients = clients
       .map((client) => {
         return {
+          id: client.id,
           name: `${client.first_name} ${client.last_name}`,
           total_revenue: client.orders.reduce(
             (prev, curr) =>

@@ -16,6 +16,7 @@ import { Trainer } from 'src/trainer/entities/trainer.entity';
 import { ClientService } from 'src/client/client.service';
 import ElementsQueryDto from './dto/query.dto';
 import FindAllOrdersDto from './dto/find-all-orders.dto';
+import { CreateReservationDto } from 'src/reservation/dto/create-reservation.dto';
 
 @Injectable()
 export class OrderService {
@@ -27,6 +28,45 @@ export class OrderService {
     private readonly clientService: ClientService,
     private readonly dataSource: DataSource,
   ) {}
+
+  private async calculateObjectToRentPrice(reservationDto: CreateReservationDto) {
+    const {
+      equipment_id,
+      rental_object_id,
+      trainer_id,
+      reservation_time_start,
+      reservation_time_end,
+    } = reservationDto;
+
+    let objectToRent: Equipment | RentalObject | Trainer;
+    let price = 0;
+    let rentHours = 0;
+
+    if (reservation_time_start && reservation_time_end) {
+      const reservationStart = DateTime.fromISO(reservation_time_start);
+      const reservationEnd = DateTime.fromISO(reservation_time_end);
+      rentHours = reservationEnd.diff(reservationStart, 'minutes').toObject().minutes / 60;
+    }
+
+    if (trainer_id) {
+      objectToRent = await this.trainerService.findOne(trainer_id);
+    } else if (rental_object_id) {
+      objectToRent = await this.rentalObjectService.findOne(rental_object_id);
+    } else if (equipment_id) {
+      objectToRent = await this.equipmentService.findOne(equipment_id);
+    }
+
+    if (!objectToRent) throw new ConflictException('Object to rent not found');
+
+    if ('price_per_hour' in objectToRent) {
+      if (!rentHours) throw new ConflictException('Reservation time is not specified');
+      price = Math.floor(objectToRent.price_per_hour * rentHours);
+    } else if ('price' in objectToRent) {
+      price = objectToRent.price;
+    }
+
+    return price;
+  }
 
   async create(userId: number, createOrderDto: CreateOrderDto) {
     const { client, reservations, ...statusAndPaymentMathod } = createOrderDto;
@@ -62,24 +102,7 @@ export class OrderService {
             description,
           } = reservationDto;
 
-          const reservationStart = DateTime.fromISO(reservation_time_start.toString());
-          const reservationEnd = DateTime.fromISO(reservation_time_end.toString());
-
-          const timeDifference =
-            reservationEnd.diff(reservationStart, 'minutes').toObject().minutes / 60;
-
-          let objectToRent: Equipment | RentalObject | Trainer;
-          if (equipment_id) {
-            objectToRent = await this.equipmentService.findOne(equipment_id);
-          } else if (rental_object_id) {
-            objectToRent = await this.rentalObjectService.findOne(rental_object_id);
-          } else if (trainer_id) {
-            objectToRent = await this.trainerService.findOne(trainer_id);
-          }
-
-          if (!objectToRent) throw new ConflictException('Object to rent not found');
-
-          const price = Math.floor(objectToRent.price_per_hour * timeDifference);
+          const price = await this.calculateObjectToRentPrice(reservationDto);
           order_sum += price;
 
           queryRunner.manager.insert(Reservation, {
@@ -112,8 +135,18 @@ export class OrderService {
   }
 
   async findAll(query: ElementsQueryDto, userId: number): Promise<FindAllOrdersDto> {
-    const { rental_object_id, equipment_id, client_id, search, trainer_id, limit, skip, sort } =
-      query;
+    const {
+      rental_object_id,
+      equipment_id,
+      client_id,
+      search,
+      trainer_id,
+      limit,
+      skip,
+      sort,
+      start_date,
+      end_date,
+    } = query;
 
     const sortFilters = (sort == undefined ? 'created_at:1' : sort).split(':');
 
@@ -139,6 +172,12 @@ export class OrderService {
     if (rental_object_id)
       orderQuery.andWhere('rental_object.id = :rental_object_id', { rental_object_id });
     if (client_id) orderQuery.andWhere('client.id = :client_id', { client_id });
+    if (start_date) {
+      orderQuery.andWhere('reservation.created_at BETWEEN :start_date AND :end_date', {
+        start_date: start_date,
+        end_date: end_date ?? DateTime.local().toUTC().toISO(),
+      });
+    }
 
     const orders = await orderQuery.getManyAndCount();
 
@@ -156,6 +195,7 @@ export class OrderService {
       .leftJoinAndSelect('order.client', 'client')
       .leftJoinAndSelect('reservation.equipment', 'equipment')
       .leftJoinAndSelect('reservation.rental_object', 'rental_object')
+      .leftJoinAndSelect('rental_object.organization', 'organization')
       .leftJoinAndSelect('reservation.trainer', 'trainer')
       .where('order.id = :id', { id })
       .getOne();
