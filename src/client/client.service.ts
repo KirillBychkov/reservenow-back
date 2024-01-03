@@ -51,10 +51,15 @@ export class ClientService {
       .andWhere(`client.first_name || ' ' || client.last_name ILIKE :search `, {
         search: `%${search ?? ''}%`,
       })
-      .orderBy(`client.${sortFilters[0]}`, sortFilters[1] === '1' ? 'ASC' : 'DESC')
       .skip(skip ?? 0)
       .take(limit ?? 10);
 
+    if (
+      sortFilters[0] !== 'total_reservation_sum' &&
+      sortFilters[0] !== 'total_reservation_amount'
+    ) {
+      clientsQuery.orderBy(`client.${sortFilters[0]}`, sortFilters[1] === '1' ? 'ASC' : 'DESC');
+    }
     if (userId) clientsQuery.andWhere('client.user.id = :userId', { userId });
     if (organization_id) {
       clientsQuery.andWhere('rental_object.organization.id = :organization_id', {
@@ -77,6 +82,20 @@ export class ClientService {
       );
       return { ...client, ...totals };
     });
+
+    // Check if sorting by total_reservation_sum is required
+    if (
+      sortFilters[0] === 'total_reservation_sum' ||
+      sortFilters[0] === 'total_reservation_amount'
+    ) {
+      clients.sort((a, b) => {
+        if (sortFilters[1] === '1') {
+          return a[sortFilters[0]] - b[sortFilters[0]];
+        } else {
+          return b[sortFilters[0]] - a[sortFilters[0]];
+        }
+      });
+    }
 
     return {
       filters: { skip, limit, search, total: fetchedClients[1], received: clients.length },
