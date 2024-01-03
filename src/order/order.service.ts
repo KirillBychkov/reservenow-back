@@ -112,8 +112,18 @@ export class OrderService {
   }
 
   async findAll(query: ElementsQueryDto, userId: number): Promise<FindAllOrdersDto> {
-    const { rental_object_id, equipment_id, client_id, search, trainer_id, limit, skip, sort } =
-      query;
+    const {
+      rental_object_id,
+      equipment_id,
+      client_id,
+      search,
+      trainer_id,
+      limit,
+      skip,
+      sort,
+      start_date,
+      end_date,
+    } = query;
 
     const sortFilters = (sort == undefined ? 'created_at:1' : sort).split(':');
 
@@ -139,6 +149,12 @@ export class OrderService {
     if (rental_object_id)
       orderQuery.andWhere('rental_object.id = :rental_object_id', { rental_object_id });
     if (client_id) orderQuery.andWhere('client.id = :client_id', { client_id });
+    if (start_date) {
+      orderQuery.andWhere('reservation.created_at BETWEEN :start_date AND :end_date', {
+        start_date: start_date,
+        end_date: end_date ?? DateTime.local().toUTC().toISO(),
+      });
+    }
 
     const orders = await orderQuery.getManyAndCount();
 
