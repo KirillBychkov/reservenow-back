@@ -121,7 +121,6 @@ export class ClientService {
 
   async findOneByPhone(phoneQuery: FindByPhoneQueryDto): Promise<Client> {
     let { phone } = phoneQuery;
-    console.log(phone);
 
     // Trim whitespaces
     phone = phone.trim();
