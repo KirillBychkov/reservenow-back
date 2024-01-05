@@ -158,14 +158,19 @@ export class OrderService {
       .leftJoinAndSelect('reservation.equipment', 'equipment')
       .leftJoinAndSelect('reservation.rental_object', 'rental_object')
       .leftJoinAndSelect('reservation.trainer', 'trainer')
-      .orderBy(`order.${sortFilters[0]}`, sortFilters[1] === '1' ? 'ASC' : 'DESC')
       .skip(skip ?? 0)
       .take(limit ?? 10);
 
+    if (sortFilters[0] === 'name') {
+      orderQuery
+        .orderBy('client.first_name', sortFilters[1] === '1' ? 'ASC' : 'DESC')
+        .addOrderBy('client.last_name', sortFilters[1] === '1' ? 'ASC' : 'DESC');
+    } else {
+      orderQuery.orderBy(`order.${sortFilters[0]}`, sortFilters[1] === '1' ? 'ASC' : 'DESC');
+    }
     if (search?.length >= 10)
       orderQuery.andWhere(`client.phone ILIKE :phone`, { phone: `%${search}` });
     if (search?.length < 10) orderQuery.andWhere('order.id = :id', { id: search });
-
     if (userId) orderQuery.andWhere('order.user.id = :userId', { userId });
     if (equipment_id) orderQuery.andWhere('equipment.id = :equipment_id', { equipment_id });
     if (trainer_id) orderQuery.andWhere('trainer.id = :trainer_id', { trainer_id });

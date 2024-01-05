@@ -38,6 +38,7 @@ import { WorkingHoursValidationPipe } from 'src/pipes/workingHoursValidationPipe
 import { imageSchema } from 'src/storage/image.schema';
 import { AbilitiesGuard } from 'src/role/abilities.guard';
 import { checkAbilites } from 'src/role/abilities.decorator';
+import { RentalObject } from 'src/rental_object/entities/rental_object.entity';
 
 @ApiTags('Organization')
 @ApiBearerAuth()
@@ -75,6 +76,15 @@ export class OrganizationController {
   @ApiFoundResponse({ description: 'The organization has been received', type: Organization })
   findOne(@Param('id') id: string) {
     return this.organizationService.findOne(+id);
+  }
+
+  @checkAbilites({ action: 'read', subject: 'organization', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
+  @ApiOperation({ summary: 'Get rental object of an organization' })
+  @Get(':id/rental_objects/')
+  @ApiFoundResponse({ description: 'The organization has been received', type: [RentalObject] })
+  findRentalObjects(@Param('id') id: string) {
+    return this.organizationService.findRentalObjects(+id);
   }
 
   @checkAbilites({ action: 'update', subject: 'organization', conditions: true })
