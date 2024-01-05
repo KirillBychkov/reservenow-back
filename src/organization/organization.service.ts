@@ -8,6 +8,7 @@ import { StorageService } from 'src/storage/storage.service';
 import { DateTime, Interval, Duration } from 'luxon';
 import { Client } from 'src/client/entities/client.entity';
 import { OrganizationStatistic } from './entities/organizationStatistic.entity';
+import { RentalObject } from 'src/rental_object/entities/rental_object.entity';
 
 @Injectable()
 export class OrganizationService {
@@ -54,6 +55,18 @@ export class OrganizationService {
       throw new ConflictException(`Organization with id ${id} does not exist`);
 
     return organizationRecord;
+  }
+
+  async findRentalObjects(id: number): Promise<RentalObject[]> {
+    const organization = await this.organizationRepository
+      .createQueryBuilder('organization')
+      .leftJoinAndSelect('organization.rental_objects', 'rental_object')
+      .where('organization.id = :id', { id })
+      .getOne();
+
+    if (!organization) throw new ConflictException(`Organization with id ${id} does not exist`);
+
+    return organization.rental_objects;
   }
 
   async update(id: number, updateOrganizationDto: UpdateOrganizationDto): Promise<Organization> {
