@@ -120,7 +120,15 @@ export class ClientService {
   }
 
   async findOneByPhone(phoneQuery: FindByPhoneQueryDto): Promise<Client> {
-    const { phone } = phoneQuery;
+    let { phone } = phoneQuery;
+
+    // Trim whitespaces
+    phone = phone.trim();
+
+    // Remove '+' from start if it exists
+    if (phone.startsWith('+')) {
+      phone = phone.substring(1);
+    }
 
     const client = await this.clientRepository
       .createQueryBuilder('client')
@@ -130,7 +138,8 @@ export class ClientService {
       .addSelect('SUM(reservation.price)', 'total_reservation_sum')
       .addSelect('COUNT(reservation.id)', 'total_reservation_amount')
       .groupBy('client.id')
-      .where('client.phone = :phone', { phone })
+      // Use LIKE operator for partial match
+      .where('client.phone LIKE :phone', { phone: '%' + phone + '%' })
       .getRawOne();
 
     return client;
