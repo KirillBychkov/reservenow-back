@@ -1,13 +1,27 @@
-import { IsMobilePhone } from 'class-validator';
+import { IsDateString, IsEmail, IsMobilePhone, IsOptional, IsString } from 'class-validator';
 
 export class CreateManagerDto {
+  @IsEmail()
   email: string;
+
+  @IsString()
   first_name: string;
+
+  @IsString()
   last_name: string;
 
   @IsMobilePhone('uk-UA')
   phone: string;
+
+  @IsString()
+  @IsOptional()
   description?: string;
-  hired_at?: Date;
-  resigned_at?: Date;
+
+  @IsDateString()
+  @IsOptional()
+  hired_at?: string;
+
+  @IsDateString()
+  @IsOptional()
+  resigned_at?: string;
 }

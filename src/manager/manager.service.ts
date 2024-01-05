@@ -35,7 +35,7 @@ export class ManagerService {
     try {
       const [newManager, role] = await Promise.all([
         queryRunner.manager.save(Manager, { ...manager, user: { id: userId } }),
-        this.roleService.getByName('trainer'),
+        this.roleService.getByName('manager'),
       ]);
 
       const account = await queryRunner.manager.save(Account, {
