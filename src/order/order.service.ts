@@ -201,6 +201,19 @@ export class OrderService {
       .getOne();
   }
 
+  async findAllWithTrainer(userId: number) {
+    const orderQuery = this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.reservations', 'reservation')
+      .leftJoinAndSelect('reservation.trainer', 'trainer')
+      .where('order.user.id = :userId', { userId })
+      .andWhere('trainer.id IS NOT NULL');
+
+    const orders = await orderQuery.getMany();
+
+    return orders;
+  }
+
   async update(id: number, updateOrderDto: UpdateOrderDto) {
     const updated = await this.orderRepository
       .createQueryBuilder()

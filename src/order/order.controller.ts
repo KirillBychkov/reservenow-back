@@ -46,10 +46,18 @@ export class OrderController {
 
   @ApiOperation({ summary: 'Get all orders in the system' })
   @UseGuards(AuthGuard('jwt'))
-  @ApiOkResponse({ description: 'All oders have been received', type: [Order] })
+  @ApiOkResponse({ description: 'All orders have been received', type: [Order] })
   @Get()
   findAll(@Req() req, @Query() query: ElementsQueryDto) {
     return this.orderService.findAll(query, +req.user.user_id);
+  }
+
+  @ApiOperation({ summary: 'Get all orders with trainer' })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOkResponse({ description: 'All orders have been received', type: [Order] })
+  @Get('withTrainer')
+  findAllWithTrainer(@Req() req) {
+    return this.orderService.findAllWithTrainer(+req.user.user_id);
   }
 
   @checkAbilites({ action: 'read', subject: 'order', conditions: true })
