@@ -18,7 +18,8 @@ export default class ElementsQueryDto {
   @ApiProperty({ description: "Id of the order or client's phone number" })
   search?: string;
   @ApiProperty({
-    description: 'Option which allow you to choose sorting like title:1 ASC or _id:-1 DESC',
+    description: `Option which allow you to choose sorting like title:1 ASC or _id:-1 DESC \n
+    If you want to sort by client's name use name:1 or name:-1 \n`,
   })
   sort?: string;
 

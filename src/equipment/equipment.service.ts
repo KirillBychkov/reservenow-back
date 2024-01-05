@@ -30,8 +30,8 @@ export class EquipmentService {
     let equipmentQuery = this.equipmentRepository
       .createQueryBuilder('equipment')
       .leftJoinAndSelect('equipment.user', 'user')
-      .where(`equipment.name ILIKE '%${search ?? ''}%'`)
-      .where('equipment.is_deleted = false')
+      .where(`equipment.name ILIKE :search`, { search: `${search ?? ''}%` })
+      .andWhere('equipment.is_deleted = false')
       .orderBy(`equipment.${sortFilters[0]}`, sortFilters[1] === '1' ? 'ASC' : 'DESC')
       .skip(skip ?? 0)
       .take(limit ?? 10);
