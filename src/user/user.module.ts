@@ -8,9 +8,11 @@ import { TokenModule } from 'src/token/token.module';
 import { RoleModule } from 'src/role/role.module';
 import { StorageModule } from 'src/storage/storage.module';
 import { MailModule } from 'src/mail/mail.module';
+import { ExportModule } from 'src/export/export.module';
 
 @Module({
   imports: [
+    ExportModule,
     MailModule,
     RoleModule,
     StorageModule,

@@ -17,6 +17,7 @@ import { ClientService } from 'src/client/client.service';
 import ElementsQueryDto from './dto/query.dto';
 import FindAllOrdersDto from './dto/find-all-orders.dto';
 import { CreateReservationDto } from 'src/reservation/dto/create-reservation.dto';
+import { ExportService } from 'src/export/export.service';
 
 @Injectable()
 export class OrderService {
@@ -27,6 +28,7 @@ export class OrderService {
     private readonly rentalObjectService: RentalObjectService,
     private readonly clientService: ClientService,
     private readonly dataSource: DataSource,
+    private readonly exportService: ExportService,
   ) {}
 
   private async calculateObjectToRentPrice(reservationDto: CreateReservationDto) {
@@ -204,6 +206,12 @@ export class OrderService {
       .leftJoinAndSelect('reservation.trainer', 'trainer')
       .where('order.id = :id', { id })
       .getOne();
+  }
+
+  async export(query: ElementsQueryDto, userId: number): Promise<string> {
+    const orders = await this.findAll(query, userId);
+
+    return this.exportService.exportAsExcel(orders.data, 'orders');
   }
 
   async findAllWithTrainer(userId: number) {
