@@ -11,6 +11,7 @@ import {
   HttpStatus,
   Req,
   Query,
+  Res,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -44,12 +45,24 @@ export class OrderController {
     return this.orderService.create(+req.user.user_id, createOrderDto);
   }
 
+  @checkAbilites({ action: 'read', subject: 'order', conditions: true })
   @ApiOperation({ summary: 'Get all orders in the system' })
   @UseGuards(AuthGuard('jwt'))
   @ApiOkResponse({ description: 'All orders have been received', type: [Order] })
   @Get()
   findAll(@Req() req, @Query() query: ElementsQueryDto) {
     return this.orderService.findAll(query, +req.user.user_id);
+  }
+
+  @checkAbilites({ action: 'read', subject: 'order', conditions: true })
+  @ApiOperation({ summary: 'Export file of orders in the system' })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOkResponse({ description: 'File of orders has been received', type: [Order] })
+  @Get('/export')
+  async export(@Req() req, @Res() res, @Query() query: ElementsQueryDto) {
+    const file = await this.orderService.export(query, +req.user.user_id);
+
+    res.download(file);
   }
 
   @ApiOperation({ summary: 'Get all orders with trainer' })

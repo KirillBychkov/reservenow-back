@@ -1,8 +1,5 @@
-import * as xlsx from 'xlsx';
-import * as tmp from 'tmp';
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-
 import { DataSource, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { AccountService } from 'src/account/account.service';
@@ -16,6 +13,7 @@ import { StorageService } from 'src/storage/storage.service';
 import ElementsQueryDto from './dto/query.dto';
 import { DateTime } from 'luxon';
 import { MailService } from 'src/mail/mail.service';
+import { ExportService } from 'src/export/export.service';
 
 @Injectable()
 export class UserService {
@@ -27,6 +25,7 @@ export class UserService {
     private readonly roleService: RoleService,
     private readonly storageService: StorageService,
     private readonly mailService: MailService,
+    private readonly exportService: ExportService,
   ) {}
 
   async findOne(id: number): Promise<User> {
@@ -65,24 +64,8 @@ export class UserService {
 
   async export(query: ElementsQueryDto): Promise<string> {
     const users = await this.findAll(query);
-    const ws = xlsx.utils.json_to_sheet(users.data);
 
-    const workBook = xlsx.utils.book_new();
-
-    xlsx.utils.book_append_sheet(workBook, ws, 'Users');
-
-    return new Promise((resolve, reject) => {
-      tmp.file(
-        { discardDescriptor: true, mode: 0o644, prefix: 'users', postfix: '.xlsx' },
-        (err, file) => {
-          if (err) reject(err);
-
-          xlsx.writeFile(workBook, file);
-
-          resolve(file);
-        },
-      );
-    });
+    return this.exportService.exportAsExcel(users.data, 'users');
   }
 
   async create(createUserDTO: CreateUserDto) {
