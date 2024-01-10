@@ -11,6 +11,7 @@ import { ReservationService } from 'src/reservation/reservation.service';
 import ReservationQueryDto from './dto/reservations-query.dto';
 import FindAllReservationsByClientDto from 'src/reservation/dto/find-reservations-by-client.dto';
 import { FindByPhoneQueryDto } from './dto/find-by-phone-query.dto';
+import { ExportService } from 'src/export/export.service';
 
 @Injectable()
 export class ClientService {
@@ -18,6 +19,7 @@ export class ClientService {
     @InjectRepository(Client) private readonly clientRepository: Repository<Client>,
     private readonly reservationService: ReservationService,
     private readonly userService: UserService,
+    private readonly exportService: ExportService,
   ) {}
 
   async create(userId, createClientDto: CreateClientDto): Promise<Client> {
@@ -101,6 +103,12 @@ export class ClientService {
       filters: { skip, limit, search, total: fetchedClients[1], received: clients.length },
       data: clients,
     };
+  }
+
+  async export(userId: number, query?: ElementsQueryDto) {
+    const clients = await this.findAll(userId, query);
+
+    return this.exportService.exportAsExcel(clients.data, 'clients');
   }
 
   async findOne(id: number): Promise<Client> {

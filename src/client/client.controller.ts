@@ -9,6 +9,7 @@ import {
   UseGuards,
   Req,
   Query,
+  Res,
 } from '@nestjs/common';
 import { ClientService } from './client.service';
 import { UpdateClientDto } from './dto/update-client.dto';
@@ -58,6 +59,17 @@ export class ClientController {
   @ApiFoundResponse({ description: 'All clients have been received', type: [Client] })
   findAll(@Req() req, @Query() query: ElementsQueryDto) {
     return this.clientService.findAll(req.user.user_id, query);
+  }
+
+  @checkAbilites({ action: 'read', subject: 'client' })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Download a file with clients in the system' })
+  @Get('/export')
+  @ApiOkResponse({ description: 'The file with clients has been downloaded successfully' })
+  async export(@Req() req, @Res() res, @Query() query: ElementsQueryDto) {
+    const file = await this.clientService.export(req.user.user_id, query);
+
+    res.download(file);
   }
 
   @checkAbilites({ action: 'read', subject: 'client', conditions: true })
