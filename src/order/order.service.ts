@@ -214,13 +214,14 @@ export class OrderService {
     return this.exportService.exportAsExcel(orders.data, 'orders');
   }
 
-  async findAllWithTrainer(userId: number) {
+  async findAllWithTrainer(userId?: number) {
     const orderQuery = this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.reservations', 'reservation')
       .leftJoinAndSelect('reservation.trainer', 'trainer')
-      .where('order.user.id = :userId', { userId })
-      .andWhere('trainer.id IS NOT NULL');
+      .where('trainer.id IS NOT NULL');
+
+    if (userId) orderQuery.andWhere('order.user.id = :userId', { userId });
 
     const orders = await orderQuery.getMany();
 
