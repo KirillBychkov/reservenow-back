@@ -171,17 +171,22 @@ export class OrderService {
     }
 
     const search = query.search?.trim();
-    const searchIsPhone = search.length >= 10;
-
-    if (searchIsPhone) orderQuery.andWhere(`client.phone ILIKE :phone`, { phone: `%${search}` });
-    else orderQuery.andWhere('order.id = :id', { id: search });
+    if (search) {
+      const searchIsPhone = search?.length >= 10;
+      if (searchIsPhone) {
+        orderQuery.andWhere(`client.phone ILIKE :phone`, { phone: `%${search}` });
+      } else {
+        orderQuery.andWhere('order.id = :id', { id: search });
+      }
+    }
 
     if (userId) orderQuery.andWhere('order.user.id = :userId', { userId });
-    if (equipment_id) orderQuery.andWhere('equipment.id = :equipment_id', { equipment_id });
-    if (trainer_id) orderQuery.andWhere('trainer.id = :trainer_id', { trainer_id });
-    if (rental_object_id)
+    else if (equipment_id) orderQuery.andWhere('equipment.id = :equipment_id', { equipment_id });
+    else if (trainer_id) orderQuery.andWhere('trainer.id = :trainer_id', { trainer_id });
+    else if (rental_object_id)
       orderQuery.andWhere('rental_object.id = :rental_object_id', { rental_object_id });
-    if (client_id) orderQuery.andWhere('client.id = :client_id', { client_id });
+    else if (client_id) orderQuery.andWhere('client.id = :client_id', { client_id });
+
     if (start_date) {
       orderQuery.andWhere('reservation.created_at BETWEEN :start_date AND :end_date', {
         start_date: start_date,
