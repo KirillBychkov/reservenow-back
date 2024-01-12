@@ -1,5 +1,5 @@
 import * as bcrypt from 'bcrypt';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { AccountService } from 'src/account/account.service';
 import { Account, AccountStatus } from 'src/account/entities/account.entity';
 import { TokenService } from 'src/token/token.service';
@@ -19,8 +19,13 @@ export class AuthService {
     const { email, password } = signInDTO;
     const numberOfAccounts = await this.accountService.getCount();
 
-    if (numberOfAccounts === 0) await this.accountService.createSuperUserAccount(email, password);
+    if (!numberOfAccounts) {
+      await this.accountService.createSuperUserAccount(email, password);
+    }
     const account: Account = await this.accountService.getAccount(null, email, true);
+
+    if (account.status !== AccountStatus.ACTIVE || !account.password)
+      throw new ForbiddenException('Account is not active');
 
     if (!(await bcrypt.compare(password, account.password)))
       throw new UnauthorizedException('Wrong password');
@@ -73,7 +78,7 @@ export class AuthService {
     return { access_token, refresh_token, account: payload };
   }
 
-  async logout(id) {
+  async logout(id: number) {
     const account = await this.accountService.getAccount(id, null);
 
     await this.tokenService.updateToken(account.id, {
@@ -83,7 +88,7 @@ export class AuthService {
     });
   }
 
-  getAccount(accountId): Promise<Account> {
+  getAccount(accountId: number): Promise<Account> {
     return this.accountService.getAccount(accountId, null);
   }
 }
