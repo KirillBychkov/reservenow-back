@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsOptional } from 'class-validator';
+import { IsDateString, IsOptional, IsString, Matches } from 'class-validator';
 
 export default class ElementsQueryDto {
   @ApiProperty({ description: 'Id of the rental object you want to get all orders for' })
@@ -16,6 +16,11 @@ export default class ElementsQueryDto {
   @ApiProperty({ description: 'How many orders to skip in the DB (0 by default)' })
   skip?: number;
   @ApiProperty({ description: "Id of the order or client's phone number" })
+  @IsOptional()
+  @IsString()
+  @Matches(/^(?:[+\s]?\d{12}|\d{10}|\d{1,9})$/, {
+    message: "Search must be rather client's phone number or integer id of the order",
+  })
   search?: string;
   @ApiProperty({
     description: `Option which allow you to choose sorting like title:1 ASC or _id:-1 DESC \n
