@@ -41,8 +41,6 @@ export class ClientService {
   async findAll(userId: number, query?: ElementsQueryDto): Promise<FindAllСlientsDto> {
     const { organization_id, search, limit, sort, skip } = query;
 
-    const sortFilters = (sort == undefined ? 'created_at:1' : sort).split(':');
-
     const clientsQuery = this.clientRepository
       .createQueryBuilder('client')
       .leftJoinAndSelect('client.orders', 'order')
@@ -50,58 +48,71 @@ export class ClientService {
       .leftJoinAndSelect('reservation.equipment', 'equipment')
       .leftJoinAndSelect('reservation.rental_object', 'rental_object')
       .leftJoinAndSelect('reservation.trainer', 'trainer')
-      .andWhere(`client.first_name || ' ' || client.last_name ILIKE :search `, {
+      .where(`client.first_name || ' ' || client.last_name ILIKE :search `, {
         search: `%${search ?? ''}%`,
-      })
-      .skip(skip ?? 0)
-      .take(limit ?? 10);
+      });
 
-    if (
-      sortFilters[0] !== 'total_reservation_sum' &&
-      sortFilters[0] !== 'total_reservation_amount'
-    ) {
-      clientsQuery.orderBy(`client.${sortFilters[0]}`, sortFilters[1] === '1' ? 'ASC' : 'DESC');
-    }
-    if (userId) clientsQuery.andWhere('client.user.id = :userId', { userId });
     if (organization_id) {
       clientsQuery.andWhere('rental_object.organization.id = :organization_id', {
         organization_id,
       });
     }
 
-    const fetchedClients = await clientsQuery.getManyAndCount();
-    const clients = fetchedClients[0].map((client) => {
-      const totals = client.orders.reduce(
-        (prev, curr) => {
-          return {
-            total_reservation_sum:
-              prev.total_reservation_sum +
-              curr.reservations.reduce((prev, curr) => (prev += curr.price), 0),
-            total_reservation_amount: prev.total_reservation_amount + curr.reservations.length,
-          };
-        },
-        { total_reservation_sum: 0, total_reservation_amount: 0 },
-      );
-      return { ...client, ...totals };
-    });
-
-    // Check if sorting by total_reservation_sum is required
-    if (
-      sortFilters[0] === 'total_reservation_sum' ||
-      sortFilters[0] === 'total_reservation_amount'
-    ) {
-      clients.sort((a, b) => {
-        if (sortFilters[1] === '1') {
-          return a[sortFilters[0]] - b[sortFilters[0]];
-        } else {
-          return b[sortFilters[0]] - a[sortFilters[0]];
-        }
+    const clientsTotals = this.clientRepository
+      .createQueryBuilder('client')
+      .leftJoin('client.orders', 'order')
+      .leftJoin('order.reservations', 'reservation')
+      .groupBy('client.id')
+      .select([
+        'client.id',
+        'SUM(reservation.price) AS total_reservation_sum',
+        'COUNT(reservation.id) AS total_reservation_amount',
+      ])
+      .where(`client.first_name || ' ' || client.last_name ILIKE :search `, {
+        search: `%${search ?? ''}%`,
       });
+
+    if (userId) {
+      clientsQuery.andWhere('client.user.id = :userId', { userId });
+      clientsTotals.andWhere('client.user.id = :userId', { userId });
     }
+
+    let orderByTotals = false;
+    if (sort) {
+      const sortFilters = sort.split(':');
+      orderByTotals =
+        sortFilters[0] === 'total_reservation_sum' || sortFilters[0] === 'total_reservation_amount';
+
+      if (orderByTotals) {
+        clientsTotals.orderBy(sortFilters[0], sortFilters[1] === '1' ? 'ASC' : 'DESC');
+      } else {
+        clientsQuery.orderBy(`client.${sortFilters[0]}`, sortFilters[1] === '1' ? 'ASC' : 'DESC');
+      }
+    }
+
+    const fetchedTotals = await clientsTotals.getRawMany();
+    const fetchedClients = await clientsQuery.getManyAndCount();
+
+    const clientsOrder = () => {
+      return fetchedClients[0].map((client) => {
+        const totals = fetchedTotals.find((result) => result.client_id === client.id);
+        return { ...client, ...totals };
+      });
+    };
+
+    const totalsOrder = () => {
+      return fetchedTotals.map((result) => {
+        const client = fetchedClients[0].find((client) => client.id === result.client_id);
+        return { ...client, ...result };
+      });
+    };
+
+    const clients = orderByTotals ? totalsOrder() : clientsOrder();
+    const slicedClients = clients.slice(skip, skip + limit);
 
     return {
       filters: { skip, limit, search, total: fetchedClients[1], received: clients.length },
-      data: clients,
+      data: slicedClients,
     };
   }
 
