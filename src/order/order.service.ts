@@ -158,6 +158,7 @@ export class OrderService {
       .leftJoinAndSelect('order.client', 'client')
       .leftJoinAndSelect('reservation.equipment', 'equipment')
       .leftJoinAndSelect('reservation.rental_object', 'rental_object')
+      .leftJoinAndSelect('rental_object.organization', 'organization')
       .leftJoinAndSelect('reservation.trainer', 'trainer')
       .skip(skip ?? 0)
       .take(limit ?? 10);
