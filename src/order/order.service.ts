@@ -182,7 +182,8 @@ export class OrderService {
     }
 
     if (userId) orderQuery.andWhere('order.user.id = :userId', { userId });
-    else if (equipment_id) orderQuery.andWhere('equipment.id = :equipment_id', { equipment_id });
+
+    if (equipment_id) orderQuery.andWhere('equipment.id = :equipment_id', { equipment_id });
     else if (trainer_id) orderQuery.andWhere('trainer.id = :trainer_id', { trainer_id });
     else if (rental_object_id)
       orderQuery.andWhere('rental_object.id = :rental_object_id', { rental_object_id });
