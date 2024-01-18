@@ -92,7 +92,6 @@ export class RentalObjectService {
       total_reservation_sum: totalPrice,
       total_reservation_amount: rentalObject.reservations.length,
       total_clients_amount: clientsSet.size,
-      total_working_hours_per_week: rentalObject.total_working_hours_per_week,
     };
   }
 
