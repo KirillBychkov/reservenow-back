@@ -131,6 +131,7 @@ export class OrganizationController {
   }
 
   @ApiOperation({ summary: 'Get statistics of the organization' })
+  @ApiQuery({ name: 'time_frame', required: false, type: String })
   @ApiQuery({ name: 'start_date', required: false, type: String })
   @ApiQuery({ name: 'end_date', required: false, type: String })
   @checkAbilites({ action: 'read', subject: 'organization', conditions: true })
@@ -138,9 +139,10 @@ export class OrganizationController {
   @Get('/:id/statistics')
   getStatistics(
     @Param('id') id: string,
+    @Query('time_frame') time_frame?: 'all' | 'month' | 'week' | 'day',
     @Query('start_date') start_date?: string,
     @Query('end_date') end_date?: string,
   ) {
-    return this.organizationService.getStatistics(+id, start_date, end_date);
+    return this.organizationService.getStatistics(+id, time_frame, start_date, end_date);
   }
 }

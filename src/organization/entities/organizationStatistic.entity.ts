@@ -2,20 +2,29 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
-  OneToOne,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Organization } from './organization.entity';
+import { TopObjectsProperties } from './types/top_objects.interface';
+import { TopClientsProperties } from './types/top_clients.interface';
+import { StatisticsPerPeriodProperties } from './types/statistics_per_period.inteface';
+
+export enum Period {
+  all = 'all',
+  day = 'day',
+  week = 'week',
+  month = 'month',
+  custom = 'custom',
+}
 
 @Entity()
 export class OrganizationStatistic {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => Organization)
-  @JoinColumn()
+  @ManyToOne(() => Organization, (organization) => organization.statistics)
   organization: Organization;
 
   @Column()
@@ -31,13 +40,16 @@ export class OrganizationStatistic {
   organization_load: number;
 
   @Column('jsonb')
-  statistics_per_period: string;
+  statistics_per_period: StatisticsPerPeriodProperties[];
+
+  @Column({ type: 'enum', enum: Period })
+  period: Period;
 
   @Column('jsonb')
-  top_objects: string;
+  top_objects: TopObjectsProperties[];
 
   @Column('jsonb')
-  top_clients: string;
+  top_clients: TopClientsProperties[];
 
   @CreateDateColumn()
   created_at: Date;
