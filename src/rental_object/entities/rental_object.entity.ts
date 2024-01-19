@@ -101,24 +101,4 @@ export class RentalObject {
 
   @Column({ type: 'int', nullable: true, select: false })
   total_clients_amount: number;
-
-  public get total_working_hours_per_week(): number {
-    const daysOfWeek = [
-      'sunday',
-      'monday',
-      'tuesday',
-      'wednesday',
-      'thursday',
-      'friday',
-      'saturday',
-    ];
-    return daysOfWeek.reduce((acc, day) => {
-      const start = this[`${day}_start_hours`];
-      const end = this[`${day}_end_hours`];
-      if (start && end) {
-        return acc + (end - start);
-      }
-      return acc;
-    }, 0);
-  }
 }

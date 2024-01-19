@@ -9,6 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { OrganizationStatistic } from './organizationStatistic.entity';
 
 @Entity()
 export class Organization {
@@ -26,6 +27,9 @@ export class Organization {
 
   // @OneToMany(() => Reservation, (reservation) => reservation.organization)
   // reservations: Reservation[];
+
+  @OneToMany(() => OrganizationStatistic, (statistic) => statistic.organization)
+  statistics: OrganizationStatistic[];
 
   @Column({ nullable: true })
   description?: string;

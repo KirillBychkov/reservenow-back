@@ -7,8 +7,11 @@ import { Organization } from './entities/organization.entity';
 import { StorageService } from 'src/storage/storage.service';
 import { DateTime, Interval, Duration } from 'luxon';
 import { Client } from 'src/client/entities/client.entity';
-import { OrganizationStatistic } from './entities/organizationStatistic.entity';
+import { OrganizationStatistic, Period } from './entities/organizationStatistic.entity';
 import { RentalObject } from 'src/rental_object/entities/rental_object.entity';
+import { total_working_hours_per_week } from 'src/helpers/rental_object_helpers';
+import { TopObjectsProperties } from './entities/types/top_objects.interface';
+import { StatisticsPerPeriodProperties } from './entities/types/statistics_per_period.inteface';
 
 @Injectable()
 export class OrganizationService {
@@ -113,11 +116,12 @@ export class OrganizationService {
 
   async getStatistics(
     id: number,
-    start_date: string,
-    end_date: string,
+    timeFrame: 'all' | 'month' | 'week' | 'day',
+    start_date?: string,
+    end_date?: string,
   ): Promise<OrganizationStatistic> {
     const previousStats = await this.organizationStatisticRepository.findOne({
-      where: { organization: { id } },
+      where: { organization: { id }, period: Period[timeFrame] },
     });
 
     if (
@@ -128,13 +132,44 @@ export class OrganizationService {
       return previousStats;
     }
 
+    let interval: 'hours' | 'days' | 'weeks' | 'months';
+
+    if (timeFrame === 'all') {
+      start_date = DateTime.now().minus({ years: 1 }).startOf('week').toISO();
+      end_date = DateTime.now().endOf('week').toISO();
+    } else if (timeFrame === 'month') {
+      start_date = DateTime.now().minus({ months: 1 }).startOf('hour').toISO();
+      end_date = DateTime.now().endOf('hour').toISO();
+    } else if (timeFrame === 'week') {
+      start_date = DateTime.now().minus({ weeks: 1 }).startOf('day').toISO();
+      end_date = DateTime.now().endOf('day').toISO();
+    } else if (timeFrame === 'day') {
+      start_date = DateTime.now().minus({ days: 1 }).startOf('hour').toISO();
+      end_date = DateTime.now().endOf('hour').toISO();
+    }
+
+    const startDateLuxon = DateTime.fromISO(start_date);
+    const endDateLuxon = DateTime.fromISO(end_date);
+
+    const timeDifference = endDateLuxon.diff(startDateLuxon);
+
+    if (timeDifference.as('months') > 1) {
+      interval = 'weeks';
+    } else if (timeDifference.as('weeks') > 1) {
+      interval = 'days';
+    } else {
+      interval = 'hours';
+    }
+
+    console.log(start_date, end_date);
+
     const organizationQuery = this.organizationRepository
       .createQueryBuilder('organization')
       .leftJoinAndSelect('organization.rental_objects', 'rental_object')
       .leftJoinAndSelect(
         'rental_object.reservations',
         'reservation',
-        start_date ? 'reservation.created_at BETWEEN :start_date AND :end_date' : '',
+        start_date ? 'reservation.reservation_time_end BETWEEN :start_date AND :end_date' : '',
         {
           start_date: new Date(start_date),
           end_date: end_date ? new Date(end_date) : DateTime.now().toISO(),
@@ -152,26 +187,27 @@ export class OrganizationService {
       .leftJoinAndSelect('reservation.equipment', 'equipment')
       .leftJoinAndSelect('reservation.rental_object', 'rental_object')
       .leftJoinAndSelect('reservation.trainer', 'trainer')
-      .where('rental_object.organization.id = :id', { id })
+      .where('reservation.reservation_time_end BETWEEN :start_date AND :end_date', {
+        start_date,
+        end_date,
+      })
+      .andWhere('rental_object.organization.id = :id', { id })
       .getMany();
 
     const [organization, clients] = await Promise.all([organizationQuery, clientsQuery]);
     let totalRentalObjectsHours = 0;
 
-    const start_date_iso = DateTime.fromISO(start_date ?? organization.created_at.toISOString());
-    const end_date_iso = DateTime.fromISO(end_date ?? DateTime.local().toUTC().toISO());
-    const daysDifference = end_date_iso.diff(start_date_iso, 'days');
+    const daysDifference = endDateLuxon.diff(startDateLuxon, 'days');
 
-    const timeIntervals = Interval.fromDateTimes(
-      end_date_iso.minus({ months: 11 }).startOf('month'),
-      end_date_iso.endOf('month'),
-    )
-      .splitBy(Duration.fromObject({ weeks: 1 }))
+    const timeIntervals = Interval.fromDateTimes(startDateLuxon, endDateLuxon)
+      .splitBy(Duration.fromObject({ [interval]: 1 }))
       .map((interval): [Interval, any[]] => [interval, []]);
+
+    console.log(timeIntervals.map(([interval]) => interval.toISO()));
 
     const rental_objects = organization.rental_objects;
 
-    const top_objects = [];
+    const top_objects: TopObjectsProperties[] = [];
 
     const top_clients = clients
       .map((client) => {
@@ -189,16 +225,20 @@ export class OrganizationService {
       .slice(0, 4);
 
     rental_objects.forEach((rental_object) => {
+      const reservations = rental_object.reservations;
+
       const notEmptyDays = new Set();
+
       const totalWokringHours =
-        rental_object.total_working_hours_per_week * Math.ceil(daysDifference.as('weeks'));
+        total_working_hours_per_week(rental_object) * Math.ceil(daysDifference.as('weeks'));
       let totalObjectMinutes = 0;
+
       totalRentalObjectsHours += totalWokringHours;
 
-      rental_object.reservations.forEach((reservation) => {
+      reservations.forEach((reservation) => {
         const reservationTimeStart = DateTime.fromJSDate(reservation.reservation_time_start);
         const reservationTimeEnd = DateTime.fromJSDate(reservation.reservation_time_end);
-        notEmptyDays.add(reservationTimeStart.toISODate());
+        notEmptyDays.add(reservationTimeEnd.toISODate());
         const dateIndex = timeIntervals.findIndex((interval) =>
           interval[0].contains(reservationTimeEnd),
         );
@@ -229,15 +269,15 @@ export class OrganizationService {
         id: rental_object.id,
         name: rental_object.name,
         total_reservations: rental_object.reservations.length,
-        empty_days: Math.ceil(start_date_iso.diff(end_date_iso, 'days').days) - notEmptyDays.size,
+        empty_days: Math.ceil(endDateLuxon.diff(startDateLuxon, 'days').days) - notEmptyDays.size,
         load: (totalObjectMinutes / 60 / totalWokringHours) * 100,
         total_revenue: rental_object.reservations.reduce((prev, curr) => (prev += curr.price), 0),
       });
     });
 
-    const reservationPerWeek = timeIntervals.map((interval) => {
+    const reservationPerPeriod: StatisticsPerPeriodProperties[] = timeIntervals.map((interval) => {
       return {
-        week: interval[0].toISODate(),
+        period: interval[0].toISO(),
         total_revenue: interval[1].reduce(
           (prev, curr) => prev + curr.totalObjectReservationsSum,
           0,
@@ -250,7 +290,7 @@ export class OrganizationService {
       };
     });
 
-    const totals = reservationPerWeek.reduce(
+    const totals = reservationPerPeriod.reduce(
       (prev, curr) => {
         return {
           total_revenue: prev.total_revenue + curr.total_revenue,
@@ -267,11 +307,12 @@ export class OrganizationService {
 
     const statsObject = {
       organization: { id },
-      statistics_per_period: JSON.stringify(reservationPerWeek),
       ...totals,
+      period: timeFrame ? Period[timeFrame] : Period.custom,
+      statistics_per_period: reservationPerPeriod,
       organization_load: (totals.total_hours / totalRentalObjectsHours) * 100,
-      top_objects: JSON.stringify(top_objects, null, 2),
-      top_clients: JSON.stringify(top_clients, null, 2),
+      top_objects: top_objects,
+      top_clients: top_clients,
     };
 
     if (previousStats) {
