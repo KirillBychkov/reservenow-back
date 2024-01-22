@@ -224,6 +224,12 @@ export class OrderService {
     return this.exportService.exportAsExcel(orders.data, 'orders');
   }
 
+  async exportById(id: number): Promise<string> {
+    const order = await this.findOne(id);
+
+    return this.exportService.exportAsExcel([order], 'orders');
+  }
+
   async findAllWithTrainer(userId?: number) {
     const orderQuery = this.orderRepository
       .createQueryBuilder('order')
