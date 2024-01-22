@@ -39,6 +39,7 @@ import { imageSchema } from 'src/storage/image.schema';
 import { AbilitiesGuard } from 'src/role/abilities.guard';
 import { checkAbilites } from 'src/role/abilities.decorator';
 import { RentalObject } from 'src/rental_object/entities/rental_object.entity';
+import GetStatisticQueryDto from './dto/get-statistics-query.dto';
 
 @ApiTags('Organization')
 @ApiBearerAuth()
@@ -137,12 +138,7 @@ export class OrganizationController {
   @checkAbilites({ action: 'read', subject: 'organization', conditions: true })
   @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @Get('/:id/statistics')
-  getStatistics(
-    @Param('id') id: string,
-    @Query('time_frame') time_frame?: 'all' | 'month' | 'week' | 'day',
-    @Query('start_date') start_date?: string,
-    @Query('end_date') end_date?: string,
-  ) {
-    return this.organizationService.getStatistics(+id, time_frame, start_date, end_date);
+  getStatistics(@Param('id') id: string, @Query() query: GetStatisticQueryDto) {
+    return this.organizationService.getStatistics(+id, query);
   }
 }
