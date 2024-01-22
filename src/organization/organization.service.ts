@@ -12,6 +12,7 @@ import { RentalObject } from 'src/rental_object/entities/rental_object.entity';
 import { total_working_hours_per_week } from 'src/helpers/rental_object_helpers';
 import { TopObjectsProperties } from './entities/types/top_objects.interface';
 import { StatisticsPerPeriodProperties } from './entities/types/statistics_per_period.inteface';
+import GetStatisticQueryDto from './dto/get-statistics-query.dto';
 
 @Injectable()
 export class OrganizationService {
@@ -114,17 +115,14 @@ export class OrganizationService {
     return updated.raw;
   }
 
-  async getStatistics(
-    id: number,
-    timeFrame: 'all' | 'month' | 'week' | 'day',
-    start_date?: string,
-    end_date?: string,
-  ): Promise<OrganizationStatistic> {
-    if (!timeFrame && !(start_date && end_date)) {
+  async getStatistics(id: number, query: GetStatisticQueryDto): Promise<OrganizationStatistic> {
+    const { time_frame } = query;
+    let { start_date, end_date } = query;
+    if (!time_frame && !(start_date && end_date)) {
       throw new ConflictException('Time frame or (start date and end date) should be specified');
     }
     const previousStats = await this.organizationStatisticRepository.findOne({
-      where: { organization: { id }, period: Period[timeFrame] },
+      where: { organization: { id }, period: Period[time_frame] },
     });
 
     if (
@@ -137,16 +135,16 @@ export class OrganizationService {
 
     let interval: 'hours' | 'days' | 'weeks' | 'months';
 
-    if (timeFrame === 'all') {
+    if (time_frame === 'all') {
       start_date = DateTime.now().minus({ years: 1 }).startOf('week').toISO();
       end_date = DateTime.now().endOf('week').toISO();
-    } else if (timeFrame === 'month') {
+    } else if (time_frame === 'month') {
       start_date = DateTime.now().minus({ months: 1 }).startOf('hour').toISO();
       end_date = DateTime.now().endOf('hour').toISO();
-    } else if (timeFrame === 'week') {
+    } else if (time_frame === 'week') {
       start_date = DateTime.now().minus({ weeks: 1 }).startOf('day').toISO();
       end_date = DateTime.now().endOf('day').toISO();
-    } else if (timeFrame === 'day') {
+    } else if (time_frame === 'day') {
       start_date = DateTime.now().minus({ days: 1 }).startOf('hour').toISO();
       end_date = DateTime.now().endOf('hour').toISO();
     }
@@ -311,7 +309,7 @@ export class OrganizationService {
     const statsObject = {
       organization: { id },
       ...totals,
-      period: timeFrame ? Period[timeFrame] : Period.custom,
+      period: time_frame ? Period[time_frame] : Period.custom,
       statistics_per_period: reservationPerPeriod,
       organization_load: (totals.total_hours / totalRentalObjectsHours) * 100,
       top_objects: top_objects,
