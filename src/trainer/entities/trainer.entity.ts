@@ -46,7 +46,7 @@ export class Trainer {
   @Column({ nullable: true })
   resigned_at?: Date;
 
-  @OneToOne(() => Account, (account) => account.trainer)
+  @OneToOne(() => Account, (account) => account.trainer, { onDelete: 'CASCADE' })
   account: Account;
 
   @Column('int')

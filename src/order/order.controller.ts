@@ -65,6 +65,17 @@ export class OrderController {
     res.download(file);
   }
 
+  @checkAbilites({ action: 'read', subject: 'order', conditions: true })
+  @ApiOperation({ summary: 'Export file of orders in the system' })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOkResponse({ description: 'File of orders has been received', type: [Order] })
+  @Get('/:id/export')
+  async exportById(@Param('id') id: string, @Req() req, @Res() res) {
+    const file = await this.orderService.exportById(+id);
+
+    res.download(file);
+  }
+
   @ApiOperation({ summary: 'Get all orders with trainer' })
   @UseGuards(AuthGuard('jwt'))
   @ApiOkResponse({ description: 'All orders have been received', type: [Order] })

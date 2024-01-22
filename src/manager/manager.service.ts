@@ -8,7 +8,7 @@ import { StorageService } from 'src/storage/storage.service';
 import { AccountService } from 'src/account/account.service';
 import { RoleService } from 'src/role/role.service';
 import { TokenService } from 'src/token/token.service';
-import { Account } from 'src/account/entities/account.entity';
+import { Account, AccountStatus } from 'src/account/entities/account.entity';
 import { MailService } from 'src/mail/mail.service';
 import { DateTime } from 'luxon';
 
@@ -108,9 +108,11 @@ export class ManagerService {
   }
 
   async remove(id: number) {
-    await this.findOne(id);
+    const manager = await this.findOne(id);
 
-    return this.managerRepository.delete({ id });
+    this.accountService.update(manager.account.id, { status: AccountStatus.DELETED });
+
+    return;
   }
 
   async uploadImage(id: number, file: Express.Multer.File) {

@@ -6,7 +6,7 @@ import { DataSource, Repository } from 'typeorm';
 import { Trainer } from './entities/trainer.entity';
 import { AccountService } from 'src/account/account.service';
 import { RoleService } from 'src/role/role.service';
-import { Account } from 'src/account/entities/account.entity';
+import { Account, AccountStatus } from 'src/account/entities/account.entity';
 import { TokenService } from 'src/token/token.service';
 import { StorageService } from 'src/storage/storage.service';
 import { MailService } from 'src/mail/mail.service';
@@ -122,8 +122,11 @@ export class TrainerService {
     return updated.raw;
   }
 
-  remove(id: number) {
-    return this.trainerRepository.delete({ id });
+  async remove(id: number) {
+    const trainer = await this.findOne(id);
+
+    this.accountService.update(trainer.account.id, { status: AccountStatus.DELETED });
+    return;
   }
 
   async uploadImage(id: number, file: Express.Multer.File) {

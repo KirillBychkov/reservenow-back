@@ -120,6 +120,9 @@ export class OrganizationService {
     start_date?: string,
     end_date?: string,
   ): Promise<OrganizationStatistic> {
+    if (!timeFrame && !(start_date && end_date)) {
+      throw new ConflictException('Time frame or (start date and end date) should be specified');
+    }
     const previousStats = await this.organizationStatisticRepository.findOne({
       where: { organization: { id }, period: Period[timeFrame] },
     });
