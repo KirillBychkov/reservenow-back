@@ -141,4 +141,24 @@ export class RentalObjectService {
 
     return updated.raw;
   }
+
+  async deleteImage(id: number) {
+    const { photo } = await this.findOne(id);
+
+    if (photo === null) {
+      throw new ConflictException('Photo does not exist');
+    }
+
+    await this.storageService.s3_delete(new URL(photo));
+
+    const updated = await this.rentalObjectsRepository
+      .createQueryBuilder()
+      .update(RentalObject)
+      .set({ photo: null })
+      .where('id = :id', { id })
+      .returning('*')
+      .execute();
+
+    return updated.raw;
+  }
 }

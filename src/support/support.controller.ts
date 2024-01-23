@@ -32,7 +32,7 @@ import { CreateSupportDto } from './dto/create-support.dto';
 import { UpdateSupportDto } from './dto/update-support.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Support } from './entities/support.entity';
-import ElementsQueryDto from 'src/user/dto/query.dto';
+import ElementsQueryDto from './dto/query.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { imageSchema } from 'src/storage/image.schema';
 import FindAllSupportRecordsDto from './dto/find-all-support-records.dto';

@@ -114,7 +114,7 @@ export class OrganizationController {
   @ApiOperation({ summary: 'Create a new image for the organization' })
   @ApiConsumes('multipart/form-data')
   @ApiBody(imageSchema)
-  @Put('/upload/image/:id')
+  @Put('/:id/upload/image')
   @UseInterceptors(FileInterceptor('file'))
   uploadImage(
     @Param('id') id: string,
@@ -129,6 +129,14 @@ export class OrganizationController {
     file: Express.Multer.File,
   ) {
     return this.organizationService.uploadImage(+id, file);
+  }
+
+  @checkAbilites({ action: 'update', subject: 'organization', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
+  @ApiOperation({ summary: 'Delete image for the organization' })
+  @Put('/:id/delete/image')
+  deleteImage(@Param('id') id: string) {
+    return this.organizationService.deleteImage(+id);
   }
 
   @ApiOperation({ summary: 'Get statistics of the organization' })
