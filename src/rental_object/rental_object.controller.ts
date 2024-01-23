@@ -63,17 +63,6 @@ export class RentalObjectController {
     return this.rentalObjectService.findAll(query, +req.user.user_id);
   }
 
-  // @checkAbilites({ action: 'read', subject: 'rental_object', conditions: true })
-  // @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
-  // @ApiOperation({ summary: "Get all user's rental objects in the system" })
-  // @ApiOkResponse({ description: 'All rental objects have been received', type: [RentalObject] })
-  // @Get(':organizationId')
-  // findAllByOrganization(
-  //   @Param('organizationId') organizationId: string,
-  //   @Query() query: ElementsQueryDto,
-  // ) {
-  //   return this.rentalObjectService.findAllByOrganization(+organizationId, query);
-  // }
   @checkAbilites({ action: 'read', subject: 'rental_object', conditions: true })
   @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
   @ApiOperation({ summary: 'Get a rental object by its id' })
@@ -102,12 +91,9 @@ export class RentalObjectController {
     return this.rentalObjectService.remove(+id);
   }
 
-  @checkAbilites({ action: 'update', subject: 'rental_object', conditions: true })
-  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
-  @ApiOperation({ summary: 'Create a new image for the rental object' })
   @ApiConsumes('multipart/form-data')
   @ApiBody(imageSchema)
-  @Put('/upload/image/:id')
+  @Put('/:id/upload/image/')
   @UseInterceptors(FileInterceptor('file'))
   uploadImage(
     @Param('id') id: string,
@@ -122,5 +108,13 @@ export class RentalObjectController {
     file: Express.Multer.File,
   ) {
     return this.rentalObjectService.uploadImage(+id, file);
+  }
+
+  @checkAbilites({ action: 'update', subject: 'rental_object', conditions: true })
+  @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
+  @ApiOperation({ summary: 'Create a new image for the rental object' })
+  @Put('/:id/delete/image')
+  deleteImage(@Param('id') id: string) {
+    return this.rentalObjectService.deleteImage(+id);
   }
 }

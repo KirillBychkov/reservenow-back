@@ -81,6 +81,7 @@ export class TrainerService {
       .leftJoinAndSelect('trainer.account', 'account')
       .leftJoinAndSelect('account.role', 'role')
       .where('user.id = :id', { id: userId })
+      .andWhere('account.status != :status', { status: AccountStatus.DELETED })
       .getMany();
 
     return trainers;

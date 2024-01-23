@@ -51,6 +51,7 @@ export class UserService {
       .where(`user.first_name || ' ' || user.last_name ILIKE :search `, {
         search: `%${search ?? ''}%`,
       })
+      .andWhere('account.status != :status', { status: AccountStatus.DELETED })
       .orderBy(`user.${sortFilters[0]}`, sortFilters[1] === '1' ? 'ASC' : 'DESC')
       .skip(skip ?? 0)
       .take(limit ?? 10)
