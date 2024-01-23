@@ -41,6 +41,8 @@ export class ClientService {
   async findAll(userId: number, query?: ElementsQueryDto): Promise<FindAllСlientsDto> {
     const { organization_id, search, limit, sort, skip } = query;
 
+    console.log(query);
+
     const clientsQuery = this.clientRepository
       .createQueryBuilder('client')
       .leftJoinAndSelect('client.orders', 'order')
@@ -108,10 +110,10 @@ export class ClientService {
     };
 
     const clients = orderByTotals ? totalsOrder() : clientsOrder();
-    const slicedClients = clients.slice(skip, skip + limit);
+    const slicedClients = clients.slice(Number(skip ?? 0), Number(skip ?? 0) + Number(limit ?? 10));
 
     return {
-      filters: { skip, limit, search, total: fetchedClients[1], received: clients.length },
+      filters: { skip, limit, search, total: fetchedClients[1], received: slicedClients.length },
       data: slicedClients,
     };
   }

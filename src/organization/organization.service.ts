@@ -162,8 +162,6 @@ export class OrganizationService {
       interval = 'hours';
     }
 
-    console.log(start_date, end_date);
-
     const organizationQuery = this.organizationRepository
       .createQueryBuilder('organization')
       .leftJoinAndSelect('organization.rental_objects', 'rental_object')
@@ -203,8 +201,6 @@ export class OrganizationService {
     const timeIntervals = Interval.fromDateTimes(startDateLuxon, endDateLuxon)
       .splitBy(Duration.fromObject({ [interval]: 1 }))
       .map((interval): [Interval, any[]] => [interval, []]);
-
-    console.log(timeIntervals.map(([interval]) => interval.toISO()));
 
     const rental_objects = organization.rental_objects;
 
@@ -329,6 +325,6 @@ export class OrganizationService {
 
     const stats = await this.organizationStatisticRepository.save(statsObject);
 
-    return stats;
+    return stats[0];
   }
 }
