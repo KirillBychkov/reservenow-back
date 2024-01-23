@@ -78,6 +78,7 @@ export class ManagerService {
       .leftJoinAndSelect('manager.account', 'account')
       .leftJoinAndSelect('account.role', 'role')
       .where('user.id = :userId', { userId })
+      .andWhere('account.status != :status', { status: AccountStatus.DELETED })
       .getMany();
   }
 
@@ -89,7 +90,10 @@ export class ManagerService {
       .leftJoinAndSelect('account.role', 'role')
       .where('manager.id = :id', { id })
       .getOne();
+
     if (!manager) throw new ConflictException(`Manager with id ${id} does not exist`);
+    if (manager.account.status === AccountStatus.DELETED)
+      throw new ConflictException(`Manager with id ${id} has been deleted`);
 
     return manager;
   }

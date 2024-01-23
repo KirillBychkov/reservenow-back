@@ -114,10 +114,30 @@ export class OrganizationService {
 
     return updated.raw;
   }
+  async deleteImage(id: number) {
+    const { photo } = await this.findOne(id);
+
+    if (photo === null) {
+      throw new ConflictException('Photo does not exist');
+    }
+
+    await this.storageService.s3_delete(new URL(photo));
+
+    const updated = await this.organizationRepository
+      .createQueryBuilder()
+      .update(Organization)
+      .set({ photo: null })
+      .where('id = :id', { id })
+      .returning('*')
+      .execute();
+
+    return updated.raw;
+  }
 
   async getStatistics(id: number, query: GetStatisticQueryDto): Promise<OrganizationStatistic> {
     const { time_frame } = query;
     let { start_date, end_date } = query;
+    console.log(typeof time_frame);
     if (!time_frame && !(start_date && end_date)) {
       throw new ConflictException('Time frame or (start date and end date) should be specified');
     }

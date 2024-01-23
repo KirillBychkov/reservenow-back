@@ -41,8 +41,6 @@ export class ClientService {
   async findAll(userId: number, query?: ElementsQueryDto): Promise<FindAllСlientsDto> {
     const { organization_id, search, limit, sort, skip } = query;
 
-    console.log(query);
-
     const clientsQuery = this.clientRepository
       .createQueryBuilder('client')
       .leftJoinAndSelect('client.orders', 'order')
