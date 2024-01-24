@@ -65,7 +65,7 @@ export class ClientService {
       .groupBy('client.id')
       .select([
         'client.id',
-        'SUM(reservation.price) AS total_reservation_sum',
+        'COALESCE(SUM(reservation.price), 0) AS total_reservation_sum',
         'COUNT(reservation.id) AS total_reservation_amount',
       ])
       .where(`client.first_name || ' ' || client.last_name ILIKE :search `, {
