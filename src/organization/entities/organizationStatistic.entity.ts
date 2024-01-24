@@ -11,13 +11,13 @@ import { TopObjectsProperties } from './types/top_objects.interface';
 import { TopClientsProperties } from './types/top_clients.interface';
 import { StatisticsPerPeriodProperties } from './types/statistics_per_period.inteface';
 
-export enum Period {
-  all = 'all',
-  day = 'day',
-  week = 'week',
-  month = 'month',
-  custom = 'custom',
-}
+// export enum Period {
+//   all = 'all',
+//   day = 'day',
+//   week = 'week',
+//   month = 'month',
+//   custom = 'custom',
+// }
 
 @Entity()
 export class OrganizationStatistic {
@@ -42,8 +42,8 @@ export class OrganizationStatistic {
   @Column('jsonb')
   statistics_per_period: StatisticsPerPeriodProperties[];
 
-  @Column({ type: 'enum', enum: Period })
-  period: Period;
+  // @Column({ type: 'enum', enum: Period })
+  // period: Period;
 
   @Column('jsonb')
   top_objects: TopObjectsProperties[];

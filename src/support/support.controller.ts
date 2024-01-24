@@ -93,7 +93,7 @@ export class SupportController {
   @ApiOperation({ summary: 'Create a new image for the support_record' })
   @ApiConsumes('multipart/form-data')
   @ApiBody(imageSchema)
-  @Put('/upload/image/:id')
+  @Put(':id/upload/image')
   @UseInterceptors(FileInterceptor('file'))
   uploadImage(
     @Param('id') id: string,

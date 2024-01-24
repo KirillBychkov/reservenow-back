@@ -30,7 +30,6 @@ import {
   ApiOperation,
   ApiConsumes,
   ApiBody,
-  ApiQuery,
 } from '@nestjs/swagger';
 import { Organization } from './entities/organization.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -114,7 +113,7 @@ export class OrganizationController {
   @ApiOperation({ summary: 'Create a new image for the organization' })
   @ApiConsumes('multipart/form-data')
   @ApiBody(imageSchema)
-  @Put('/:id/upload/image')
+  @Put(':id/upload/image')
   @UseInterceptors(FileInterceptor('file'))
   uploadImage(
     @Param('id') id: string,
@@ -139,12 +138,9 @@ export class OrganizationController {
     return this.organizationService.deleteImage(+id);
   }
 
-  @ApiOperation({ summary: 'Get statistics of the organization' })
-  @ApiQuery({ name: 'time_frame', required: false, type: String })
-  @ApiQuery({ name: 'start_date', required: false, type: String })
-  @ApiQuery({ name: 'end_date', required: false, type: String })
   @checkAbilites({ action: 'read', subject: 'organization', conditions: true })
   @UseGuards(AuthGuard('jwt'), AbilitiesGuard)
+  @ApiOperation({ summary: 'Get statistics of the organization' })
   @Get('/:id/statistics')
   getStatistics(@Param('id') id: string, @Query() query: GetStatisticQueryDto) {
     return this.organizationService.getStatistics(+id, query);

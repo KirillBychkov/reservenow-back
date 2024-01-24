@@ -95,7 +95,7 @@ export class TrainerController {
   @ApiOperation({ summary: 'Create a new avatar for the trainer' })
   @ApiConsumes('multipart/form-data')
   @ApiBody(imageSchema)
-  @Put('/upload/image/:id')
+  @Put('/:id/upload/image')
   @UseInterceptors(FileInterceptor('file'))
   uploadImage(
     @Param('id') id: string,
