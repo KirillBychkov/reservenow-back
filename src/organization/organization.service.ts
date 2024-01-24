@@ -139,25 +139,8 @@ export class OrganizationService {
     if (!(start_date && end_date)) {
       throw new ConflictException('Both start_date and end_date should be specified');
     }
-    // const previousStats = await this.organizationStatisticRepository.findOne({
-    //   where: { organization: { id }, period: Period[time_frame] },
-    // });
 
     let interval: 'hours' | 'days' | 'weeks' | 'months';
-
-    // if (time_frame === 'all') {
-    //   start_date = DateTime.now().minus({ years: 1 }).startOf('week').toISO();
-    //   end_date = DateTime.now().endOf('week').toISO();
-    // } else if (time_frame === 'month') {
-    //   start_date = DateTime.now().minus({ months: 1 }).startOf('hour').toISO();
-    //   end_date = DateTime.now().endOf('hour').toISO();
-    // } else if (time_frame === 'week') {
-    //   start_date = DateTime.now().minus({ weeks: 1 }).startOf('day').toISO();
-    //   end_date = DateTime.now().endOf('day').toISO();
-    // } else if (time_frame === 'day') {
-    //   start_date = DateTime.now().minus({ days: 1 }).startOf('hour').toISO();
-    //   end_date = DateTime.now().endOf('hour').toISO();
-    // }
 
     const startDateLuxon = DateTime.fromISO(start_date);
     const endDateLuxon = DateTime.fromISO(end_date);
@@ -315,26 +298,14 @@ export class OrganizationService {
     const statsObject = {
       organization: { id },
       ...totals,
-      // period: time_frame ? Period[time_frame] : Period.custom,
       statistics_per_period: reservationPerPeriod,
       organization_load: (totals.total_hours / totalRentalObjectsHours) * 100,
       top_objects: top_objects,
       top_clients: top_clients,
     };
 
-    // if (previousStats) {
-    //   const updated = await this.organizationStatisticRepository
-    //     .createQueryBuilder()
-    //     .update(OrganizationStatistic, statsObject)
-    //     .where('id = :id', { id: previousStats.id })
-    //     .returning('*')
-    //     .execute();
-
-    //   return updated.raw;
-    // }
-
     const stats = await this.organizationStatisticRepository.save(statsObject);
 
-    return stats[0];
+    return stats;
   }
 }
