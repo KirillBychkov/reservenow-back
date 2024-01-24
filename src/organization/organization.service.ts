@@ -7,7 +7,7 @@ import { Organization } from './entities/organization.entity';
 import { StorageService } from 'src/storage/storage.service';
 import { DateTime, Interval, Duration } from 'luxon';
 import { Client } from 'src/client/entities/client.entity';
-import { OrganizationStatistic, Period } from './entities/organizationStatistic.entity';
+import { OrganizationStatistic } from './entities/organizationStatistic.entity';
 import { RentalObject } from 'src/rental_object/entities/rental_object.entity';
 import { total_working_hours_per_week } from 'src/helpers/rental_object_helpers';
 import { TopObjectsProperties } from './entities/types/top_objects.interface';
@@ -135,39 +135,29 @@ export class OrganizationService {
   }
 
   async getStatistics(id: number, query: GetStatisticQueryDto): Promise<OrganizationStatistic> {
-    const { time_frame } = query;
-    let { start_date, end_date } = query;
-    console.log(typeof time_frame);
-    if (!time_frame && !(start_date && end_date)) {
-      throw new ConflictException('Time frame or (start date and end date) should be specified');
+    const { start_date, end_date } = query;
+    if (!(start_date && end_date)) {
+      throw new ConflictException('Both start_date and end_date should be specified');
     }
-    const previousStats = await this.organizationStatisticRepository.findOne({
-      where: { organization: { id }, period: Period[time_frame] },
-    });
-
-    if (
-      DateTime.fromISO(DateTime.now().toISO())
-        .diff(DateTime.fromISO(previousStats?.created_at.toISOString()))
-        .as('days') < 1
-    ) {
-      return previousStats;
-    }
+    // const previousStats = await this.organizationStatisticRepository.findOne({
+    //   where: { organization: { id }, period: Period[time_frame] },
+    // });
 
     let interval: 'hours' | 'days' | 'weeks' | 'months';
 
-    if (time_frame === 'all') {
-      start_date = DateTime.now().minus({ years: 1 }).startOf('week').toISO();
-      end_date = DateTime.now().endOf('week').toISO();
-    } else if (time_frame === 'month') {
-      start_date = DateTime.now().minus({ months: 1 }).startOf('hour').toISO();
-      end_date = DateTime.now().endOf('hour').toISO();
-    } else if (time_frame === 'week') {
-      start_date = DateTime.now().minus({ weeks: 1 }).startOf('day').toISO();
-      end_date = DateTime.now().endOf('day').toISO();
-    } else if (time_frame === 'day') {
-      start_date = DateTime.now().minus({ days: 1 }).startOf('hour').toISO();
-      end_date = DateTime.now().endOf('hour').toISO();
-    }
+    // if (time_frame === 'all') {
+    //   start_date = DateTime.now().minus({ years: 1 }).startOf('week').toISO();
+    //   end_date = DateTime.now().endOf('week').toISO();
+    // } else if (time_frame === 'month') {
+    //   start_date = DateTime.now().minus({ months: 1 }).startOf('hour').toISO();
+    //   end_date = DateTime.now().endOf('hour').toISO();
+    // } else if (time_frame === 'week') {
+    //   start_date = DateTime.now().minus({ weeks: 1 }).startOf('day').toISO();
+    //   end_date = DateTime.now().endOf('day').toISO();
+    // } else if (time_frame === 'day') {
+    //   start_date = DateTime.now().minus({ days: 1 }).startOf('hour').toISO();
+    //   end_date = DateTime.now().endOf('hour').toISO();
+    // }
 
     const startDateLuxon = DateTime.fromISO(start_date);
     const endDateLuxon = DateTime.fromISO(end_date);
@@ -325,23 +315,23 @@ export class OrganizationService {
     const statsObject = {
       organization: { id },
       ...totals,
-      period: time_frame ? Period[time_frame] : Period.custom,
+      // period: time_frame ? Period[time_frame] : Period.custom,
       statistics_per_period: reservationPerPeriod,
       organization_load: (totals.total_hours / totalRentalObjectsHours) * 100,
       top_objects: top_objects,
       top_clients: top_clients,
     };
 
-    if (previousStats) {
-      const updated = await this.organizationStatisticRepository
-        .createQueryBuilder()
-        .update(OrganizationStatistic, statsObject)
-        .where('id = :id', { id: previousStats.id })
-        .returning('*')
-        .execute();
+    // if (previousStats) {
+    //   const updated = await this.organizationStatisticRepository
+    //     .createQueryBuilder()
+    //     .update(OrganizationStatistic, statsObject)
+    //     .where('id = :id', { id: previousStats.id })
+    //     .returning('*')
+    //     .execute();
 
-      return updated.raw;
-    }
+    //   return updated.raw;
+    // }
 
     const stats = await this.organizationStatisticRepository.save(statsObject);
 
