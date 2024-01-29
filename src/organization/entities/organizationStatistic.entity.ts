@@ -24,7 +24,7 @@ export class OrganizationStatistic {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Organization, (organization) => organization.statistics)
+  @ManyToOne(() => Organization, (organization) => organization.statistics, { onDelete: 'CASCADE' })
   organization: Organization;
 
   @Column()

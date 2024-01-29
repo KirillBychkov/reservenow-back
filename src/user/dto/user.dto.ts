@@ -1,4 +1,4 @@
-import { IsMobilePhone } from 'class-validator';
+import { IsLowercase, IsMobilePhone, Matches } from 'class-validator';
 
 export default class UserDto {
   first_name: string;
@@ -7,6 +7,10 @@ export default class UserDto {
   @IsMobilePhone('uk-UA')
   phone: string;
 
+  @IsLowercase()
+  @Matches(/^[a-zA-Z1-9]*$/, {
+    message: 'domain_url must contain only English letters',
+  })
   domain_url: string;
   description?: string;
 }
