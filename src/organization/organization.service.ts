@@ -38,10 +38,11 @@ export class OrganizationService {
   async findAll(id?: number): Promise<Organization[]> {
     let query = this.organizationRepository
       .createQueryBuilder('organization')
-      .leftJoinAndSelect('organization.user', 'user');
+      .leftJoinAndSelect('organization.user', 'user')
+      .where('organization.is_deleted = false');
 
     if (id) {
-      query = query.where('organization.user.id = :id', { id });
+      query = query.andWhere('organization.user.id = :id', { id });
     }
 
     const result = await query.getMany();
@@ -89,7 +90,7 @@ export class OrganizationService {
   async remove(id: number) {
     await this.findOne(id);
 
-    this.organizationRepository.delete({ id });
+    this.organizationRepository.update(id, { is_deleted: true });
   }
 
   async uploadImage(id: number, file: Express.Multer.File) {

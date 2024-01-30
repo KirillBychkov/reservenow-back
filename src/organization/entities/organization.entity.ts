@@ -43,6 +43,9 @@ export class Organization {
   @Column()
   address: string;
 
+  @Column({ default: false })
+  is_deleted: boolean;
+
   @Column('int', { nullable: true })
   monday_start_hours?: number;
 
