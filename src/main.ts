@@ -10,12 +10,14 @@ async function bootstrap() {
     credentials: true,
   });
 
+  app.setGlobalPrefix('api');
   const config = new DocumentBuilder()
     .setTitle('ReserveNow')
     .setDescription('The ReserveNow API description')
     .setVersion('1.0')
     .addServer('http://localhost:3000')
     .addServer('http://51.15.35.161')
+    .addServer('https://reservnow.com')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
