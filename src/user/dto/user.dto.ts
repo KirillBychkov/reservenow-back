@@ -8,7 +8,7 @@ export default class UserDto {
   phone: string;
 
   @IsLowercase()
-  @Matches(/^[a-zA-Z1-9]*$/, {
+  @Matches(/^[a-z0-9]*$/, {
     message: 'domain_url must contain only English letters',
   })
   domain_url: string;
