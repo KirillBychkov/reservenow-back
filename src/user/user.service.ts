@@ -108,7 +108,7 @@ export class UserService {
       this.mailService.sendMail(
         account.email,
         'Verify your account',
-        'http://127.0.0.1:5173/activate-account?verify_token=' + verify_token,
+        `${process.env.WEB_SERVICE_URL}/activate-account?verify_token=` + verify_token,
       );
       return { verify_token };
     } catch (error) {
