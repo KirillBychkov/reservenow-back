@@ -57,6 +57,8 @@ export class UserService {
       .take(limit ?? 10)
       .getManyAndCount();
 
+    console.log(users);
+
     return {
       filters: { skip, limit, search, total: users[1], received: users[0].length },
       data: users[0],

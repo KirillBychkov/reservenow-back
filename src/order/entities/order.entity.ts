@@ -45,7 +45,7 @@ export class Order {
   @OneToMany(() => Reservation, (reservation) => reservation.order)
   reservations: Reservation[];
 
-  @ManyToOne(() => Client, (client) => client.id)
+  @ManyToOne(() => Client, (client) => client.id, { onDelete: 'CASCADE' })
   client: Client;
 
   @CreateDateColumn()
